@@ -1,0 +1,162 @@
+.wallet-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 120px 24px 64px;
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #FF385C 0%, #BD1E59 100%);
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 25px rgba(255, 56, 92, 0.3);
+}
+
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.balance-label {
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.balance-amount {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.balance-expiry {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  color: #222;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cards-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.payment-method-card {
+  min-width: 240px;
+  height: 140px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fcfcfc;
+}
+
+.payment-method-card.mastercard {
+   background: #222;
+   color: white;
+   border: none;
+}
+
+.card-logo {
+  font-weight: 800;
+  font-style: italic;
+  font-size: 20px;
+}
+
+.card-number {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.card-expiry {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.transaction-icon.credit {
+  background: #e6fce8;
+  color: #008a05;
+}
+
+.transaction-icon.debit {
+  background: #f7f7f7;
+  color: #222;
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.t-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.t-date {
+  font-size: 13px;
+  color: #717171;
+}
+
+.t-amount {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.t-amount.credit {
+  color: #008a05;
+}

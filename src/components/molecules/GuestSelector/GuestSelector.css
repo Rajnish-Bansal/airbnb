@@ -1,0 +1,78 @@
+.guest-selector-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  padding: 16px 24px;
+  z-index: 1000;
+  margin-top: 12px;
+  border: 1px solid #dddddd;
+}
+
+.guest-counter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.guest-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.guest-label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #222222;
+}
+
+.guest-sub-label {
+  font-weight: 400;
+  font-size: 13px;
+  color: #717171;
+  margin-top: 2px;
+}
+
+.guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.counter-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #b0b0b0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #717171;
+  transition: all 0.2s ease;
+}
+
+.counter-btn:hover:not(:disabled) {
+  border-color: #222222;
+  color: #222222;
+}
+
+.counter-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #ebebeb;
+}
+
+.count-value {
+  min-width: 20px;
+  text-align: center;
+  font-size: 16px;
+  color: #222222;
+}
+
+

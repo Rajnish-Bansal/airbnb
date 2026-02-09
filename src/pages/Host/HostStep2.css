@@ -1,0 +1,156 @@
+/* Inherits some basic styles from HostStep1.css via class names, but keeping specific styles here */
+
+/* Override max-width for better split layout */
+.host-step-container {
+  max-width: 1000px !important;
+}
+
+.location-split-layout {
+  display: flex;
+  gap: 48px;
+  height: 100%;
+  align-items: flex-start;
+}
+
+.location-inputs {
+  flex: 1;
+}
+
+.location-map {
+  flex: 1;
+  height: 100%;
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.amenity-card {
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.amenity-card:hover {
+  border-color: #222222;
+}
+
+.amenity-card.selected {
+  border: 2px solid #222222;
+  background-color: #f7f7f7;
+}
+
+.amenity-label {
+  font-weight: 500;
+}
+
+.photo-upload-container {
+  border: 1px dashed #b0b0b0;
+  border-radius: 12px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f7f7f7;
+  cursor: pointer;
+}
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #717171;
+}
+
+.step-subheading {
+  font-size: 16px;
+  color: #717171;
+  margin-bottom: 40px; /* Standardized spacing */
+  margin-top: 0; /* Removed negative margin that was causing overlapping */
+}
+
+.host-textarea {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #b0b0b0;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.host-textarea:focus {
+  border-color: #222222;
+  border-width: 2px;
+  padding: 15px; /* Adjust for border width change */
+}
+
+.title-input {
+  font-size: 22px;
+  font-weight: 600;
+  resize: none;
+  height: 100px;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #717171;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Ensure Leaflet map takes full height */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  min-height: 400px; /* Fallback */
+}
+
+.current-location-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.current-location-btn:hover {
+  background: #f7f7f7;
+}
+
+.city-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  border-radius: 16px;
+  padding: 8px 0;
+}
+
+.city-suggestion-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #222;
+  transition: background 0.2s;
+}
+
+.city-suggestion-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}

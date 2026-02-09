@@ -1,0 +1,381 @@
+/* Aesthetic Pricing UI - Step 6 */
+
+.host-step-container.aesthetic-bg {
+  max-width: 680px;
+  margin: 0 auto;
+  padding-top: 60px;
+  padding-bottom: 120px;
+  position: relative;
+}
+
+/* Base Gradient Background Effect */
+.host-step-container.aesthetic-bg::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -200px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 56, 92, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.pricing-header {
+  text-align: center;
+  position: relative;
+  margin-bottom: 48px;
+}
+
+.header-decoration {
+  color: #ff385c;
+  opacity: 0.2;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.step-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #222222;
+  margin-bottom: 12px;
+}
+
+.step-subheading {
+  font-size: 18px;
+  color: #717171;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.premium-border {
+  border: 1px solid #e2e2e2;
+  border-bottom: 4px solid #f0f0f0;
+}
+
+/* Pricing Tip */
+.pricing-tip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 20px;
+  padding: 20px 28px;
+  margin-bottom: 40px;
+  transition: transform 0.3s ease;
+}
+
+.pricing-tip:hover {
+  transform: translateY(-2px);
+}
+
+.tip-icon {
+  color: #ff385c;
+  background: rgba(255, 56, 92, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.pricing-tip p {
+  margin: 0;
+  font-size: 15px;
+  color: #484848;
+}
+
+/* Main Pricing Card */
+.pricing-main-card {
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 48px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pricing-main-card:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  transform: scale(1.01);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.gradient-badge {
+  background: linear-gradient(135deg, #ff385c 0%, #bd1e59 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.3);
+}
+
+.price-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.price-field-container label {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #717171;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 2px solid #f0f0f0;
+  background: #fcfcfc;
+  border-radius: 16px;
+  padding: 12px 20px;
+  transition: all 0.3s ease;
+}
+
+.price-input-wrapper.large {
+  padding: 16px 24px;
+  background: white;
+  border-color: #f7f7f7;
+}
+
+.price-input-wrapper:focus-within {
+  border-color: #ff385c;
+  background: white;
+}
+
+.focus-glow:focus-within {
+  box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.1);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #ff385c 0%, #bd1e59 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 24px;
+  font-weight: 800;
+  margin-right: 12px;
+}
+
+.price-input-wrapper.large .gradient-text {
+  font-size: 32px;
+}
+
+.price-input-wrapper input {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  font-weight: 800;
+  color: #222;
+  width: 100%;
+  padding: 0;
+  outline: none;
+}
+
+.price-input-wrapper.large input {
+  font-size: 32px;
+}
+
+.per-night {
+  font-size: 15px;
+  font-weight: 600;
+  color: #717171;
+  white-space: nowrap;
+  margin-left: 16px;
+}
+
+/* Room Categories Section */
+.room-categories-section {
+  margin-top: 56px;
+}
+
+.section-desc {
+  font-size: 15px;
+  color: #717171;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.room-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.room-item-card:hover {
+  transform: translateX(8px);
+  border-color: #ff385c;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.04);
+}
+
+.room-item-card.editing {
+  background: #fff8f6;
+  border-color: #ff385c;
+  transform: scale(1.02);
+}
+
+.room-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #222;
+}
+
+.room-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff385c;
+  background: rgba(255, 56, 92, 0.05);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.room-price-details {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.main-price {
+  font-weight: 800;
+  font-size: 20px;
+  color: #222;
+}
+
+.weekend-price {
+  font-size: 14px;
+  font-weight: 500;
+  color: #717171;
+}
+
+/* Add Category Action */
+.add-category-action {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 24px;
+  background: #ffffff;
+  border: 2px dashed #e2e2e2;
+  border-radius: 20px;
+  color: #484848;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-category-action:hover {
+  background: #fcfcfc;
+  border-color: #222;
+  color: #222;
+}
+
+/* Form Card Overhaul */
+.add-category-form-card {
+  background: white;
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+  border: 1px solid #f0f0f0;
+}
+
+.form-group label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.form-group input {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #f9f9f9;
+  border: 2px solid #f0f0f0;
+  font-weight: 600;
+}
+
+.form-group input:focus {
+  background: white;
+  border-color: #ff385c;
+}
+
+.btn-solid {
+  background: linear-gradient(135deg, #ff385c 0%, #bd1e59 100%);
+  box-shadow: 0 8px 20px rgba(255, 56, 92, 0.3);
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.btn-solid:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(255, 56, 92, 0.4);
+}
+
+/* Footer & Global UI Elements */
+.back-btn {
+  color: #222;
+  font-weight: 800;
+}
+
+.next-btn {
+  background: linear-gradient(135deg, #ff385c 0%, #bd1e59 100%);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.2);
+}
+
+.save-exit-btn {
+  border: 2px solid #222;
+  transition: all 0.2s ease;
+}
+
+.save-exit-btn:hover {
+  background: #222;
+  color: white;
+}

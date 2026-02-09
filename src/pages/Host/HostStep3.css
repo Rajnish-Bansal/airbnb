@@ -1,0 +1,63 @@
+.photo-upload-zone {
+  border: 2px dashed #b0b0b0;
+  border-radius: 12px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f7f7f7;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  margin-top: 32px;
+}
+
+.photo-upload-zone.drag-active {
+  background-color: #ffffff;
+  border-color: #222222;
+  box-shadow: inset 0 0 0 2px #222222;
+}
+
+.upload-empty-state {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.upload-instruction {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #222222;
+}
+
+.upload-limit {
+  font-size: 14px;
+  color: #717171;
+  margin-bottom: 24px;
+}
+
+.upload-btn {
+  background: none;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222222;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.upload-btn:hover {
+  background-color: #f7f7f7;
+}
+
+.upload-btn:active {
+  transform: scale(0.96);
+}

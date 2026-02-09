@@ -1,0 +1,208 @@
+/* Premium Photo Upload UI - Step 5 */
+
+.host-step-container.aesthetic-bg {
+  max-width: 800px; /* Slightly wider for the grid */
+  margin: 0 auto;
+}
+
+/* Empty State Zone */
+.photo-upload-zone {
+  min-height: 420px;
+  border: 2px dashed #e2e2e2;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.photo-upload-zone:hover {
+  border-color: #ff385c;
+  background: rgba(255, 56, 92, 0.02);
+}
+
+.photo-upload-zone.drag-active {
+  background: rgba(255, 56, 92, 0.05);
+  border-color: #ff385c;
+  transform: scale(1.02);
+}
+
+.upload-icon-container {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 56, 92, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.upload-cloud-icon {
+  color: #ff385c;
+}
+
+.upload-instruction {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.upload-limit {
+  font-size: 16px;
+  color: #717171;
+  margin-bottom: 24px;
+}
+
+.upload-btn-aesthetic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+/* Photos Preview Grid */
+.photos-preview-container {
+  margin-top: 12px;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+.btn-add-more {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #e2e2e2;
+  transition: all 0.2s;
+}
+
+.btn-add-more:hover {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .photos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.photo-card-wrapper {
+  position: relative;
+  aspect-ratio: 4/3;
+}
+
+.photo-card-wrapper.cover-photo-slot {
+  grid-column: span 2;
+  grid-row: span 2;
+  aspect-ratio: 4/3;
+}
+
+.photo-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #e2e2e2;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cover Badge */
+.cover-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: white;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  color: #222;
+}
+
+/* Delete Button */
+.delete-photo-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #222;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.photo-card:hover .delete-photo-btn {
+  opacity: 1;
+}
+
+.delete-photo-btn:hover {
+  background: white;
+  color: #ff385c;
+  transform: scale(1.1);
+}
+
+/* Placeholder Slots */
+.empty-slot {
+  border: 2px dashed #e2e2e2;
+  background: #fcfcfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.empty-slot:hover {
+  border-color: #b0b0b0;
+  background: #f7f7f7;
+}
+
+.placeholder-slot .photo-card:hover {
+  transform: none;
+  box-shadow: none;
+}

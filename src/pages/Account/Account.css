@@ -1,0 +1,87 @@
+.account-page-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 120px 24px 64px; /* increased top padding to account for fixed navbar */
+}
+
+.account-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.account-subtitle {
+  font-size: 18px;
+  color: #222;
+  margin-bottom: 48px;
+}
+
+.go-to-profile {
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.setting-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08); /* Soft shadow card style */
+  background: white;
+  height: 140px; /* Fixed height for consistency */
+  border: 1px solid #dddddd; /* Subtle border */
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+  align-items: flex-start;
+}
+
+.setting-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  border-color: #bbbbbb;
+}
+
+.setting-icon {
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.setting-desc {
+  font-size: 14px;
+  color: #717171;
+  line-height: 1.4;
+}
+
+.account-footer {
+  text-align: center;
+  margin-top: 48px;
+  color: #717171;
+  font-size: 14px;
+}
+
+.footer-link {
+  text-decoration: underline;
+  color: #222;
+  font-weight: 500;
+  cursor: pointer;
+}

@@ -1,0 +1,186 @@
+.host-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+/* Premium Step Indicator Styles */
+.step-indicator-strip {
+  background: #ffffff;
+  padding: 16px 40px 48px; /* Increased padding-bottom to cover labels */
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 80px; /* Offset by header height */
+  z-index: 90;
+  border-bottom: 1px solid #ebebeb; /* Solid separator */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+}
+
+.premium-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 10; /* Ensure it stays above connectors */
+  cursor: pointer; /* Feedback for interactivity */
+  user-select: none;
+}
+
+.node-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px; /* Slightly tighter corners for smaller size */
+  border: 1.5px solid #e0e0e0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.step-node.active .node-icon {
+  border-color: #00a699;
+  background: white; /* Solid background to prevent line passing through */
+  box-shadow: 0 0 0 4px rgba(0, 166, 153, 0.1);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 166, 153, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 166, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 166, 153, 0); }
+}
+
+.active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px; 
+  background: #00a699;
+}
+
+.step-node.completed .node-icon {
+  background: #00a699;
+  border-color: #00a699;
+  transform: scale(1.05);
+}
+
+.check-icon {
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.step-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  top: 32px; /* Adjusted for smaller icon */
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 5px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.step-number {
+  font-size: 9px;
+  font-weight: 800;
+  color: #717171;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.step-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #222222;
+  margin-top: 1px;
+}
+
+.step-node.active .step-name {
+  color: #00a699;
+}
+
+.step-node.future .step-name {
+  color: #b0b0b0;
+}
+
+.step-connector {
+  flex: 1; /* Flexible width */
+  min-width: 30px;
+  max-width: 120px;
+  height: 2px; /* Thinner more elegant line */
+  background: #f0f0f0;
+  margin-top: 11px; /* (24/2) - (2/2) = 11px */
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  pointer-events: none;
+}
+
+.step-connector.completed {
+  background: linear-gradient(90deg, #00a699, #00a699);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.host-header {
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  background: white;
+  border-bottom: 1px solid #ebebeb;
+  z-index: 100;
+  position: sticky;
+  top: 0;
+}
+
+.host-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.host-logo .logo-text {
+  color: #ff385c;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.save-exit-btn {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222222;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 32px;
+  background: #f7f7f7;
+  transition: background 0.2s;
+}
+
+.save-exit-btn:hover {
+  background: #ebebeb;
+}
+
+.host-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

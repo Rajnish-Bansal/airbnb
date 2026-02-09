@@ -1,0 +1,119 @@
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  width: 100%;
+  position: relative;
+  z-index: 100;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  box-shadow: 0 3px 12px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.08);
+  max-width: 850px;
+  width: 100%;
+  height: 66px;
+  transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.search-bar:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.search-input-group {
+  flex: 1;
+  height: 100%;
+  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s ease;
+}
+
+.search-input-group:hover {
+  background-color: #EBEBEB; /* Light gray hover */
+}
+
+/* Active state creates a bright white "pill" context with shadow */
+.search-input-group.active {
+  background-color: white;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.search-input-group:hover + .divider,
+.search-input-group.active + .divider,
+.search-input-group:has(+ .search-input-group:hover) .divider,
+.search-input-group:has(+ .search-input-group.active) .divider {
+    opacity: 0;
+    visibility: hidden;
+}
+
+
+/* Give "Where" more space */
+.search-input-group:first-child {
+  flex: 1.5;
+  padding-left: 32px;
+}
+
+.search-input-group label {
+  font-size: 12px;
+  font-weight: 800; /* Bolder */
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  letter-spacing: 0.04em;
+}
+
+.search-input-group input {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  outline: none;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden; 
+  white-space: nowrap;
+  padding: 0;
+}
+
+.search-input-group input::placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border-light);
+  transition: opacity 0.1s ease;
+}
+
+/* Search Button Wrapper to sit inside the last group or next to it */
+.search-button-large {
+  background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+  margin-right: 8px; /* Spacing from right edge */
+  flex-shrink: 0;
+  color: white;
+}
+
+.search-button-large:hover {
+  transform: scale(1.05); /* Slight grow */
+}

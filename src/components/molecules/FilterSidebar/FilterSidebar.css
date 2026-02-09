@@ -1,0 +1,236 @@
+.filter-sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #ebebeb;
+  height: calc(100vh - 80px);
+  position: sticky;
+  top: 80px;
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.sidebar-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.reset-filters-btn {
+  background: none;
+  border: none;
+  color: #222;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.reset-filters-btn:hover {
+  color: #717171;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-section {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
+}
+
+.sidebar-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 12px 0;
+}
+
+/* Price Range */
+.price-inputs-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.price-input-group-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.price-input-group-sidebar label {
+  font-size: 12px;
+  color: #717171;
+  font-weight: 500;
+}
+
+.price-input-group-sidebar input {
+  padding: 8px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.price-separator-sidebar {
+  margin-top: 20px;
+  color: #717171;
+}
+
+.price-display-sidebar {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  margin-top: 8px;
+}
+
+/* Property Type Chips */
+.sidebar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sidebar-chip {
+  padding: 8px 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-chip:hover {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.sidebar-chip.active {
+  background: #222;
+  color: white;
+  border-color: #222;
+}
+
+/* Amenities Checkboxes */
+.sidebar-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #222;
+}
+
+.sidebar-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #222;
+}
+
+.sidebar-checkbox-label.instant-book-sidebar {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.sidebar-checkbox-label.instant-book-sidebar span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-checkbox-label.instant-book-sidebar strong {
+  font-size: 14px;
+  color: #222;
+}
+
+.sidebar-checkbox-label.instant-book-sidebar p {
+  font-size: 12px;
+  color: #717171;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Rating Options */
+.sidebar-rating-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.sidebar-rating-btn {
+  padding: 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-rating-btn:hover {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.sidebar-rating-btn.active {
+  background: #222;
+  color: white;
+  border-color: #222;
+}
+
+/* Scrollbar Styling */
+.filter-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-sidebar::-webkit-scrollbar-track {
+  background: #f7f7f7;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* Responsive - Hide on mobile */
+@media (max-width: 1024px) {
+  .filter-sidebar {
+    display: none;
+  }
+}

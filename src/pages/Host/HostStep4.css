@@ -1,0 +1,133 @@
+/* Inherits some basic styles from HostStep1.css */
+
+.centered-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 24px 0 8px;
+}
+
+.currency-symbol {
+  font-size: 48px;
+  font-weight: 600;
+  color: #222222;
+  margin-right: 8px;
+}
+
+.price-input {
+  font-size: 48px;
+  font-weight: 600;
+  color: #222222;
+  border: 1px solid #b0b0b0;
+  border-radius: 8px;
+  width: 200px;
+  text-align: center;
+  padding: 8px;
+  outline: none;
+}
+
+.price-input:focus {
+  border-color: #222222;
+  border-width: 2px;
+}
+
+.price-note {
+  font-size: 18px;
+  color: #222222;
+  margin-bottom: 40px;
+}
+
+.review-section {
+  border-top: 1px solid #ebebeb;
+  padding-top: 40px;
+}
+
+.review-card {
+  display: flex;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 400px;
+  margin: 0 auto 24px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.review-image-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #dddddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #717171;
+}
+
+.review-details {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.review-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.review-price {
+  font-weight: 600;
+}
+
+.night-text {
+  font-weight: 400;
+  color: #717171;
+}
+
+.review-summary {
+  background-color: #f7f7f7;
+  padding: 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #222222;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-icon {
+  font-size: 20px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.summary-text {
+  flex: 1;
+}
+
+.summary-text strong {
+  color: #717171;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.publish-btn {
+  background: linear-gradient(90deg, #ff385c 0%, #bd1e59 100%);
+}
+
+.publish-btn:hover {
+  transform: scale(1.02);
+}
