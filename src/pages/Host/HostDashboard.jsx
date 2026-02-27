@@ -741,13 +741,18 @@ const HostDashboard = () => {
                         const pendingRequests = reservations.filter(r => r.listingId === listing.id && r.status === 'Pending').length;
 
                         return (
-                           <div key={listing.id} className="listing-card-v2">
+                            <div className="listing-card-v2">
                               <div className="card-image">
-                                 {listing.photos && listing.photos[0] ? (
-                                   <img src={listing.photos[0] instanceof File ? URL.createObjectURL(listing.photos[0]) : listing.photos[0]} alt="" />
-                                 ) : (
-                                   <img src="/placeholder-listing.jpg" alt="No image available" />
-                                 )}
+                                 {(() => {
+                                   let imgUrl = '/placeholder-listing.jpg';
+                                   if (listing.photos && listing.photos.length > 0) {
+                                      const photo = listing.photos[0];
+                                      if (typeof photo === 'string') imgUrl = photo;
+                                      else if (photo instanceof File) imgUrl = URL.createObjectURL(photo);
+                                      else if (photo && photo.url) imgUrl = photo.url;
+                                   }
+                                   return <img src={imgUrl} alt={listing.title || 'Listing'} />;
+                                 })()}
                                  <span className={`status-pill ${listing.status.toLowerCase().replace(' ', '-')}`}>
                                     {listing.status === 'Pending' ? 'Pending Approval' : listing.status} {listing.status === 'Active' ? '(Annual)' : ''}
                                  </span>
