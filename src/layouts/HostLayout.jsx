@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import { HostProvider, useHost } from '../context/HostContext';
 import { useAuth } from '../context/AuthContext';
-import { Menu, User, Bell } from 'lucide-react';
+import { Menu, User, Bell, Check } from 'lucide-react';
 import Toast from '../components/atoms/Toast/Toast';
 import './HostLayout.css';
 
@@ -40,10 +40,8 @@ const HostLayoutContent = () => {
              <span className="logo-text">airbnb</span>
            </Link>
            <div className="host-header-actions">
-             {isDashboardOrLanding ? (
-                <Link to="/" className="save-exit-btn">Switch to traveling</Link>
-             ) : (
-                <Link to="/become-a-host/dashboard" className="save-exit-btn">Save & Exit</Link>
+             {isDashboardOrLanding && (
+                <Link to="/" className="host-switch-btn">Switch to Traveling</Link>
              )}
              
              {/* Notification Icon */}
@@ -59,14 +57,16 @@ const HostLayoutContent = () => {
                 <div 
                   className="user-menu-button" 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 5px 5px 12px', border: '1px solid #ddd', borderRadius: '21px', cursor: 'pointer', background: 'white' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 12px 5px 16px', border: '1px solid #ddd', borderRadius: '21px', cursor: 'pointer', background: 'white' }}
                 >
-                   <Menu size={18} />
                    {user ? (
-                      <div className="user-avatar-small" style={{ width: '30px', height: '30px', background: '#222', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>{user.name?.charAt(0).toUpperCase() || 'U'}</div>
+                      <span style={{ fontSize: '15px', fontWeight: '600', color: '#222' }}>
+                        {user.name?.split(' ')[0]}
+                      </span>
                    ) : (
                       <User size={18} className="user-icon" />
                    )}
+                   <Menu size={18} />
                 </div>
 
                 {isUserMenuOpen && (
@@ -98,7 +98,7 @@ const HostLayoutContent = () => {
                       title={`Go to ${step.name}`}
                     >
                       <div className="node-icon">
-                        {state === 'completed' && <span className="check-icon">✓</span>}
+                        {state === 'completed' && <Check size={14} color="white" strokeWidth={4} style={{ position: 'relative', top: '1px' }} />}
                         {state === 'active' && <div className="active-dot"></div>}
                       </div>
                         <div className="step-label">

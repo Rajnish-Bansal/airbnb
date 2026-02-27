@@ -123,11 +123,16 @@
   padding: 14px 24px;
   border-radius: 12px;
   font-weight: 700;
+  border: none;
+  background-color: #222222;
+  color: #ffffff;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
 .current-location-btn:hover {
-  background: #f7f7f7;
+  background-color: #000000;
+  color: #ffffff; 
 }
 
 .city-suggestions {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
-import { Sparkles, Zap, MessageSquare, Shield, CheckCircle } from 'lucide-react';
+import { Zap, MessageSquare, Shield, CheckCircle } from 'lucide-react';
 import './HostStep1.css'; 
 
 const HostStep4 = () => {
@@ -36,8 +36,7 @@ const HostStep4 = () => {
     <div className="host-step-container aesthetic-bg">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
-           <h1 className="step-title">Decide how guests will book</h1>
+           <h1 className="step-title">Choose how guests will book</h1>
            <p className="step-subheading">You can choose to approve every request or let guests book instantly.</p>
         </header>
         

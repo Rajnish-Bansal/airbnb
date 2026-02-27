@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
 import './HostStep1.css';
-import { Image as ImageIcon, Plus, Trash2, UploadCloud, Sparkles, Tag } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, UploadCloud, Tag } from 'lucide-react';
 import './HostStep5.css'; 
 
 const HostStep5 = () => {
@@ -77,19 +77,17 @@ const HostStep5 = () => {
     <div className="host-step-container aesthetic-bg">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
-           <h1 className="step-title">Showcase your place</h1>
+           <h1 className="step-title">Make your place stand out</h1>
            <p className="step-subheading">Give your place a catchy title and add photos to attract guests.</p>
         </header>
         
         {/* Title Section */}
         <section className="step-section">
-          <h2 className="step-heading">Property Title</h2>
+          <h2 className="step-heading">Property Title <span style={{ color: '#ff385c' }}>*</span></h2>
           <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px', marginBottom: '32px' }}>
             <textarea 
               className="host-textarea title-input" 
               placeholder="e.g. Peaceful villa in the heart of Delhi"
-              maxLength={32}
               value={listingData.title}
               onChange={(e) => updateListingData({ title: e.target.value })}
               style={{ 
@@ -108,16 +106,16 @@ const HostStep5 = () => {
               }}
             />
             <div className="char-count" style={{ marginTop: '8px', textAlign: 'right' }}>
-              <span className="gradient-badge" style={{ padding: '4px 12px', fontSize: '12px' }}>
-                {listingData.title?.length || 0}/32
-              </span>
+              <div style={{ textAlign: 'right', fontSize: '12px', color: '#717171', marginTop: '8px', fontWeight: '600' }}>
+              {(listingData.title || '').length} characters
+            </div>
             </div>
           </div>
         </section>
 
         {/* Photos Section */}
         <section className="step-section">
-          <h2 className="step-heading">Photos</h2>
+          <h2 className="step-heading">Photos <span style={{ color: '#ff385c' }}>*</span></h2>
         {!hasPhotos ? (
           <div 
             className={`photo-upload-zone glass-card ${dragActive ? 'drag-active' : ''}`}

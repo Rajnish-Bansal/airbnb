@@ -8,7 +8,6 @@ import {
   Wind, 
   Tv, 
   Monitor, 
-  Sparkles, 
   Flame, 
   Car, 
   Dog, 
@@ -78,14 +77,16 @@ const HostStep3 = () => {
     <div className="host-step-container aesthetic-bg">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
-           <h1 className="step-title">Tell guests what your place has</h1>
+           <h1 className="step-title">Tell guests what your place has to offer</h1>
            <p className="step-subheading">Guests search for these features when they're looking for a place to stay.</p>
         </header>
         
         {/* Amenities Section */}
         <section className="step-section">
-          <h2 className="step-heading">Amenities</h2>
+          <h2 className="step-heading" style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            Amenities <span style={{ color: '#ff385c' }}>*</span>
+            <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#717171' }}>(Select minimum 3)</span>
+          </h2>
           <div className="amenities-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
             {amenitiesList.map(({ name, icon: Icon }) => (
               <div 

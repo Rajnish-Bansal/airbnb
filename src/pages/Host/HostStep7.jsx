@@ -1,14 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
-import { 
-  Home, 
-  MapPin, 
-  Users, 
-  Sparkles, 
-  IndianRupee, 
+import {
+  Home,
+  MapPin,
+  Users,
+  IndianRupee,
   Image as ImageIcon,
-  CheckCircle2
+  CheckCircle2,
+  Book,
+  Clock
 } from 'lucide-react';
 import './HostStep1.css';
 import './HostStep7.css';
@@ -24,7 +25,7 @@ const HostStep7 = () => {
   };
 
   const hasRooms = (listingData.rooms || []).length > 0;
-  
+
   // Helper to safely get the cover photo URL
   const getCoverPhoto = () => {
     if (listingData.photos && listingData.photos.length > 0) {
@@ -48,11 +49,10 @@ const HostStep7 = () => {
     <div className="host-step-container aesthetic-bg review-large-container">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
-           <h1 className="step-title">Review</h1>
+           <h1 className="step-title">Review your listing</h1>
            <p className="step-subheading">Here's a quick look at what guests will see. Make sure everything looks perfect!</p>
         </header>
-        
+
         <div className="review-card glass-card premium-border" style={{ borderRadius: '32px', overflow: 'hidden', padding: '0' }}>
            {/* Cover Image Preview */}
            <div className="review-cover-image" style={{ height: '300px', position: 'relative' }}>
@@ -81,7 +81,7 @@ const HostStep7 = () => {
               </div>
 
               <div className="summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-                 
+
                  {/* Property Type */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px' }}>
                     <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
@@ -90,7 +90,7 @@ const HostStep7 = () => {
                     <div className="summary-details">
                        <span className="summary-label" style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', color: '#717171', fontWeight: '700', marginBottom: '4px' }}>Property Type</span>
                        <span className="summary-value" style={{ fontSize: '16px', fontWeight: '600' }}>
-                          {listingData.type} 
+                          {listingData.type}
                           {listingData.placeType && ` • ${listingData.placeType === 'entire' ? 'Entire Place' : 'Private Room'}`}
                        </span>
                     </div>
@@ -116,7 +116,7 @@ const HostStep7 = () => {
                     </div>
                     <div className="summary-details">
                        <span className="summary-label" style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', color: '#717171', fontWeight: '700', marginBottom: '4px' }}>Pricing & Rooms</span>
-                       
+
                        {/* Base Price */}
                        {!hasRooms && (
                           <div className="room-breakdown" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -151,8 +151,8 @@ const HostStep7 = () => {
                     <div className="summary-details">
                        <span className="summary-label" style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', color: '#717171', fontWeight: '700', marginBottom: '4px' }}>Amenities Selection</span>
                        <span className="summary-value" style={{ fontSize: '15px', color: '#484848', lineHeight: '1.5' }}>
-                          {(listingData.amenities || []).length > 0 
-                             ? (listingData.amenities || []).join(' • ') 
+                          {(listingData.amenities || []).length > 0
+                             ? (listingData.amenities || []).join(' • ')
                              : 'No amenities selected'}
                        </span>
                     </div>
@@ -161,11 +161,11 @@ const HostStep7 = () => {
                  {/* Booking Settings */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px', gridColumn: 'span 2' }}>
                     <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
-                      <Sparkles size={24} />
+                      <MapPin size={24} />
                     </div>
                     <div className="summary-details">
                        <span className="summary-label" style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', color: '#717171', fontWeight: '700', marginBottom: '8px' }}>Booking Settings</span>
-                       
+
                        <div style={{ marginBottom: '12px' }}>
                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>
                             {listingData.instantBooking ? 'Instant Book On' : 'Request to Book'}

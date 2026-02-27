@@ -124,7 +124,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .main-header h2 {
@@ -247,7 +247,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .listings-grid-v2 {
@@ -409,40 +409,10 @@
   overflow: hidden;
 }
 
-.card-rating-location {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
 .card-location {
   font-size: 14px;
   color: #717171;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-rating-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: #222;
-  white-space: nowrap;
-}
-
-.rating-value {
-  font-weight: 600;
-}
-
-.rating-count {
-  color: #717171;
-  font-weight: 400;
+  margin: 0 0 8px 0;
 }
 
 .card-pricing-summary {
@@ -636,29 +606,6 @@
 
 .btn-action-outline:hover {
   background: #f7f7f7;
-}
-
-.btn-public-view {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px;
-  border: 1px solid #222;
-  border-radius: 8px;
-  background: white;
-  color: #222;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.btn-public-view:hover {
-  background: #f7f7f7;
-  border-color: #000;
 }
 
 .btn-action-outline.delete {
@@ -882,13 +829,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 13px;
 }
 
 .cal-header-left {
@@ -935,8 +875,6 @@
 
 .cal-legend {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
   gap: 16px;
   font-size: 14px;
   color: #717171;
@@ -1148,7 +1086,9 @@
 .txn-tabs {
   display: flex;
   gap: 24px;
-  margin-bottom: -1px;
+  border-bottom: 1px solid #ebebeb;
+  width: 100%;
+  margin-top: 8px;
 }
 
 .txn-tab {
@@ -1809,7 +1749,7 @@
 /* Define Grid Layout for both Header and Rows */
 .table-header, .table-row {
   display: grid;
-  grid-template-columns: 0.5fr 1.5fr 1.2fr 1.8fr 1fr 1.2fr 1.5fr; /* Added Sl No. column */
+  grid-template-columns: 1.8fr 1.2fr 2.2fr 1fr 1.2fr 0.8fr; /* Precise column control */
   padding: 16px 24px;
   align-items: center;
   gap: 16px; /* consistent gap between columns */
@@ -1838,11 +1778,7 @@
 }
 
 /* Column Alignment & Styling */
-.col-sl {
-  font-weight: 500;
-  color: #717171;
-  font-size: 13px;
-}
+/* Note: nth-child selectors aren't needed for width anymore, grid handles it. */
 
 .col-price { 
   font-weight: 700; 
@@ -1851,16 +1787,15 @@
 
 .col-action { 
   display: flex; 
-  gap: 12px;
   justify-content: flex-end; 
 }
 
 /* Explicit Header Alignments to match data */
-.table-header > div:nth-child(5) { text-align: right; }
-.table-header > div:nth-child(7) { text-align: right; }
+.table-header > div:nth-child(4) { text-align: right; }
+.table-header > div:nth-child(6) { text-align: right; }
 
 /* Ensure content doesn't break layout */
-.col-guest, .col-date, .col-listing, .col-price, .col-status {
+.col-guest, .col-date, .col-listing, .col-price, .col-status, .col-action {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1907,15 +1842,15 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
   gap: 16px;
-  border-bottom: 1px solid #ebebeb;
+  margin-top: 12px;
 }
 
 .txn-date-filters {
   display: flex;
   gap: 16px;
   align-items: center;
-  padding-bottom: 4px;
 }
 
 .date-input-wrapper {
@@ -1952,654 +1887,4 @@
     width: 100%;
     margin-top: 8px;
   }
-}
-
-/* Month View Price Input */
-.month-price-input-wrapper {
-  display: inline-flex;
-  align-items: center;
-  background: white;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 2px 4px;
-  margin-top: 4px;
-  transition: border-color 0.2s;
-  width: 100%;
-  max-width: 60px;
-}
-
-.month-price-input-wrapper:hover,
-.month-price-input-wrapper:focus-within {
-  border-color: #ebebeb;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.month-price-input {
-  border: none;
-  outline: none;
-  font-size: 12px;
-  font-weight: 600;
-  color: #222;
-  width: 100%;
-  background: transparent;
-}
-
-.day-cell.booked .month-price-input-wrapper,
-.day-cell.booked .month-price-input {
-  background: transparent;
-  color: #717171;
-}
-
-.day-cell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-.day-price {
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-.month-price-input-wrapper {
-  margin-top: 0 !important;
-}
-.booking-strip {
-  width: 100%;
-}
-.day-cell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-.day-price {
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-.month-price-input-wrapper {
-  margin-top: 0 !important;
-}
-.booking-strip {
-  width: 100%;
-}
-.days-grid .day-cell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 8px;
-}
-
-.days-grid .day-price {
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  height: 24px;
-}
-
-.days-grid .bookings-stack {
-  margin-top: 8px;
-  width: 100%;
-}
-
-.days-grid .booking-strip {
-  border-radius: 4px;
-  margin-bottom: 2px;
-  padding: 2px 4px;
-  font-size: 11px;
-  color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.month-price-input {
-  width: 100% !important;
-  min-width: 45px !important;
-}
-
-.month-price-input-wrapper {
-  max-width: 100% !important;
-  width: 100% !important;
-  box-sizing: border-box;
-}
-
-.days-grid .day-price {
-  height: auto !important;
-  min-height: 24px;
-  overflow: visible !important;
-}
-.month-price-input {
-  min-width: 60px !important; 
-  padding: 0 !important;
-  font-size: 13px !important;
-}
-
-.month-price-input-wrapper {
-  max-width: 100% !important;
-  width: auto !important; 
-  flex-grow: 1;
-}
-
-.days-grid .day-price {
-  height: auto !important;
-  min-height: 28px;
-  overflow: visible !important;
-  padding: 2px 0;
-}
-
-.day-cell {
-  overflow: hidden; 
-}
-.month-price-input {
-  text-overflow: ellipsis;
-  overflow: visible;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-.days-grid .day-cell {
-  overflow: visible !important; 
-  padding: 4px;
-}
-.bookings-stack {
-  z-index: 2;
-  position: relative;
-}
-.month-price-input {
-  max-width: 100%;
-}
-.month-price-input-wrapper {
-  overflow: hidden;
-}
-.save-action-bar {
-  position: fixed;
-  bottom: 0px;
-  left: 260px; /* offset sidebar */
-  right: 0;
-  background: white;
-  border-top: 1px solid #ebebeb;
-  padding: 16px 24px;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-}
-
-.save-action-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 1000px;
-}
-
-.save-action-content span {
-  font-weight: 500;
-  color: #222;
-}
-
-.save-action-btns {
-  display: flex;
-  gap: 12px;
-}
-
-.btn-cancel {
-  background: white;
-  border: 1px solid #222;
-  color: #222;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-save {
-  background: #222;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Remove up and down arrows from number inputs */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* Tertiary Block Dates Button */
-.btn-block-dates {
-  background: transparent;
-  color: #222;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-block-dates:hover {
-  background: #f7f7f7;
-  color: #000;
-}
-
-/* Enhance edibility visual cues for month and list prices */
-.month-price-input-wrapper {
-  background: #f7f7f7 !important;
-  border: 1px dashed #dcdcdc !important;
-  padding: 4px 6px !important;
-  border-radius: 6px !important;
-  cursor: text;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.month-price-input-wrapper:hover {
-  border-color: #222 !important;
-  background: white !important;
-}
-
-.month-price-input-wrapper:focus-within {
-  border-style: solid !important;
-  border-color: #222 !important;
-  box-shadow: 0 0 0 1px #222 !important;
-  background: white !important;
-}
-
-.month-price-input {
-  cursor: text;
-}
-
-/* Blocked Dates UI */
-.dot.offline {
-  background-color: #a3a3a3;
-}
-
-.status-badge.offline {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.blocked-strip {
-  color: rgba(255,255,255,0.9) !important;
-  font-style: italic;
-}
-
-/* Modal UI for Block Dates */
-.block-dates-modal {
-  max-width: 450px !important;
-}
-
-.block-dates-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-row {
-  display: flex;
-  gap: 12px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  background: white;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
-  border-color: #222;
-}
-
-.pb-0 {
-  padding-bottom: 0 !important;
-}
-
-/* Inline Calendar Checkbox Styles */
-.blocking-mode-cell {
-  background: #fdfdfd;
-  cursor: pointer;
-}
-
-.blocking-mode-cell:hover {
-  background: #f5f5f5;
-}
-
-.day-block-checkbox {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #222;
-  z-index: 10;
-}
-
-.booking-strip.blocked-strip {
-  display: flex !important;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.unblock-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  padding: 0 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-  opacity: 0.7;
-}
-
-.unblock-btn:hover {
-  opacity: 1;
-}
-
-.unblock-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 100;
-  min-width: 140px;
-  overflow: hidden;
-}
-
-.unblock-dropdown button {
-  width: 100%;
-  text-align: left;
-  padding: 10px 16px;
-  background: transparent;
-  border: none;
-  font-size: 13px;
-  color: #222;
-  cursor: pointer;
-}
-
-.unblock-dropdown button:hover {
-  background: #f7f7f7;
-}
-
-.booking-strip.blocked-strip {
-  position: relative;
-  overflow: visible;
-}
-
-
-.unblock-text-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #fff;
-  cursor: pointer;
-  padding: 2px 8px;
-  font-size: 11px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.unblock-text-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.unblock-text-btn {
-  background: white;
-  border: 1px solid #ddd;
-  color: #222;
-  cursor: pointer;
-  padding: 4px 6px;
-  font-size: 11px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  white-space: normal;
-  line-height: 1.2;
-  font-weight: 500;
-  width: 90%;
-  margin: 0 auto;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.unblock-text-btn:hover {
-  background: #f7f7f7;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.booking-strip-unavailable {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-items: center;
-  padding: 4px 0 6px 0;
-  gap: 4px;
-}
-
-.unavailable-text-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.btn-outline-small {
-  background: white;
-  border: 1px solid #ddd;
-  color: #222;
-  cursor: pointer;
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.btn-outline-small:hover {
-  background: #f7f7f7;
-  border-color: #222;
-}
-
-.messages-content {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  height: calc(100vh - 120px);
-}
-
-.messages-sidebar-layout {
-  display: flex;
-  height: 100%;
-}
-
-.messages-list {
-  width: 300px;
-  border-right: 1px solid #eee;
-  background: #fafafa;
-  overflow-y: auto;
-}
-
-.message-thread-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-  transition: background 0.2s;
-}
-
-.message-thread-item:hover {
-  background: #f1f1f1;
-}
-
-.message-thread-item.active {
-  background: #fff;
-  border-left: 3px solid #ff385c;
-}
-
-.message-avatar {
-  width: 40px;
-  height: 40px;
-  background: #ff385c;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.message-preview h4 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-}
-
-.message-preview p {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-.messages-chat-window {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.chat-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
-  background: white;
-}
-
-.chat-header h4 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.chat-history {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #fff;
-}
-
-.chat-bubble-wrapper {
-  display: flex;
-  flex-direction: column;
-  max-width: 70%;
-}
-
-.chat-bubble-wrapper.guest {
-  align-self: flex-start;
-}
-
-.chat-bubble-wrapper.host {
-  align-self: flex-end;
-  align-items: flex-end;
-}
-
-.chat-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.chat-bubble-wrapper.guest .chat-bubble {
-  background: #f1f1f1;
-  color: #222;
-  border-bottom-left-radius: 4px;
-}
-
-.chat-bubble-wrapper.host .chat-bubble {
-  background: #ff385c;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.chat-time {
-  font-size: 11px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.chat-input-area {
-  padding: 16px 20px;
-  border-top: 1px solid #eee;
-  background: white;
-  display: flex;
-  gap: 12px;
-}
-
-.chat-input-area input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 24px;
-  font-size: 14px;
-  outline: none;
-}
-
-.chat-input-area input:focus {
-  border-color: #ff385c;
-}
-
-.chat-input-area .btn-primary {
-  padding: 0 24px;
-  border-radius: 24px;
-}
-
-.day-cell.fully-booked {
-  background-color: rgba(255, 56, 92, 0.05);
-}
-
-.day-cell.fully-booked .day-number {
-  color: #ff385c;
-  font-weight: 600;
 }

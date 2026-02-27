@@ -7,7 +7,7 @@ import bgImage from '../../assets/goa.png';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, allUsers } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -15,12 +15,20 @@ const Login = () => {
     e.preventDefault();
     if (!email || !password) return;
 
+    // Check if user is a host in DB
+    const userInDb = allUsers?.find(u => u.email === email);
+    const isHost = userInDb?.role === 'Host';
+
     // Simulate API call and login
-    const userData = { email, password };
+    const userData = { email, password, isHost };
     login(userData);
     
-    // Redirect to home or profile
-    navigate('/');
+    // Redirect to host landing or home
+    if (isHost) {
+      navigate('/become-a-host');
+    } else {
+      navigate('/');
+    }
   };
 
   return (

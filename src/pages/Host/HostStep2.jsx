@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navigation, ExternalLink, MapPin, Home, Sparkles } from 'lucide-react';
+import { Navigation, ExternalLink, MapPin, Home } from 'lucide-react';
 import { useHost } from '../../context/HostContext';
 import './HostStep1.css'; // Reusing base styles
 import './HostStep2.css'; // Specific styles for split layout
@@ -178,7 +178,6 @@ const HostStep2 = () => {
     <div className="host-step-container aesthetic-bg location-large-container">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
            <h1 className="step-title">Where's your place located?</h1>
            <p className="step-subheading">Your address is only shared with guests after they've booked.</p>
         </header>
@@ -187,7 +186,7 @@ const HostStep2 = () => {
           {/* Address Input - Left Side */}
           <div className="location-inputs glass-card premium-border" style={{ padding: '32px', borderRadius: '24px' }}>
             
-            <button className="current-location-btn btn-solid" style={{ width: '100%', marginBottom: '24px', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={handleUseCurrentLocation}>
+            <button className="current-location-btn" style={{ width: '100%', marginBottom: '24px', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={handleUseCurrentLocation}>
                <Navigation size={18} />
                Use current location
             </button>
@@ -208,7 +207,7 @@ const HostStep2 = () => {
               <input 
                 type="text" 
                 className="host-input" 
-                placeholder="Street address"
+                placeholder="Street address *"
                 value={address.street || ''}
                 onChange={(e) => handleAddressChange('street', e.target.value)}
                 style={{ marginBottom: '16px' }}
@@ -218,7 +217,7 @@ const HostStep2 = () => {
                    <input 
                      type="text" 
                      className="host-input" 
-                     placeholder="City" 
+                     placeholder="City *" 
                      value={address.city || ''}
                      onChange={(e) => handleAddressChange('city', e.target.value)}
                      onFocus={() => setShowSuggestions(true)}
@@ -241,7 +240,7 @@ const HostStep2 = () => {
                  <input 
                    type="text" 
                    className="host-input" 
-                   placeholder="State" 
+                   placeholder="State *" 
                    value={address.state || ''}
                    onChange={(e) => handleAddressChange('state', e.target.value)}
                  />
@@ -251,7 +250,7 @@ const HostStep2 = () => {
               <input 
                 type="text" 
                 className="host-input" 
-                placeholder="Pincode" 
+                placeholder="Pincode *" 
                 value={address.zip || ''}
                 onChange={(e) => handleAddressChange('zip', e.target.value)}
                 style={{ marginBottom: '16px' }} 
@@ -259,7 +258,7 @@ const HostStep2 = () => {
                <input 
                  type="text" 
                  className="host-input" 
-                 placeholder="Country / Region" 
+                 placeholder="Country / Region *" 
                  value={address.country || ''}
                  onChange={(e) => handleAddressChange('country', e.target.value)}
                />

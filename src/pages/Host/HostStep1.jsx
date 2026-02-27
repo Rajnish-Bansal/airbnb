@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
-import { Sparkles } from 'lucide-react';
 import './HostStep1.css';
 
 const propertyTypes = [
@@ -36,14 +35,13 @@ const HostStep1 = () => {
     <div className="host-step-container aesthetic-bg">
       <div className="step-content">
         <header className="pricing-header">
-           <Sparkles className="header-decoration" />
            <h1 className="step-title">Let's start with the basics</h1>
            <p className="step-subheading">Which of these best describes your place and how guests will stay?</p>
         </header>
         
         {/* Property Type Section */}
         <section className="step-section">
-          <h2 className="step-heading">Property Category</h2>
+          <h2 className="step-heading">Property Category <span style={{ color: '#ff385c' }}>*</span></h2>
           <div className="type-grid">
             {propertyTypes.map(type => (
                <div 
@@ -60,7 +58,7 @@ const HostStep1 = () => {
 
         {/* Place Type Section */}
         <section className="step-section">
-            <h2 className="step-heading">Privacy Level</h2>
+            <h2 className="step-heading">Privacy Level <span style={{ color: '#ff385c' }}>*</span></h2>
             <div className="place-type-list">
               {placeTypes.map(place => (
                  <div 
@@ -77,15 +75,55 @@ const HostStep1 = () => {
             </div>
           </section>
 
+        {/* Multi-Unit Section */}
+        <section className="step-section">
+          <h2 className="step-heading">Inventory & Units <span style={{ color: '#ff385c' }}>*</span></h2>
+          <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: listingData.isMultiUnit ? '20px' : '0' }}>
+                <div>
+                  <label style={{ fontSize: '16px', fontWeight: '600', color: '#222', display: 'block' }}>Multiple identical units?</label>
+                  <p style={{ fontSize: '14px', color: '#717171', margin: '4px 0 0 0' }}>If you have several identical rooms, cabins, or apartments, list them as one and manage inventory together.</p>
+                </div>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={listingData.isMultiUnit || false}
+                    onChange={(e) => updateListingData({ isMultiUnit: e.target.checked, unitCount: e.target.checked ? 2 : 1 })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+             </div>
+
+             {listingData.isMultiUnit && (
+               <div style={{ paddingTop: '20px', borderTop: '1px solid #eee' }}>
+                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#222' }}>How many identical units do you have?</label>
+                 <div className="guest-dropdown-wrapper glass-card premium-border" style={{ padding: '8px', borderRadius: '16px', maxWidth: '300px' }}>
+                   <select 
+                     className="guest-select"
+                     value={listingData.unitCount || 2}
+                     onChange={(e) => updateListingData({ unitCount: parseInt(e.target.value) })}
+                     style={{ border: 'none', backgroundColor: 'transparent' }}
+                   >
+                     {[...Array(49)].map((_, i) => (
+                       <option key={i + 2} value={i + 2}>
+                         {i + 2} units
+                       </option>
+                     ))}
+                   </select>
+                 </div>
+               </div>
+             )}
+          </div>
+        </section>
+
         {/* Conditional: Shared Spaces Section (only for private rooms) */}
         {listingData.placeType === 'private' && (
           <section className="step-section">
-            <h2 className="step-heading">Shared Spaces</h2>
+            <h2 className="step-heading">Shared Spaces <span style={{ color: '#ff385c' }}>*</span></h2>
             <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
               <p style={{ fontSize: '14px', color: '#717171', marginBottom: '20px' }}>
-                Let guests know which spaces they'll have access to
+                Which areas can guests access?
               </p>
-
               {/* Private Bathroom */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
@@ -216,7 +254,7 @@ const HostStep1 = () => {
                     onChange={(e) => updateListingData({
                       hostPresence: { ...listingData.hostPresence, accessHours: e.target.value }
                     })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     <option value="24/7">24/7 Access</option>
                     <option value="08:00-22:00">8 AM - 10 PM</option>
@@ -233,7 +271,7 @@ const HostStep1 = () => {
         {/* Property Capacity Section - Conditional based on placeType */}
         <section className="step-section">
           <h2 className="step-heading">
-            {listingData.placeType === 'private' ? 'Room Capacity' : 'Property Capacity'}
+            {listingData.placeType === 'private' ? 'Room Capacity' : 'Property Capacity'} <span style={{ color: '#ff385c' }}>*</span>
           </h2>
           
           {/* For Entire Place: Show Bedrooms, Bathrooms, Guests */}
@@ -246,7 +284,7 @@ const HostStep1 = () => {
                     className="guest-select"
                     value={listingData.bedrooms || 0}
                     onChange={(e) => updateListingData({ bedrooms: parseInt(e.target.value) })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     {[...Array(11)].map((_, i) => (
                       <option key={i} value={i}>
@@ -264,7 +302,7 @@ const HostStep1 = () => {
                     className="guest-select"
                     value={listingData.bathrooms || 1}
                     onChange={(e) => updateListingData({ bathrooms: parseInt(e.target.value) })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     {[...Array(10)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -282,7 +320,7 @@ const HostStep1 = () => {
                     className="guest-select"
                     value={listingData.guests}
                     onChange={(e) => updateListingData({ guests: parseInt(e.target.value) })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     {[...Array(16)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -305,7 +343,7 @@ const HostStep1 = () => {
                     className="guest-select"
                     value={listingData.beds || 1}
                     onChange={(e) => updateListingData({ beds: parseInt(e.target.value) })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -323,7 +361,7 @@ const HostStep1 = () => {
                     className="guest-select"
                     value={listingData.guests}
                     onChange={(e) => updateListingData({ guests: parseInt(e.target.value) })}
-                    style={{ border: 'none', background: 'transparent' }}
+                    style={{ border: 'none', backgroundColor: 'transparent' }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -339,7 +377,7 @@ const HostStep1 = () => {
 
         {/* Check-in/Check-out Times Section */}
         <section className="step-section">
-          <h2 className="step-heading">Check-in and Check-out Times</h2>
+          <h2 className="step-heading">Check-in and Check-out Times <span style={{ color: '#ff385c' }}>*</span></h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#222' }}>Check-in</label>
@@ -348,7 +386,7 @@ const HostStep1 = () => {
                   className="guest-select"
                   value={listingData.checkInTime || '15:00'}
                   onChange={(e) => updateListingData({ checkInTime: e.target.value })}
-                  style={{ border: 'none', background: 'transparent' }}
+                  style={{ border: 'none', backgroundColor: 'transparent' }}
                 >
                   <option value="08:00">8:00 AM</option>
                   <option value="09:00">9:00 AM</option>
@@ -372,7 +410,7 @@ const HostStep1 = () => {
                   className="guest-select"
                   value={listingData.checkOutTime || '11:00'}
                   onChange={(e) => updateListingData({ checkOutTime: e.target.value })}
-                  style={{ border: 'none', background: 'transparent' }}
+                  style={{ border: 'none', backgroundColor: 'transparent' }}
                 >
                   <option value="08:00">8:00 AM</option>
                   <option value="09:00">9:00 AM</option>
@@ -428,50 +466,7 @@ const HostStep1 = () => {
               </label>
             </div>
 
-            {/* Quiet Hours */}
-            <div>
-              <label style={{ fontSize: '16px', fontWeight: '600', color: '#222', display: 'block', marginBottom: '12px' }}>Quiet Hours</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#717171' }}>Start</label>
-                  <div className="guest-dropdown-wrapper glass-card premium-border" style={{ padding: '8px', borderRadius: '16px' }}>
-                    <select 
-                      className="guest-select"
-                      value={listingData.houseRules?.quietHoursStart || '22:00'}
-                      onChange={(e) => updateListingData({ 
-                        houseRules: { ...listingData.houseRules, quietHoursStart: e.target.value }
-                      })}
-                      style={{ border: 'none', background: 'transparent' }}
-                    >
-                      <option value="20:00">8:00 PM</option>
-                      <option value="21:00">9:00 PM</option>
-                      <option value="22:00">10:00 PM</option>
-                      <option value="23:00">11:00 PM</option>
-                      <option value="00:00">12:00 AM</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#717171' }}>End</label>
-                  <div className="guest-dropdown-wrapper glass-card premium-border" style={{ padding: '8px', borderRadius: '16px' }}>
-                    <select 
-                      className="guest-select"
-                      value={listingData.houseRules?.quietHoursEnd || '08:00'}
-                      onChange={(e) => updateListingData({ 
-                        houseRules: { ...listingData.houseRules, quietHoursEnd: e.target.value }
-                      })}
-                      style={{ border: 'none', background: 'transparent' }}
-                    >
-                      <option value="06:00">6:00 AM</option>
-                      <option value="07:00">7:00 AM</option>
-                      <option value="08:00">8:00 AM</option>
-                      <option value="09:00">9:00 AM</option>
-                      <option value="10:00">10:00 AM</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
           </div>
         </section>

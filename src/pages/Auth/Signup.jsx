@@ -7,7 +7,7 @@ import bgImage from '../../assets/goa.png'; // Using Goa image for background
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, allUsers } = useAuth();
   
   // State for inputs
   const [identifier, setIdentifier] = useState('');
@@ -52,16 +52,27 @@ const Signup = () => {
 
     setLoading(true);
     
+    // Check if user is a host in DB (Simulated - technically a signup wouldn't be in DB yet unless pre-approved)
+    const emailToUse = isPhone ? null : identifier;
+    const userInDb = allUsers?.find(u => u.email === emailToUse);
+    const isHost = userInDb?.role === 'Host';
+
     // Simulate API call and login
     setTimeout(() => {
        const userData = { 
-           email: isPhone ? null : identifier, 
+           email: emailToUse, 
            phone: isPhone ? identifier : null,
-           name: "New User" 
+           name: "New User",
+           isHost: isHost
        };
        login(userData);
        setLoading(false);
-       navigate('/');
+
+       if (isHost) {
+          navigate('/become-a-host');
+       } else {
+          navigate('/');
+       }
     }, 1500);
   };
 

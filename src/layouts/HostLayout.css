@@ -164,19 +164,46 @@
   letter-spacing: -1px;
 }
 
+.host-switch-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222222;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 21px;
+  background: white;
+  border: 1px solid #222222;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.host-switch-btn:hover {
+  background: #f7f7f7;
+  border-color: #000000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.host-switch-btn:active {
+  transform: scale(0.96);
+}
+
 .save-exit-btn {
   font-size: 14px;
   font-weight: 600;
   color: #222222;
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 32px;
-  background: #f7f7f7;
-  transition: background 0.2s;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #222222;
+  transition: all 0.2s;
 }
 
 .save-exit-btn:hover {
-  background: #ebebeb;
+  background: #f7f7f7;
 }
 
 .host-content {

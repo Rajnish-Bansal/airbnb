@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
 import { useAuth } from '../../context/AuthContext';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, parseISO, isWithinInterval } from 'date-fns';
-import { ChevronLeft, ChevronRight, Download, Trash2, Camera, Upload, Link2, Star, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Trash2, Camera } from 'lucide-react';
 import './HostDashboard.css';
 import { generateICalData } from '../../utils/icalGenerator';
 import ConfirmationModal from '../../components/molecules/ConfirmationModal/ConfirmationModal';
@@ -15,79 +15,8 @@ const HostDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-
   const [selectedListingId, setSelectedListingId] = useState('all');
   const selectedListing = selectedListingId === 'all' ? null : listings.find(l => l.id === selectedListingId);
-
-  // Unsaved Changes State for Calendar
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  const handlePriceChange = () => {
-     setHasUnsavedChanges(true);
-  };
-
-  const handleSaveChanges = () => {
-     // In a real app, this would trigger an API call to save all modified dates
-     setHasUnsavedChanges(false);
-     
-     if (selectedDatesToBlock.length > 0) {
-        if (selectedListingId === 'all') {
-           alert("Please select a specific listing to block dates for.");
-           return;
-        }
-
-         const listingUnitCount = selectedListing ? (selectedListing.unitCount || 1) : 1;
-
-         // Double Booking Check based on unit count
-         const hasConflict = selectedDatesToBlock.some(dateStr => {
-            const blockDate = new Date(dateStr);
-            blockDate.setHours(0,0,0,0);
-            
-            // Count existing reservations/blocks for this date
-            const existingCount = reservations.filter(res => {
-               if (res.listingId !== Number(selectedListingId)) return false;
-               
-               const start = new Date(res.startDate);
-               start.setHours(0,0,0,0);
-               const end = new Date(res.endDate);
-               end.setHours(0,0,0,0);
-               
-               return blockDate >= start && blockDate <= end;
-            }).length;
-
-            return existingCount >= listingUnitCount;
-         });
-
-         if (hasConflict) {
-            alert("Double Booking Prevented: One or more of the selected dates already have a guest reservation. Please deselect them and try again.");
-            return;
-         }
-
-        const newBlocks = selectedDatesToBlock.map((dateStr, i) => ({
-           id: Date.now() + i,
-           listingId: Number(selectedListingId),
-           guest: 'Unavailable',
-           dates: format(new Date(dateStr), 'MMM dd'),
-           startDate: dateStr,
-           endDate: dateStr,
-           price: '-',
-           status: 'Unavailable'
-        }));
-
-        setReservations(prev => [...prev, ...newBlocks]);
-        setIsBlockingMode(false);
-        setSelectedDatesToBlock([]);
-     }
-
-     alert("Changes saved successfully!");
-  };
-
-  const handleCancelChanges = () => {
-     // In a real app, this would reset the local state arrays to match the server data
-     setHasUnsavedChanges(false);
-     setIsBlockingMode(false);
-     setSelectedDatesToBlock([]);
-  };
 
   // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -122,63 +51,6 @@ const HostDashboard = () => {
   const [inventoryLimits, setInventoryLimits] = useState({}); // Map of listingId -> limit
   const [pendingAddOn, setPendingAddOn] = useState(null); // { units: number, cost: number }
   
-  // Messages State
-  const [mockMessages, setMockMessages] = useState([
-    { id: 1, guest: 'Alice Johnson', text: 'Hi, is early check-in possible?', time: '10:00 AM', isHost: false },
-    { id: 2, guest: 'Charlie Brown', text: 'Thank you for the wonderful stay!', time: 'Yesterday', isHost: false },
-  ]);
-  const [activeMessageGuest, setActiveMessageGuest] = useState('Alice Johnson');
-  const [newMessageText, setNewMessageText] = useState('');
-
-  const handleSendMessage = () => {
-    if (!newMessageText.trim()) return;
-    setMockMessages(prev => [...prev, {
-      id: Date.now(),
-      guest: activeMessageGuest,
-      text: newMessageText,
-      time: 'Just now',
-      isHost: true
-    }]);
-    setNewMessageText('');
-  };
-
-  // iCal Automated Sync State
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [syncUrl, setSyncUrl] = useState('');
-  const [syncedCalendars, setSyncedCalendars] = useState([]); // Array of URLs
-
-  const handleMockAutoSync = (url) => {
-    if (selectedListingId === 'all') {
-      alert("Please select a specific listing to enable auto-sync.");
-      return;
-    }
-
-    const today = new Date();
-    const mockBlockStart = new Date(today);
-    mockBlockStart.setDate(mockBlockStart.getDate() + 14); // 2 weeks out
-    
-    const mockBlockEnd = new Date(mockBlockStart);
-    mockBlockEnd.setDate(mockBlockEnd.getDate() + 2); // 3 days block
-
-    const newBlocks = eachDayOfInterval({start: mockBlockStart, end: mockBlockEnd}).map((day, i) => ({
-       id: Date.now() + i + 2000,
-       listingId: Number(selectedListingId),
-       guest: 'Auto Synced',
-       dates: format(new Date(day), 'MMM dd'),
-       startDate: day.toISOString(),
-       endDate: day.toISOString(),
-       price: '-',
-       status: 'Unavailable'
-    }));
-
-    setReservations(prev => [...prev, ...newBlocks]);
-    try {
-      alert(`Successfully synced events from ${new URL(url).hostname}. Added 3 blocked dates.`);
-    } catch {
-      alert(`Successfully synced events from external calendar. Added 3 blocked dates.`);
-    }
-  };
-
   const getListingLimit = (id) => inventoryLimits[id] || 1;
 
   const handleSubscribe = (id, addOnDetails = null) => {
@@ -399,44 +271,24 @@ const HostDashboard = () => {
     rating: 4.8
   };
 
-  // Mock Reservations with listingId (Now stateful so we can add blocks)
-  const [reservations, setReservations] = useState([
-    { id: 1, listingId: 1700001, guest: 'Alice Johnson', dates: 'Oct 12 - 15', startDate: '2025-10-12', endDate: '2025-10-15', price: '₹12,400', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=alice', rating: 4.9 },
-    { id: 2, listingId: 1700001, guest: 'Bob Smith', dates: 'Nov 02 - 05', startDate: '2025-11-02', endDate: '2025-11-05', price: '₹8,200', status: 'Pending', img: 'https://i.pravatar.cc/150?u=bob', rating: 4.5 },
-    { id: 3, listingId: 1700002, guest: 'Charlie Brown', dates: 'Feb 10 - 14', startDate: '2026-02-10', endDate: '2026-02-14', price: '₹34,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=charlie', rating: 5.0 },
-    { id: 4, listingId: 1700003, guest: 'David Lee', dates: 'Feb 12 - 15', startDate: '2026-02-12', endDate: '2026-02-15', price: '₹30,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=david', rating: 4.2 },
+  // Mock Reservations with listingId
+  const reservations = [
+    { id: 1, listingId: 1700001, guest: 'Alice Johnson', dates: 'Oct 12 - 15', startDate: '2025-10-12', endDate: '2025-10-15', price: '₹12,400', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 2, listingId: 1700001, guest: 'Bob Smith', dates: 'Nov 02 - 05', startDate: '2025-11-02', endDate: '2025-11-05', price: '₹8,200', status: 'Pending', img: 'https://i.pravatar.cc/150?u=bob' },
+    { id: 3, listingId: 1700002, guest: 'Charlie Brown', dates: 'Feb 10 - 14', startDate: '2026-02-10', endDate: '2026-02-14', price: '₹34,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=charlie' },
+    { id: 4, listingId: 1700003, guest: 'David Lee', dates: 'Feb 12 - 15', startDate: '2026-02-12', endDate: '2026-02-15', price: '₹30,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=david' },
     // Mock high-volume overlapping bookings
-    { id: 5, listingId: 1700001, guest: 'Eve A', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=5', rating: 4.8 },
-    { id: 6, listingId: 1700002, guest: 'Frank B', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹5,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=6', rating: 4.7 },
-    { id: 7, listingId: 1700003, guest: 'Grace C', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹6,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=7', rating: 4.9 },
-    { id: 8, listingId: 1700001, guest: 'Heidi D', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=8', rating: 5.0 },
-    { id: 9, listingId: 1700002, guest: 'Ivan E', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹5,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=9', rating: 4.6 },
-    { id: 10, listingId: 1700003, guest: 'Judy F', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹6,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=10', rating: 4.9 },
-    { id: 11, listingId: 1700001, guest: 'Kevin G', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=11', rating: 4.8 },
+    { id: 5, listingId: 1700001, guest: 'Eve A', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=5' },
+    { id: 6, listingId: 1700002, guest: 'Frank B', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹5,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=6' },
+    { id: 7, listingId: 1700003, guest: 'Grace C', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹6,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=7' },
+    { id: 8, listingId: 1700001, guest: 'Heidi D', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=8' },
+    { id: 9, listingId: 1700002, guest: 'Ivan E', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹5,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=9' },
+    { id: 10, listingId: 1700003, guest: 'Judy F', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹6,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=10' },
+    { id: 11, listingId: 1700001, guest: 'Kevin G', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=11' },
     { id: 12, listingId: 1700002, guest: 'Liam H', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹5,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=12' },
     { id: 13, listingId: 1700003, guest: 'Mia I', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹6,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=13' },
     { id: 14, listingId: 1700001, guest: 'Noah J', dates: 'Mar 10 - 12', startDate: '2026-03-10', endDate: '2026-03-12', price: '₹4,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=14' },
-  ]);
-
-  // Inline Block Dates State
-  const [isBlockingMode, setIsBlockingMode] = useState(false);
-  const [selectedDatesToBlock, setSelectedDatesToBlock] = useState([]);
-
-  const toggleDateSelection = (dateString) => {
-    setSelectedDatesToBlock(prev => 
-      prev.includes(dateString) 
-        ? prev.filter(d => d !== dateString)
-        : [...prev, dateString]
-    );
-  };
-
-
-
-
-
-  const handleRemoveBlock = (blockId) => {
-    setReservations(prev => prev.filter(res => res.id !== blockId));
-  };
+  ];
 
   // Mock Transactions Data
   const mockTransactions = [
@@ -462,9 +314,6 @@ const HostDashboard = () => {
   const getDailyReservations = (day) => {
      return reservations.filter(res => {
         if (selectedListingId !== 'all' && res.listingId != selectedListingId) return false;
-        
-        // Hide unavailable blocks from the "All Listings" view
-        if (selectedListingId === 'all' && res.status === 'Unavailable') return false;
 
         // Simple check if day matches start or is within range (simulated)
         const start = new Date(res.startDate);
@@ -493,41 +342,6 @@ const HostDashboard = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handleImportCal = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (selectedListingId === 'all') {
-      alert("Please select a specific listing to import calendar data.");
-      return;
-    }
-
-    // Mock importing logic - adds some blocks 7 days from now to simulate parsed external reservations
-    const today = new Date();
-    const mockBlockStart = new Date(today);
-    mockBlockStart.setDate(mockBlockStart.getDate() + 7);
-    
-    const mockBlockEnd = new Date(mockBlockStart);
-    mockBlockEnd.setDate(mockBlockEnd.getDate() + 3);
-
-    const newBlocks = eachDayOfInterval({start: mockBlockStart, end: mockBlockEnd}).map((day, i) => ({
-       id: Date.now() + i + 1000,
-       listingId: Number(selectedListingId),
-       guest: 'iCal Import',
-       dates: format(new Date(day), 'MMM dd'),
-       startDate: day.toISOString(),
-       endDate: day.toISOString(),
-       price: '-',
-       status: 'Unavailable' // imported as unavailable chunk
-    }));
-
-    setReservations(prev => [...prev, ...newBlocks]);
-    alert(`${file.name} imported successfully. 4 new blocks added.`);
-    
-    // reset file input
-    e.target.value = null;
   };
 
   return (
@@ -566,9 +380,7 @@ const HostDashboard = () => {
            <button onClick={() => setActiveTab('payout-details')} className={`nav-item ${activeTab === 'payout-details' ? 'active' : ''}`}>
              Tax Profile
            </button>
-           <button onClick={() => setActiveTab('messages')} className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`}>
-             Messages <span className="badge-count">1</span>
-           </button>
+           <button className="nav-item">Messages</button>
 
         </nav>
         <div className="sidebar-footer">
@@ -581,6 +393,7 @@ const HostDashboard = () => {
         <header className="main-header">
            <h2>{activeTab === 'overview' ? 'Dashboard Overview' : activeTab === 'listings' ? 'My Listings' : activeTab === 'bookings' ? 'Reservations' : activeTab === 'calendar' ? 'Calendar & Availability' : activeTab === 'transactions' ? 'Transaction History' : activeTab === 'payout-details' ? 'Tax Profile' : activeTab === 'profile' ? 'My Profile' : 'Monthly Plans'}</h2>
            <div className="user-profile" onClick={() => setActiveTab('profile')} style={{ cursor: 'pointer' }}>
+              <span className="user-name">{profile.name}</span>
               <div className="user-avatar">
                 {profile.avatar ? <img src={profile.avatar} alt="" style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}} /> : profile.name.charAt(0)}
               </div>
@@ -673,6 +486,7 @@ const HostDashboard = () => {
            <div className="listings-content">
               <div className="listings-header-row">
                  <p>{listings.length} Listings found</p>
+                 <Link to="/become-a-host/step1" className="create-btn" onClick={resetListingData}>+ Create New</Link>
               </div>
               
               <div className="listings-grid-v2">
@@ -716,16 +530,7 @@ const HostDashboard = () => {
                                     {listing.type || 'Property'} • {listing.guests || 2} guests
                                  </div>
                                  <h4 className="card-title">{listing.title || 'Untitled Listing'}</h4>
-                                 <div className="card-rating-location">
-                                    <p className="card-location">{listing.location}</p>
-                                    {listing.rating > 0 && (
-                                       <div className="card-rating-badge">
-                                          <Star size={14} fill="#222" />
-                                          <span className="rating-value">{listing.rating.toFixed(1)}</span>
-                                          <span className="rating-count">({listing.reviewsCount})</span>
-                                       </div>
-                                    )}
-                                 </div>
+                                 <p className="card-location">{listing.location}</p>
                                  
                                  <div className="card-pricing-summary">
                                     <span className="price-bold">₹{listing.price || 0}</span>
@@ -774,9 +579,6 @@ const HostDashboard = () => {
                                           <button className="btn-action-outline" style={{width: '100%'}} onClick={() => handleEdit(listing)}>Edit Listing</button>
                                        )}
                                     </div>
-                                    <Link to={`/rooms/${listing.id}`} className="btn-public-view" target="_blank">
-                                       <Eye size={14} /> Public View
-                                    </Link>
                                  </div>
                               </div>
                            </div>
@@ -811,7 +613,6 @@ const HostDashboard = () => {
            <div className="bookings-content">
               <div className="bookings-table">
                  <div className="table-header">
-                    <div>Sl No.</div>
                     <div>Guest</div>
                     <div>Dates</div>
                     <div>Listing</div>
@@ -819,18 +620,11 @@ const HostDashboard = () => {
                     <div>Status</div>
                     <div>Action</div>
                  </div>
-                 {reservations.map((res, index) => (
+                 {reservations.map(res => (
                     <div key={res.id} className="table-row">
-                       <div className="col-sl">{index + 1}</div>
                        <div className="col-guest">
                           <img src={res.img} alt="" className="guest-avatar" />
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                             <span style={{ fontWeight: '600' }}>{res.guest}</span>
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#717171' }}>
-                                <Star size={10} fill="#ff385c" color="#ff385c" />
-                                <span>{res.rating || 'New'}</span>
-                             </div>
-                          </div>
+                          <span>{res.guest}</span>
                        </div>
                        <div className="col-date">{res.dates}</div>
                        <div className="col-listing">{listings[0]?.title || 'Seaside Villa'}</div>
@@ -864,175 +658,59 @@ const HostDashboard = () => {
                        </div>
                     </div>
                     
-
-
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                       <div className="cal-listing-selector">
-                           <select 
-                              value={selectedListingId} 
-                              onChange={(e) => setSelectedListingId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                              className="listing-dropdown"
-                           >
-                              <option value="all">All Listings</option>
-                              {listings.map(l => (
-                                 <option key={l.id} value={l.id}>{l.title}</option>
-                              ))}
-                           </select>
-                       </div>
-
-                       <div style={{ display: 'flex', gap: '8px' }}>
-                          <button 
-                             className="btn-outline-small" 
-                             onClick={handleExportCal}
-                             title="Export iCal"
-                          >
-                             <Download size={16} /> Export
-                          </button>
-
-                          <button 
-                             className="btn-outline-small" 
-                             onClick={() => {
-                               if (selectedListingId === 'all') {
-                                 alert("Please select a specific listing to setup automated sync.");
-                               } else {
-                                 setIsSyncModalOpen(true);
-                               }
-                             }}
-                             title="Add Sync Link"
-                          >
-                             <Link2 size={16} /> Sync Link
-                          </button>
-
-                          <label className="btn-outline-small" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                             <Upload size={16} /> Import
-                             <input 
-                                type="file" 
-                                accept=".ics" 
-                                style={{ display: 'none' }}
-                                onChange={handleImportCal}
-                             />
-                          </label>
-                       </div>
+                    <div className="cal-listing-selector">
+                        <select 
+                           value={selectedListingId} 
+                           onChange={(e) => setSelectedListingId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                           className="listing-dropdown"
+                        >
+                           <option value="all">All Listings</option>
+                           {listings.map(l => (
+                              <option key={l.id} value={l.id}>{l.title}</option>
+                           ))}
+                        </select>
                     </div>
 
-                     <div className="cal-legend">
-                        <span className="legend-item"><span className="dot booked"></span> Booked</span>
-                        <span className="legend-item"><span className="dot available"></span> Available</span>
-                        <span className="legend-item"><span className="dot offline"></span> Unavailable</span>
-                        
-                        {!isBlockingMode && (
-                           <button className="btn-block-dates" style={{marginLeft: 'auto'}} onClick={() => setIsBlockingMode(true)}>
-                             Mark dates as unavailable
-                           </button>
-                        )}
-                     </div>
+                    <div className="cal-legend">
+                       <span className="legend-item"><span className="dot booked"></span> Booked</span>
+                       <span className="legend-item"><span className="dot available"></span> Available</span>
+                    </div>
                  </div>
                  
-                        <div className="weekdays-grid">
-                           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                              <div key={day} className="weekday-header">{day}</div>
-                           ))}
-                        </div>
-                        
-                        <div className="days-grid">
-                            {calendarDays.map((day, idx) => {
-                              const dailyReservations = getDailyReservations(new Date(day));
-                              const listingUnitCount = selectedListing ? (selectedListing.unitCount || 1) : 1;
-                              const isToday = isSameDay(day, new Date());
-                              const isPastDay = day < new Date(new Date().setHours(0,0,0,0));
-                              const isCurrentMonth = isSameMonth(day, currentMonth);
-                              const totalBlocks = dailyReservations.length;
-                              const hasBooking = totalBlocks > 0;
-                              const isFull = totalBlocks >= listingUnitCount;
-                              
-                              return (
-                                 <div key={day.toString()} className={`day-cell ${!isCurrentMonth ? 'outside' : ''} ${hasBooking ? 'booked' : ''} ${isFull ? 'fully-booked' : ''} ${isToday ? 'today' : ''} ${isBlockingMode ? 'blocking-mode-cell' : ''} ${isPastDay ? 'past-day' : ''}`}>
-                                    {isBlockingMode && !isPastDay && !isFull && (
-                                      <input 
-                                        type="checkbox" 
-                                        className="day-block-checkbox"
-                                        checked={selectedDatesToBlock.includes(day.toISOString())}
-                                        onChange={() => toggleDateSelection(day.toISOString())}
-                                      />
-                                    )}
-                                    <div className="day-number">{format(day, 'd')}</div>
-                                    {listingUnitCount > 1 && (
-                                        <div className="unit-counter" style={{ fontSize: '11px', color: isFull ? '#fff' : '#ff385c', fontWeight: 'bold', marginTop: '2px' }}>
-                                          {totalBlocks}/{listingUnitCount} Booked
-                                        </div>
-                                    )}
-                                    <div className="day-price">
-                                       {selectedListingId === 'all' ? (
-                                          ''
-                                       ) : (
-                                          <div className="month-price-input-wrapper">
-                                             <span className="currency-symbol">₹</span>
-                                             <input 
-                                                type="number" 
-                                                className="month-price-input" 
-                                                defaultValue={selectedListing?.price || '0'} 
-                                                onClick={(e) => e.stopPropagation()}
-                                                onChange={handlePriceChange}
-                                                disabled={isPastDay}
-                                             />
-                                          </div>
-                                       )}
-                                    </div>
-                                    
-                                    <div className="bookings-stack">
-                                       {dailyReservations.map((res, i) => (
-                                           <div 
-                                             key={res.id} 
-                                             className={`booking-strip ${res.status === 'Unavailable' ? 'blocked-strip' : ''}`} 
-                                             style={{
-                                                backgroundColor: res.status === 'Unavailable' ? '#a3a3a3' : (i % 2 === 0 ? '#ff385c' : '#222'),
-                                             }}
-                                           >
-                                             {res.status === 'Unavailable' ? (
-                                                <div className="booking-strip-unavailable">
-                                                   <span className="unavailable-text-label">
-                                                      Unavailable
-                                                   </span>
-                                                   {!isPastDay && (
-                                                      <button 
-                                                         className="unblock-text-btn" 
-                                                         onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveBlock(res.id);
-                                                         }}
-                                                      >
-                                                         Mark available
-                                                      </button>
-                                                   )}
-                                                </div>
-                                             ) : (
-                                                <span className="booking-strip-title">
-                                                   {selectedListingId === 'all' 
-                                                      ? (listings.find(l => l.id === res.listingId)?.title?.split(' ').slice(0, 2).join(' ') || 'Listing')
-                                                      : res.guest.split(' ')[0]}
-                                                </span>
-                                             )}
-                                           </div>
-                                       ))}
-                                    </div>
-                                 </div>
-                              );
-                           })}
-                        </div>
-
-                  {/* Save Changes Floating Action Bar */}
-                  {(hasUnsavedChanges || selectedDatesToBlock.length > 0) && (
-                     <div className="save-action-bar">
-                        <div className="save-action-content">
-                           <span>You have unsaved changes to your calendar.</span>
-                           <div className="save-action-btns">
-                              <button className="btn-cancel" onClick={handleCancelChanges}>Discard</button>
-                              <button className="btn-save" onClick={handleSaveChanges}>Save Changes</button>
-                           </div>
-                        </div>
-                     </div>
-                  )}
-               </div>
+                 <div className="weekdays-grid">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                       <div key={day} className="weekday-header">{day}</div>
+                    ))}
+                 </div>
+                 
+                 <div className="days-grid">
+                    {calendarDays.map((day, idx) => {
+                       const dailyReservations = getDailyReservations(new Date(day));
+                       const isToday = isSameDay(day, new Date());
+                       const isCurrentMonth = isSameMonth(day, currentMonth);
+                       const hasBooking = dailyReservations.length > 0;
+                       
+                       return (
+                          <div key={day.toString()} className={`day-cell ${!isCurrentMonth ? 'outside' : ''} ${hasBooking ? 'booked' : ''} ${isToday ? 'today' : ''}`}>
+                             <div className="day-number">{format(day, 'd')}</div>
+                             <div className="day-price">{selectedListingId === 'all' ? '' : `₹${selectedListing?.price || '0'}`}</div>
+                             
+                             <div className="bookings-stack">
+                                {dailyReservations.map((res, i) => (
+                                   <div key={res.id} className="booking-strip" style={{
+                                      backgroundColor: i % 2 === 0 ? '#ff385c' : '#222', // Alternating colors
+                                   }}>
+                                      {selectedListingId === 'all' 
+                                         ? (listings.find(l => l.id === res.listingId)?.title?.split(' ').slice(0, 2).join(' ') || 'Listing')
+                                         : res.guest.split(' ')[0]}
+                                   </div>
+                                ))}
+                             </div>
+                          </div>
+                       );
+                    })}
+                 </div>
+              </div>
            </div>
         )}
 
@@ -1374,98 +1052,16 @@ const HostDashboard = () => {
                </div>
             </div>
          )}
-         
-         {activeTab === 'messages' && (
-            <div className="messages-content">
-               <div className="messages-sidebar-layout">
-                  <div className="messages-list">
-                     {['Alice Johnson', 'Charlie Brown'].map(guest => (
-                       <div 
-                         key={guest} 
-                         className={`message-thread-item ${activeMessageGuest === guest ? 'active' : ''}`}
-                         onClick={() => setActiveMessageGuest(guest)}
-                       >
-                         <div className="message-avatar">{guest.charAt(0)}</div>
-                         <div className="message-preview">
-                           <h4>{guest}</h4>
-                           <p>Click to view conversation</p>
-                         </div>
-                       </div>
-                     ))}
-                  </div>
-                  <div className="messages-chat-window">
-                     <div className="chat-header">
-                       <h4>{activeMessageGuest}</h4>
-                     </div>
-                     <div className="chat-history">
-                       {mockMessages.filter(m => m.guest === activeMessageGuest).map(msg => (
-                         <div key={msg.id} className={`chat-bubble-wrapper ${msg.isHost ? 'host' : 'guest'}`}>
-                           <div className="chat-bubble">{msg.text}</div>
-                           <span className="chat-time">{msg.time}</span>
-                         </div>
-                       ))}
-                     </div>
-                     <div className="chat-input-area">
-                       <input 
-                         type="text" 
-                         value={newMessageText} 
-                         onChange={(e) => setNewMessageText(e.target.value)}
-                         placeholder="Type a message..."
-                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                       />
-                       <button className="btn-primary" onClick={handleSendMessage}>Send</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
       </main>
       
       <LimitManagementModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
-        listingId={selectedListingId}
-        currentLimit={getListingLimit(selectedListingId)}
-        onSave={(newLimit) => setInventoryLimits(prev => ({...prev, [selectedListingId]: newLimit}))}
+        currentLimit={listingToSubscribe ? getListingLimit(listingToSubscribe.id) : 1}
+        currentUnits={listingToSubscribe ? (localUnits[listingToSubscribe.id] || listingToSubscribe.units || 1) : 1}
+        onProceedToPay={handleProceedToPay}
+        onUpdateUnits={handleUpdateActiveUnits}
       />
-
-      {/* iCal Automated Sync Modal */}
-      {isSyncModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '400px' }}>
-            <h3>Automated Calendar Sync</h3>
-            <p className="modal-desc">Paste an iCal (.ics) link from another platform (like VRBO or Booking.com) to automatically keep your availability in sync.</p>
-            
-            <div style={{ marginTop: '20px', marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Calendar URL</label>
-              <input 
-                type="url" 
-                value={syncUrl} 
-                onChange={(e) => setSyncUrl(e.target.value)} 
-                placeholder="https://..." 
-                className="modal-input"
-              />
-            </div>
-            
-            <div className="modal-actions">
-              <button className="btn-outline" onClick={() => { setIsSyncModalOpen(false); setSyncUrl(''); }}>Cancel</button>
-              <button 
-                className="btn-primary" 
-                onClick={() => {
-                  if (syncUrl) {
-                    setSyncedCalendars(prev => [...prev, syncUrl]);
-                    setIsSyncModalOpen(false);
-                    handleMockAutoSync(syncUrl);
-                    setSyncUrl('');
-                  }
-                }}
-              >
-                Add & Sync Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       <SubscriptionModal 
         isOpen={isSubModalOpen} 
@@ -1476,8 +1072,6 @@ const HostDashboard = () => {
         itemName={pendingAddOn ? "Inventory Add-on" : "Annual Host Subscription"}
         description={pendingAddOn ? `Adding ${pendingAddOn.units} Unit(s) to Limit` : null}
       />
-
-
     </div>
   );
 };

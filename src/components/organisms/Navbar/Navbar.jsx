@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Globe, Menu, User, Bell } from 'lucide-react';
 import { useHost } from '../../../context/HostContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -8,11 +8,13 @@ import './Navbar.css';
 
 const Navbar = ({ onSearch, onLogoClick }) => {
   const { listings } = useHost();
-  const { user, login, logout, isAuthModalOpen, openAuthModal, closeAuthModal } = useAuth();
+  const { user, login, logout, isAuthModalOpen, openAuthModal, closeAuthModal, allUsers } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
   
   const userMenuRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,9 +39,22 @@ const Navbar = ({ onSearch, onLogoClick }) => {
 
   const handleAuthComplete = (userData) => {
     if (userData) {
+      // Check if user is a host in DB, or was passed explicitly
+      const userInDb = allUsers?.find(u => u.email === userData.email);
+      const isHostUser = userInDb?.role === 'Host' || userData.isHost;
+      userData.isHost = isHostUser;
+
       login(userData);
+      if (redirectAfterLogin) {
+        navigate(redirectAfterLogin);
+        setRedirectAfterLogin(null);
+      } else if (isHostUser) {
+        navigate('/become-a-host');
+      }
     } else {
       closeAuthModal();
+      setRedirectAfterLogin(null);
+      navigate('/');
     }
   };
   
@@ -66,14 +81,14 @@ const Navbar = ({ onSearch, onLogoClick }) => {
           <div className="navbar-user">
             {user ? (
                isHostMode ? (
-                  <Link to="/" className="host-link">Switch to traveling</Link>
+                  <Link to="/" className="host-switch-btn">Switch to Traveling</Link>
                ) : isHost ? (
                   <Link to="/become-a-host/dashboard" className="host-link">Switch to hosting</Link>
                ) : (
                   <Link to="/become-a-host" className="host-link">Become a host</Link>
                )
             ) : (
-               <div className="host-link" onClick={openAuthModal} style={{cursor: 'pointer'}}>Become a host</div>
+               <div className="host-link" onClick={() => { setRedirectAfterLogin('/become-a-host'); openAuthModal(); }} style={{cursor: 'pointer'}}>Become a host</div>
             )}
             
             {/* Globe icon removed */}
@@ -90,12 +105,14 @@ const Navbar = ({ onSearch, onLogoClick }) => {
                   className="user-menu-button" 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 >
-                   <Menu size={18} />
                    {user ? (
-                      <div className="user-avatar-small">{user.name?.charAt(0).toUpperCase() || 'U'}</div>
+                      <span style={{ fontSize: '15px', fontWeight: '600', color: '#222', marginLeft: '4px', marginRight: '8px' }}>
+                        {user.name?.split(' ')[0]}
+                      </span>
                    ) : (
                       <User size={18} className="user-icon" />
                    )}
+                   <Menu size={18} />
                 </div>
 
                 {isUserMenuOpen && (
@@ -125,7 +142,7 @@ const Navbar = ({ onSearch, onLogoClick }) => {
                           <Link to="/login" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Log in</Link>
                           <Link to="/signup" className="menu-item" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Sign up</Link>
                           <div className="menu-divider"></div>
-                          <div className="menu-item">Become a host</div>
+                          <div className="menu-item" onClick={() => { setRedirectAfterLogin('/become-a-host'); openAuthModal(); setIsUserMenuOpen(false); }}>Become a host</div>
                           <div className="menu-item">Help Center</div>
                         </>
                      )}

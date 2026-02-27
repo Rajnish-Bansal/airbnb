@@ -117,13 +117,14 @@
   font-size: 20px;
   font-weight: 700;
   color: #222;
+  margin: 0;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 8px;
 }
 
 .gradient-badge {
@@ -166,7 +167,7 @@
 }
 
 .price-input-wrapper.large {
-  padding: 16px 24px;
+  padding: 8px 24px;
   background: white;
   border-color: #f7f7f7;
 }
@@ -191,7 +192,7 @@
 }
 
 .price-input-wrapper.large .gradient-text {
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .price-input-wrapper input {
@@ -206,7 +207,7 @@
 }
 
 .price-input-wrapper.large input {
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .per-night {
@@ -215,6 +216,94 @@
   color: #717171;
   white-space: nowrap;
   margin-left: 16px;
+}
+
+/* Price Breakdown Styling */
+.price-breakdown-section {
+  margin-top: 32px;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.breakdown-divider {
+  height: 1px;
+  background: #ebebeb;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.breakdown-divider.light {
+  background: #f0f0f0;
+  margin: 16px 0;
+}
+
+.breakdown-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
+.breakdown-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.breakdown-subtitle {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #717171;
+  margin-bottom: 20px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #484848;
+  margin-bottom: 12px;
+}
+
+.breakdown-row.highlight {
+  font-weight: 600;
+  color: #222;
+}
+
+.breakdown-row.final {
+  font-weight: 800;
+  font-size: 18px;
+  color: #222;
+  margin-top: 4px;
+}
+
+.info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-icon {
+  color: #717171;
+  opacity: 0.6;
+}
+
+.payout-amount {
+  color: #008489;
+}
+
+.guest-total {
+  color: #ff385c;
+}
+
+.guest-side {
+  border-left: 1px solid #f0f0f0;
+  padding-left: 48px;
 }
 
 /* Room Categories Section */
@@ -359,19 +448,184 @@
   box-shadow: 0 12px 24px rgba(255, 56, 92, 0.4);
 }
 
+.add-category-inline-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-category-inline-btn:hover {
+  background: #f7f7f7;
+  transform: scale(1.02);
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.room-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: white;
+  border: 1px solid #ebebeb;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #717171;
+}
+
+.icon-btn:hover {
+  border-color: #222;
+  color: #222;
+  transform: scale(1.1);
+}
+
+.delete-btn:hover {
+  background: #fff8f6;
+  border-color: #ff385c;
+  color: #ff385c;
+}
+
+.room-payout-preview {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #008489;
+  background: rgba(0, 132, 137, 0.05);
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.add-category-form-card .form-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 24px 0;
+  color: #222;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.price-input-small {
+  display: flex;
+  align-items: center;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 0 16px;
+  background: #f9f9f9;
+}
+
+.price-input-small span {
+  font-size: 18px;
+  font-weight: 700;
+  color: #717171;
+  margin-right: 8px;
+}
+
+.price-input-small input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  outline: none;
+}
+
+.mini-breakdown {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f7f7f7;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.text-green { color: #008489; }
+.text-pink { color: #ff385c; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 12px 20px;
+}
+
 /* Footer & Global UI Elements */
 .back-btn {
   color: #222;
   font-weight: 800;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .next-btn {
   background: linear-gradient(135deg, #ff385c 0%, #bd1e59 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
   box-shadow: 0 4px 12px rgba(255, 56, 92, 0.2);
 }
 
 .save-exit-btn {
   border: 2px solid #222;
+  background: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 

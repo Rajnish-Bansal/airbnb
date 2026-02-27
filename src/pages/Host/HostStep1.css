@@ -12,7 +12,7 @@
 
 .host-step-container.aesthetic-bg {
   max-width: 680px;
-  padding-top: 60px;
+  padding-top: 16px; /* Reduced from 60px to pull content higher */
   padding-bottom: 120px;
   position: relative;
 }
@@ -33,35 +33,21 @@
 .pricing-header {
   text-align: center;
   position: relative;
-  margin-bottom: 48px;
+  margin-bottom: 24px; /* Reduced from 48px */
 }
 
-.header-decoration {
-  color: #ff385c;
-  opacity: 0.2;
-  width: 40px;
-  height: 40px;
-  margin-bottom: 16px;
-  margin-left: auto;
-  margin-right: auto;
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
 
 .step-content {
   flex: 1;
 }
 
 .step-title {
-  font-size: 32px;
+  /* outline: auto; */
+  font-size: 26px; /* Reduced from 32px per user request */
   font-weight: 800;
   letter-spacing: -0.5px;
   color: #222222;
-  margin-bottom: 12px; /* Standardized spacing */
+  margin-bottom: 4px; /* Reduced from 12px */
 }
 
 .step-subheading {
@@ -70,7 +56,7 @@
   max-width: 480px;
   margin: 0 auto;
   line-height: 1.5;
-  margin-bottom: 40px; /* Consistent gap after subheading */
+  margin-bottom: 24px; /* Reduced from 40px */
 }
 
 /* Glassmorphism Cards */
@@ -119,14 +105,14 @@
 
 /* Base Step Sections */
 .step-section {
-  margin-bottom: 48px; /* Standardized section gap */
+  margin-bottom: 24px; /* Reduced from 48px to pack questions tighter */
 }
 
 .step-heading {
-  font-size: 22px;
+  font-size: 20px; /* Slightly smaller */
   font-weight: 600;
   color: #222;
-  margin-bottom: 24px;
+  margin-bottom: 16px; /* Reduced from 24px */
 }
 
 .category-grid {
@@ -138,9 +124,10 @@
 .category-card {
   border: 1px solid #dddddd;
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px; /* Reduced from 16px to save vertical space */
   cursor: pointer;
   transition: all 0.2s;
+  text-align: center; /* Center contents */
 }
 
 .category-card:hover {
@@ -169,6 +156,15 @@
   border-radius: 8px;
   font-size: 16px;
   outline: none;
+}
+
+/* Global Hint Text (Placeholder) Styling */
+.host-input::placeholder,
+.host-textarea::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: #717171;
+  opacity: 1; /* Ensure full opacity of the custom color in all browsers */
 }
 
 /* Focus Glows */
@@ -273,7 +269,7 @@
 .place-card {
   border: 1px solid #dddddd;
   border-radius: 12px;
-  padding: 16px; /* Reduced from 24px */
+  padding: 12px; /* Reduced from 16px */
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -281,7 +277,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  min-height: 100px; /* Reduced from 140px */
+  min-height: 80px; /* Reduced from 100px */
 }
 
 .place-card:hover {
@@ -317,13 +313,13 @@
   border: 1px solid #b0b0b0;
   border-radius: 12px;
   font-size: 16px;
-  color: #222222;
+  color: #717171; /* Changed from #222222 to look like a hint */
   background-color: #ffffff;
   cursor: pointer;
   outline: none;
   appearance: none;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23717171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); /* Changed arrow color to match */
   background-repeat: no-repeat;
   background-position: right 16px center; /* Adjusted for tighter padding */
   background-size: 16px;

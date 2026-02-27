@@ -11,6 +11,11 @@ import HostStep5 from './pages/Host/HostStep5';
 import HostStep6 from './pages/Host/HostStep6';
 import HostStep7 from './pages/Host/HostStep7';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminLayout from './layouts/AdminLayout';
+import AdminUsers from './pages/Admin/AdminUsers';
+import AdminListings from './pages/Admin/AdminListings';
+import AdminLogin from './pages/Admin/AdminLogin';
+import ProtectedAdminRoute from './components/atoms/ProtectedAdminRoute/ProtectedAdminRoute';
 import { HostProvider } from './context/HostContext';
 import { BookingProvider } from './context/BookingContext';
 import { AuthProvider } from './context/AuthContext';
@@ -46,8 +51,17 @@ function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/wishlists" element={<Wishlist />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-            
+              <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* Admin Routes - Protected */}
+              <Route element={<ProtectedAdminRoute />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="listings" element={<AdminListings />} />
+                </Route>
+              </Route>
+
             {/* Host Flow Routes */}
             <Route path="/become-a-host" element={<HostLayout />}>
               <Route index element={<HostLanding />} />

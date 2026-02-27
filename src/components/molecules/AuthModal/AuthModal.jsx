@@ -35,10 +35,9 @@ const AuthModal = ({ isOpen, onClose, mode = 'login' }) => {
   return (
     <div className="auth-modal-overlay" onClick={() => onClose(null)}>
       <div className="auth-modal-content" onClick={e => e.stopPropagation()}>
-        <div className="auth-header">
-           <button className="close-btn" onClick={() => onClose(null)}>✕</button>
+        <div className="auth-header" style={{ position: 'relative', justifyContent: 'center' }}>
            <h3>{isLogin ? 'Log in' : 'Sign up'}</h3>
-           <div className="spacer"></div>
+           <button className="close-btn" style={{ position: 'absolute', right: '16px' }} onClick={() => onClose(null)}>✕</button>
         </div>
         
         <div className="auth-body">

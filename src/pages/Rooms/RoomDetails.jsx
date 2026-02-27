@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import GuestSelector from '../../components/molecules/GuestSelector/GuestSelector';
 import { useAuth } from '../../context/AuthContext';
+import { useHost } from '../../context/HostContext';
 import { useSearch } from '../../context/SearchContext';
 import { mockListings } from '../../data/mockListings';
 import { differenceInDays, format } from 'date-fns';
@@ -15,8 +16,12 @@ const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
+  const { listings: hostListings } = useHost();
   const { addToRecentlyViewed } = useSearch();
-  const listing = mockListings.find(l => l.id === parseInt(id));
+  
+  // Combine both sources
+  const allListings = [...mockListings, ...hostListings];
+  const listing = allListings.find(l => l.id == id); // Loose equality for string/number id mismatch protection
 
   // Track recently viewed
   useEffect(() => {

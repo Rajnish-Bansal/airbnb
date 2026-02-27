@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useAuth } from './AuthContext';
 
 const HostContext = createContext();
 
@@ -7,12 +8,14 @@ const initialListingData = {
   step: 1, // Track current step
   category: '',
   type: '',
-  placeType: '',
+  placeType: 'entire',
   location: '',
   guests: 4,
   bedrooms: 1,
   bathrooms: 1,
   beds: 1,
+  isMultiUnit: false,
+  unitCount: 1,
   amenities: [],
   title: '',
   description: '',
@@ -106,7 +109,9 @@ const getInitialListings = () => {
              // Ensure ID exists
              id: l.id || Date.now() + Math.random(),
              // Ensure status exists
-             status: l.status || 'In Progress'
+             status: l.status || 'In Progress',
+             rating: l.rating || (l.id === 1700001 ? 4.8 : l.id === 1700002 ? 4.9 : l.id === 1700003 ? 4.7 : 0),
+             reviewsCount: l.reviewsCount || (l.id === 1700001 ? 12 : l.id === 1700002 ? 24 : l.id === 1700003 ? 8 : 0)
            };
         }).filter(Boolean);
 
@@ -123,36 +128,46 @@ const getInitialListings = () => {
   return [
     {
       id: 1700001,
+      hostId: 1,
       title: "Cozy Apartment in Connaught Place",
       type: "Apartment/Flat",
       location: "New Delhi, India",
       price: 4500,
       status: "Active",
+      rating: 4.8,
+      reviewsCount: 12,
       createdAt: new Date(Date.now() - 86400000 * 60).toISOString(),
       photos: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"]
     },
     {
       id: 1700002,
+      hostId: 1,
       title: "Mountain Retreat in Manali",
       type: "House (Standard)",
       location: "Manali, Himachal Pradesh",
       price: 8500,
       status: "Active",
+      rating: 4.9,
+      reviewsCount: 24,
       createdAt: new Date(Date.now() - 86400000 * 45).toISOString(),
       photos: ["https://images.unsplash.com/photo-1449156493391-d2cfa28e468b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"]
     },
     {
       id: 1700003,
+      hostId: 1,
       title: "Heritage Havel in Jaipur",
       type: "House (Standard)",
       location: "Jaipur, Rajasthan",
       price: 15000,
       status: "Active",
+      rating: 4.7,
+      reviewsCount: 8,
       createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
       photos: ["https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"]
     },
     {
       id: 1700004,
+      hostId: 1,
       title: "Luxury Seaside Villa",
       type: "Villa (Luxury)", // Changed from Hotel
       location: "Goa, India",
@@ -166,13 +181,20 @@ const getInitialListings = () => {
 
 
 export const HostProvider = ({ children }) => {
+  const { user } = useAuth();
   const [listingData, setListingData] = useState(initialListingData);
-  const [listings, setListings] = useState(getInitialListings);
+  const [allListings, setListings] = useState(getInitialListings);
+
+  const filteredListings = user 
+    ? allListings
+        .filter(l => (l.hostId || 1) === user.id)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    : [];
 
   // Persist listings to localStorage whenever they change
   React.useEffect(() => {
-    localStorage.setItem('host_listings', JSON.stringify(listings));
-  }, [listings]);
+    localStorage.setItem('host_listings', JSON.stringify(allListings));
+  }, [allListings]);
   
   const updateListingData = (updates) => {
     setListingData(prev => ({ ...prev, ...updates }));
@@ -198,7 +220,8 @@ export const HostProvider = ({ children }) => {
          ...listingData,
          id: Date.now(),
          status: 'Pending', 
-         createdAt: new Date().toISOString()
+         createdAt: new Date().toISOString(),
+         hostId: user?.id
        };
        setListings(prev => [...prev, newListing]);
        return newListing;
@@ -230,7 +253,8 @@ export const HostProvider = ({ children }) => {
          ...dataToSave,
          id: newId,
          status: 'In Progress',
-         createdAt: new Date().toISOString()
+         createdAt: new Date().toISOString(),
+         hostId: user?.id
        };
        setListingData(prev => ({ ...prev, id: newId, step: dataToSave.step }));
        setListings(prev => [...prev, newListing]);
@@ -278,7 +302,7 @@ export const HostProvider = ({ children }) => {
     <HostContext.Provider value={{ 
       listingData, 
       updateListingData, 
-      listings, 
+      listings: filteredListings, 
       publishListing, 
       saveDraft,
       updateListingStatus,
