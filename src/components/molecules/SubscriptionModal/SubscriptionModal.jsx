@@ -1,114 +1,101 @@
 import React, { useState } from 'react';
+import { X, Lock } from 'lucide-react';
 import './SubscriptionModal.css';
 
-const SubscriptionModal = ({ isOpen, onClose, onConfirm, listingTitle, planPrice = 999, itemName = "Annual Host Subscription", description, currentLimit }) => {
+const SubscriptionModal = ({ isOpen, onClose, onConfirm, listingTitle, basePricePerUnit = 499, currentUnits = 0, totalInventory = 1 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [targetLimit, setTargetLimit] = useState(currentLimit || 1);
 
-  // Sync target limit when modal opens or currentLimit changes
+  const availableToActivate = Math.max(0, totalInventory - currentUnits);
+  const [targetUnits, setTargetUnits] = useState(Math.min(1, availableToActivate));
+
   React.useEffect(() => {
-     if (isOpen && currentLimit) {
-         setTargetLimit(currentLimit);
-     }
-  }, [isOpen, currentLimit]);
+    if (isOpen) setTargetUnits(Math.min(1, availableToActivate));
+  }, [isOpen, availableToActivate]);
 
-  const extraUnits = Math.max(0, targetLimit - (currentLimit || 1));
-  const upgradeCost = extraUnits * 500; // Cost per unit
-  const finalPrice = planPrice + upgradeCost;
-  
+  const finalPrice = targetUnits * basePricePerUnit;
+
   if (!isOpen) return null;
 
-  const handlePayment = (e) => {
-    e.preventDefault();
+  const handlePay = () => {
     setIsProcessing(true);
-    
-    // Simulate API call
     setTimeout(() => {
       setIsProcessing(false);
-      onConfirm({ newLimit: targetLimit });
+      onConfirm({ unitsActivated: targetUnits, finalPrice });
       onClose();
-    }, 2000);
+    }, 1500);
   };
 
   return (
     <div className="sub-modal-overlay">
       <div className="sub-modal-content">
         <div className="sub-modal-header">
-           <h2>Secure Checkout</h2>
-           <button className="close-btn" onClick={onClose}>&times;</button>
-        </div>
-        
-        <div className="order-summary">
-           <div className="summary-row">
-              <span className="item-name">{itemName}</span>
-              <span className="item-price">₹{planPrice}</span>
-           </div>
-           
-           {/* Recharge Upgrade Option */}
-           {currentLimit && (
-             <div className="upgrade-section" style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', alignItems: 'center' }}>
-                   <span style={{ fontWeight: 600, color: '#475569' }}>Want to increase capacity?</span>
-                   <span style={{ fontSize: '12px', color: '#64748b' }}>Current: {currentLimit} units</span>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                   <input 
-                      type="range" 
-                      min={currentLimit} 
-                      max={currentLimit + 20} 
-                      value={targetLimit} 
-                      onChange={(e) => setTargetLimit(parseInt(e.target.value))}
-                      style={{ flex: 1, accentColor: '#2563eb', cursor: 'pointer' }}
-                   />
-                   <span style={{ fontWeight: 700, fontSize: '16px', color: '#0f172a', minWidth: '24px', textAlign: 'center' }}>
-                      {targetLimit}
-                   </span>
-                </div>
-                
-                {extraUnits > 0 && (
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '13px', color: '#2563eb' }}>
-                      <span>+ {extraUnits} extra unit(s)</span>
-                      <span>+ ₹{upgradeCost}</span>
-                   </div>
-                )}
-             </div>
-           )}
-
-           <div className="summary-row total" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-              <span>Total Pay</span>
-              <span>₹{finalPrice}</span>
-           </div>
-           <p className="listing-ref">{description || <span>For: <strong>{listingTitle}</strong></span>}</p>
+          <h2>Activate Units</h2>
+          <button className="close-btn-rounded" onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
 
-        <form className="payment-form" onSubmit={handlePayment}>
-           <div className="form-group">
-              <label>Card Number</label>
-              <div className="card-input-wrapper">
-                 <span className="card-icon">💳</span>
-                 <input type="text" placeholder="0000 0000 0000 0000" className="card-input" required />
-              </div>
-           </div>
-           
-           <div className="form-row">
-              <div className="form-group">
-                 <label>Expiry</label>
-                 <input type="text" placeholder="MM/YY" className="card-input" required />
-              </div>
-              <div className="form-group">
-                 <label>CVC</label>
-                 <input type="text" placeholder="123" className="card-input" required />
-              </div>
-           </div>
+        <div className="order-summary-pristine">
+          {/* Listing info */}
+          <div className="listing-info-block">
+            <strong className="listing-name-bold">{listingTitle}</strong>
+            <span className="listing-stats-subtext">
+              {totalInventory} total &nbsp;|&nbsp; {currentUnits} active &nbsp;|&nbsp; {availableToActivate} available
+            </span>
+          </div>
 
-           <button type="submit" className="btn-pay" disabled={isProcessing}>
-             {isProcessing ? 'Processing...' : `Pay ₹${planPrice}`}
-           </button>
-        </form>
-        
-        <div className="secure-badge">
-           🔒 256-bit SSL Encrypted Payment
+          {availableToActivate > 0 ? (
+            <>
+              {/* Inline stepper */}
+              <div className="unit-selector-row">
+                <span className="unit-selector-label">How many units?</span>
+                <div className="unit-selector-controls">
+                  <button
+                    type="button"
+                    className="unit-btn unit-btn-minus"
+                    onClick={() => setTargetUnits(u => Math.max(1, u - 1))}
+                    disabled={targetUnits <= 1}
+                  >
+                    &#8722;
+                  </button>
+                  <span className="unit-count-display">{targetUnits}</span>
+                  <button
+                    type="button"
+                    className="unit-btn unit-btn-plus"
+                    onClick={() => setTargetUnits(u => Math.min(availableToActivate, u + 1))}
+                    disabled={targetUnits >= availableToActivate}
+                  >
+                    &#43;
+                  </button>
+                </div>
+              </div>
+
+              {/* Divider & Total */}
+              <div className="total-divider"></div>
+              <div className="summary-row total-row-bold">
+                <span>Total</span>
+                <span>&#8377;{finalPrice}</span>
+              </div>
+
+              {/* CTA */}
+              <button
+                className="btn-pay-solid"
+                onClick={handlePay}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : `Checkout \u2022 \u20B9${finalPrice}`}
+              </button>
+            </>
+          ) : (
+            <div className="all-active-notice">
+              All units are currently active!
+            </div>
+          )}
+        </div>
+
+        <div className="secure-badge-pill">
+          <Lock size={12} className="lock-icon" />
+          <span>256-bit SSL Encrypted</span>
         </div>
       </div>
     </div>
@@ -116,3 +103,4 @@ const SubscriptionModal = ({ isOpen, onClose, onConfirm, listingTitle, planPrice
 };
 
 export default SubscriptionModal;
+

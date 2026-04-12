@@ -84,7 +84,7 @@ const HostStep7 = () => {
 
                  {/* Property Type */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px' }}>
-                    <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                    <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                       <Home size={24} />
                     </div>
                     <div className="summary-details">
@@ -98,7 +98,7 @@ const HostStep7 = () => {
 
                  {/* Guests / Basics */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px' }}>
-                    <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                    <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                       <Users size={24} />
                     </div>
                     <div className="summary-details">
@@ -111,7 +111,7 @@ const HostStep7 = () => {
 
                  {/* Pricing Section */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px', gridColumn: 'span 2' }}>
-                    <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                    <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                       <IndianRupee size={24} />
                     </div>
                     <div className="summary-details">
@@ -121,7 +121,7 @@ const HostStep7 = () => {
                        {!hasRooms && (
                           <div className="room-breakdown" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                              <span style={{ fontWeight: 600 }}>Base Rate</span>
-                             <span style={{ fontSize: '20px', fontWeight: '800', color: '#ff385c' }}>₹{listingData.price} <small style={{ color: '#717171', fontSize: '12px' }}>/night</small></span>
+                             <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary)' }}>₹{listingData.price} <small style={{ color: '#717171', fontSize: '12px' }}>/night</small></span>
                           </div>
                        )}
 
@@ -145,7 +145,7 @@ const HostStep7 = () => {
 
                  {/* Amenities */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px', gridColumn: 'span 2' }}>
-                    <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                    <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                       <CheckCircle2 size={24} />
                     </div>
                     <div className="summary-details">
@@ -160,7 +160,7 @@ const HostStep7 = () => {
 
                  {/* Booking Settings */}
                  <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px', gridColumn: 'span 2' }}>
-                    <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                    <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                       <MapPin size={24} />
                     </div>
                     <div className="summary-details">
@@ -193,7 +193,7 @@ const HostStep7 = () => {
                   {/* Conditional: Room-Specific Information (only for private rooms) */}
                   {listingData.placeType === 'private' && (
                     <div className="summary-item-aesthetic glass-card" style={{ padding: '20px', borderRadius: '16px', gridColumn: 'span 2' }}>
-                      <div className="summary-icon-wrapper" style={{ color: '#ff385c', marginBottom: '12px' }}>
+                      <div className="summary-icon-wrapper" style={{ color: 'var(--primary)', marginBottom: '12px' }}>
                         <Home size={24} />
                       </div>
                       <div className="summary-details">

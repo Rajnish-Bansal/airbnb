@@ -9,7 +9,7 @@ export const generateICalData = (reservations, listings, selectedListingId) => {
   let icalContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Airbnb Clone//Host Dashboard//EN',
+    'PRODID:-//Hostify Clone//Host Dashboard//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
@@ -19,11 +19,11 @@ export const generateICalData = (reservations, listings, selectedListingId) => {
     if (selectedListingId !== 'all' && res.listingId != selectedListingId) return;
 
     const listing = listings.find(l => l.id === res.listingId);
-    const summary = `Stay at ${listing?.title || 'Airbnb Listing'} - ${res.guest}`;
+    const summary = `Stay at ${listing?.title || 'Hostify Listing'} - ${res.guest}`;
     const description = `Guest: ${res.guest}\\nPrice: ${res.price}\\nStatus: ${res.status}`;
     
     // Create unique UID
-    const uid = `res-${res.id}-${now}@airbnbclone.com`;
+    const uid = `res-${res.id}-${now}@Hostifyclone.com`;
 
     // Add VEVENT
     icalContent.push(

@@ -294,7 +294,7 @@ const HostStep2 = () => {
                  alignItems: 'center'
                }}>
                  <div style={{ 
-                   backgroundColor: '#ff385c', 
+                   backgroundColor: 'var(--primary)', 
                    padding: '12px', 
                    borderRadius: '50%', 
                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -331,7 +331,7 @@ const HostStep2 = () => {
                  href={`https://www.google.com/maps/search/?api=1&query=${coordinates.lat},${coordinates.lng}`} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600', fontSize: '14px', color: '#ff385c', textDecoration: 'none' }}
+                 style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600', fontSize: '14px', color: 'var(--primary)', textDecoration: 'none' }}
                >
                  <ExternalLink size={14} />
                  Test on Google Maps

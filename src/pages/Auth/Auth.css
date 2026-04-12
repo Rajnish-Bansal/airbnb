@@ -84,7 +84,7 @@
 
 .auth-submit-btn {
   width: 100%;
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   padding: 14px;
   border: none;

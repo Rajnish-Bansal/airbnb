@@ -169,12 +169,36 @@ const getInitialListings = () => {
       id: 1700004,
       hostId: 1,
       title: "Luxury Seaside Villa",
-      type: "Villa (Luxury)", // Changed from Hotel
+      type: "Villa (Luxury)",
       location: "Goa, India",
       price: 12000,
       status: "Payment Required",
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(Date.now() - 86400000 * 60).toISOString(), // 60 days ago
       photos: ["https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"]
+    },
+    {
+      id: 1700005,
+      hostId: 1,
+      title: "Expired Test Listing",
+      type: "House (Standard)",
+      location: "Shimla, India",
+      price: 5000,
+      status: "Active",
+      createdAt: new Date(Date.now() - 86400000 * 35).toISOString(), // 35 days ago (Monthly expiry is ~30 days)
+      photos: []
+    },
+    {
+      id: 1700006,
+      hostId: 1,
+      title: "Cozy Downtown Studio",
+      type: "Apartment",
+      location: "Mumbai, Maharashtra",
+      price: 4500,
+      status: "Pending",
+      rating: 0,
+      reviewsCount: 0,
+      createdAt: new Date().toISOString(),
+      photos: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"]
     }
   ];
 };
@@ -185,11 +209,12 @@ export const HostProvider = ({ children }) => {
   const [listingData, setListingData] = useState(initialListingData);
   const [allListings, setListings] = useState(getInitialListings);
 
-  const filteredListings = user 
-    ? allListings
-        .filter(l => (l.hostId || 1) === user.id)
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    : [];
+  const filteredListings = allListings
+    .filter(l => {
+       const hostId = user?.id || 1; // Default to hostId 1 for demo
+       return (l.hostId || 1) === hostId;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Persist listings to localStorage whenever they change
   React.useEffect(() => {
@@ -271,13 +296,51 @@ export const HostProvider = ({ children }) => {
     setListings(prev => prev.filter(l => l.id != id));
   };
 
-  const extendSubscription = (id) => {
+  const importAirbnbListing = async (url) => {
+    try {
+      const response = await fetch('/api/listings/import-airbnb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to import listing');
+      }
+
+      const data = await response.json();
+      
+      // Map scraped data to our internal listing state
+      const importedData = {
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        price: data.price,
+        photos: data.photos,
+        amenities: data.amenities,
+        guests: data.guests,
+        bedrooms: data.bedrooms,
+        beds: data.beds,
+        bathrooms: data.bathrooms,
+        step: 1 // Start at step 1 for review
+      };
+
+      setListingData(prev => ({ ...prev, ...importedData }));
+      return importedData;
+    } catch (err) {
+      console.error("Import Error:", err);
+      throw err;
+    }
+  };
+
+  const activateUnits = (id, unitsToActivate) => {
     setListings(prev => prev.map(l => {
       if (l.id === id) {
          const now = new Date();
          const created = new Date(l.createdAt || now);
          const currentExpiry = new Date(created);
-         currentExpiry.setFullYear(created.getFullYear() + 1);
+         currentExpiry.setMonth(created.getMonth() + 1);
 
          let newCreatedAt;
          if (currentExpiry > now) {
@@ -288,7 +351,12 @@ export const HostProvider = ({ children }) => {
             newCreatedAt = now.toISOString();
          }
          
-         return { ...l, createdAt: newCreatedAt, status: 'Active' };
+         return { 
+           ...l, 
+           createdAt: newCreatedAt, 
+           status: 'Active',
+           activeSubscriptionUnits: (l.activeSubscriptionUnits || 0) + unitsToActivate 
+         };
       }
       return l;
     }));
@@ -311,7 +379,8 @@ export const HostProvider = ({ children }) => {
       resetListingData,
       approveListing,
       rejectListing,
-      extendSubscription
+      activateUnits,
+      importAirbnbListing
     }}>
       {children}
     </HostContext.Provider>

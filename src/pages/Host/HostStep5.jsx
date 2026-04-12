@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
-import './HostStep1.css';
-import { Image as ImageIcon, Plus, Trash2, UploadCloud, Tag } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, UploadCloud, Tag, Loader2 } from 'lucide-react';
+import { uploadImage } from '../../services/api';
 import './HostStep5.css'; 
 
 const HostStep5 = () => {
   const navigate = useNavigate();
   const { listingData, updateListingData, saveDraft } = useHost();
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleSaveAndExit = () => {
     saveDraft(5);
@@ -25,18 +26,47 @@ const HostStep5 = () => {
     addPhotos(files);
   };
 
-  const addPhotos = (files) => {
-    const currentPhotoCount = (listingData.photos || []).length;
-    const newPhotos = files.map((file, index) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      url: URL.createObjectURL(file),
-      file: file,
-      category: currentPhotoCount === 0 && index === 0 ? 'cover' : 'other' // First photo is cover
-    }));
+  const addPhotos = async (files) => {
+    setUploading(true);
+    const currentPhotos = [...(listingData.photos || [])];
     
-    updateListingData({ 
-      photos: [...(listingData.photos || []), ...newPhotos] 
-    });
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // 1. Add a temporary loading entry
+        const tempId = 'temp-' + Math.random().toString(36).substr(2, 9);
+        const tempPhoto = {
+          id: tempId,
+          url: URL.createObjectURL(file), // Local preview
+          loading: true,
+          category: (currentPhotos.length + i) === 0 ? 'cover' : 'other'
+        };
+        
+        updateListingData({ 
+          photos: [...currentPhotos, ...files.slice(0, i).map((_, idx) => ({})), tempPhoto] // This logic is tricky with state, better to handle one by one
+        });
+
+        // 2. Perform real upload
+        const result = await uploadImage(file);
+        
+        // 3. Update with real URL
+        const realPhoto = {
+          id: result.public_id,
+          url: result.url,
+          loading: false,
+          category: tempPhoto.category
+        };
+
+        currentPhotos.push(realPhoto);
+        updateListingData({ photos: [...currentPhotos] });
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Failed to upload some photos. Please check your connection and Cloudinary keys.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removePhoto = (photoId) => {
@@ -83,7 +113,7 @@ const HostStep5 = () => {
         
         {/* Title Section */}
         <section className="step-section">
-          <h2 className="step-heading">Property Title <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Property Title <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px', marginBottom: '32px' }}>
             <textarea 
               className="host-textarea title-input" 
@@ -115,7 +145,7 @@ const HostStep5 = () => {
 
         {/* Photos Section */}
         <section className="step-section">
-          <h2 className="step-heading">Photos <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Photos <span style={{ color: 'var(--primary)' }}>*</span></h2>
         {!hasPhotos ? (
           <div 
             className={`photo-upload-zone glass-card ${dragActive ? 'drag-active' : ''}`}
@@ -163,21 +193,37 @@ const HostStep5 = () => {
                 />
             </div>
 
-            <div className="photos-grid">
                {(listingData.photos || []).map((photo, index) => (
                  <div 
                    key={photo.id || index} 
                    className={`photo-card-wrapper ${index === 0 ? 'cover-photo-slot' : ''}`}
                  >
-                   <div className="photo-card glass-card">
-                     <img src={photo.url || photo} alt={`Preview ${index}`} />
-                     
-                     {/* Category Badge */}
+                    <div className="photo-card glass-card">
+                      <img src={photo.url || photo} alt={`Preview ${index}`} style={{ opacity: photo.loading ? 0.5 : 1 }} />
+                      
+                      {photo.loading && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(255, 255, 255, 0.4)',
+                          zIndex: 5
+                        }}>
+                          <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+                        </div>
+                      )}
+                      
+                      {/* Category Badge */}
                      <div style={{
                        position: 'absolute',
                        top: '12px',
                        left: '12px',
-                       background: photo.category === 'cover' ? 'linear-gradient(135deg, #ff385c 0%, #bd1e59 100%)' : 'rgba(0, 0, 0, 0.7)',
+                       background: photo.category === 'cover' ? 'linear-gradient(135deg, var(--primary) 0%, #bd1e59 100%)' : 'rgba(0, 0, 0, 0.7)',
                        color: 'white',
                        padding: '4px 10px',
                        borderRadius: '6px',
@@ -256,7 +302,6 @@ const HostStep5 = () => {
                  </div>
                )}
             </div>
-          </div>
         )}
         </section>
       </div>

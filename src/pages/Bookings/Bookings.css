@@ -45,7 +45,7 @@
 }
 
 .tab-btn.active {
-  color: #ff385c;
+  color: var(--primary);
 }
 
 .tab-btn.active::after {
@@ -55,7 +55,7 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, #ff385c, #e31c5f);
+  background: linear-gradient(90deg, var(--primary), #e31c5f);
   border-radius: 3px 3px 0 0;
 }
 
@@ -267,7 +267,7 @@
 }
 
 .detail-icon {
-  color: #ff385c;
+  color: var(--primary);
   opacity: 0.8;
 }
 

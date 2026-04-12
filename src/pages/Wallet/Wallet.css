@@ -5,7 +5,7 @@
 }
 
 .balance-card {
-  background: linear-gradient(135deg, #FF385C 0%, #BD1E59 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #BD1E59 100%);
   border-radius: 16px;
   padding: 32px;
   color: white;

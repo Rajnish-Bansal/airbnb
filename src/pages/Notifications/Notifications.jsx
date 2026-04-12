@@ -13,7 +13,7 @@ const Notifications = () => {
     },
     {
       id: 2,
-      title: "Welcome to Airbnb",
+      title: "Welcome to Hostify",
       message: "Finish setting up your profile to start your journey.",
       date: "1 day ago",
       read: true

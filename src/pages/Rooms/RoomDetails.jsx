@@ -8,8 +8,9 @@ import GuestSelector from '../../components/molecules/GuestSelector/GuestSelecto
 import { useAuth } from '../../context/AuthContext';
 import { useHost } from '../../context/HostContext';
 import { useSearch } from '../../context/SearchContext';
-import { mockListings } from '../../data/mockListings';
+import { fetchListingById } from '../../services/api';
 import { differenceInDays, format } from 'date-fns';
+import { Helmet } from 'react-helmet-async';
 import './RoomDetails.css';
 
 const RoomDetails = () => {
@@ -19,9 +20,32 @@ const RoomDetails = () => {
   const { listings: hostListings } = useHost();
   const { addToRecentlyViewed } = useSearch();
   
-  // Combine both sources
-  const allListings = [...mockListings, ...hostListings];
-  const listing = allListings.find(l => l.id == id); // Loose equality for string/number id mismatch protection
+  const [listing, setListing] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch listing data
+  useEffect(() => {
+    const getListing = async () => {
+      try {
+        // Try to find in host listings first (local state)
+        const localListing = hostListings.find(l => (l._id || l.id) == id);
+        if (localListing) {
+          setListing(localListing);
+          setLoading(false);
+          return;
+        }
+
+        // Otherwise fetch from API
+        const data = await fetchListingById(id);
+        setListing(data);
+      } catch (err) {
+        console.error("Failed to fetch listing details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getListing();
+  }, [id, hostListings]);
 
   // Track recently viewed
   useEffect(() => {
@@ -58,17 +82,98 @@ const RoomDetails = () => {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const displayedReviews = showAllReviews ? listing?.reviews : listing?.reviews?.slice(0, 6);
 
-  if (!listing) {
-    return <div>Property not found</div>;
-  }
+  if (loading) return <div className="loading-container">Loading property details...</div>;
+  if (!listing) return <div className="error-container">Property not found</div>;
 
   const nights = Math.max(differenceInDays(endDate, startDate), 1);
-  const totalGuests = guests.adults + guests.children;
-  const totalBasePrice = listing.price * nights;
-  const serviceFee = Math.round(totalBasePrice * 0.14);
-  const totalPrice = totalBasePrice + serviceFee;
+  const totalGuests = (guests.adults || 0) + (guests.children || 0);
+
+  const calculateDetailedPrice = () => {
+    let subtotal = 0;
+    let weekendNights = 0;
+    let weekdayNights = 0;
+
+    for (let i = 0; i < nights; i++) {
+        const currentDay = new Date(startDate);
+        currentDay.setDate(currentDay.getDate() + i);
+        const dayOfWeek = currentDay.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+
+        if ((dayOfWeek === 5 || dayOfWeek === 6) && listing.weekendPrice) {
+            subtotal += listing.weekendPrice;
+            weekendNights++;
+        } else {
+            subtotal += listing.price;
+            weekdayNights++;
+        }
+    }
+
+    // Apply Weekly/Monthly Discounts
+    let discountAmount = 0;
+    let discountBadge = null;
+
+    if (nights >= 28 && listing.discounts?.monthly > 0) {
+        discountAmount = Math.round(subtotal * (listing.discounts.monthly / 100));
+        discountBadge = `Monthly discount (${listing.discounts.monthly}%)`;
+    } else if (nights >= 7 && listing.discounts?.weekly > 0) {
+        discountAmount = Math.round(subtotal * (listing.discounts.weekly / 100));
+        discountBadge = `Weekly discount (${listing.discounts.weekly}%)`;
+    }
+
+    const totalBasePrice = subtotal - discountAmount;
+    const serviceFee = Math.round(totalBasePrice * 0.14);
+    const totalPrice = totalBasePrice + serviceFee;
+
+    return { 
+        subtotal, 
+        discountAmount, 
+        discountBadge, 
+        totalBasePrice, 
+        serviceFee, 
+        totalPrice,
+        weekendNights,
+        weekdayNights
+    };
+  };
+
+  const priceStats = calculateDetailedPrice();
+  const { nightsArr } = { nightsArr: Array.from({length: nights}) }; // Helper for labels if needed
 
   const guestLabel = `${totalGuests} guest${totalGuests > 1 ? 's' : ''}`;
+
+  const calculateReviewCategories = () => {
+    if (!listing?.reviews || listing.reviews.length === 0) return null;
+    
+    const totals = {
+      cleanliness: 0,
+      accuracy: 0,
+      communication: 0,
+      location: 0,
+      checkin: 0,
+      value: 0
+    };
+
+    listing.reviews.forEach(r => {
+      const rt = r.ratings || { cleanliness: 5, accuracy: 5, communication: 5, location: 5, checkin: 5, value: 5 };
+      totals.cleanliness += rt.cleanliness || 5;
+      totals.accuracy += rt.accuracy || 5;
+      totals.communication += rt.communication || 5;
+      totals.location += rt.location || 5;
+      totals.checkin += rt.checkin || 5;
+      totals.value += rt.value || 5;
+    });
+
+    const count = listing.reviews.length;
+    return {
+      cleanliness: (totals.cleanliness / count).toFixed(1),
+      accuracy: (totals.accuracy / count).toFixed(1),
+      communication: (totals.communication / count).toFixed(1),
+      location: (totals.location / count).toFixed(1),
+      checkin: (totals.checkin / count).toFixed(1),
+      value: (totals.value / count).toFixed(1)
+    };
+  };
+
+  const reviewStats = calculateReviewCategories();
 
   const handleReserve = () => {
     if (!user) {
@@ -90,6 +195,14 @@ const RoomDetails = () => {
 
   return (
     <div className="room-details">
+      <Helmet>
+        <title>{`${listing.propertyType || 'Stay'} in ${listing.location} - ${listing.title}`}</title>
+        <meta name="description" content={listing.description} />
+        <meta property="og:title" content={`${listing.propertyType} in ${listing.location}`} />
+        <meta property="og:description" content={listing.description} />
+        <meta property="og:image" content={listing.image} />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Navbar />
       <div className="room-content">
         {/* Back Button */}
@@ -118,9 +231,9 @@ const RoomDetails = () => {
         <div className="room-gallery">
           <div className="main-image" style={{backgroundImage: `url(${listing.image})`}}></div>
           <div className="side-images">
-             <div className="side-img" style={{backgroundImage: `url(${listing.image})`}}></div>
-             <div className="side-img" style={{backgroundImage: `url(${listing.image})`}}></div>
-             <div className="side-img" style={{backgroundImage: `url(${listing.image})`}}></div>
+             <div className="side-img" style={{backgroundImage: `url(${listing.image || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb'})`}}></div>
+             <div className="side-img" style={{backgroundImage: `url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80')`}}></div>
+             <div className="side-img" style={{backgroundImage: `url('https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=800&q=80')`}}></div>
              <div className="side-img" style={{backgroundImage: `url(${listing.image})`, opacity: 0.8}}>
                <button className="show-photos-btn">Show all photos</button>
              </div>
@@ -239,20 +352,32 @@ const RoomDetails = () => {
                  <div className="no-charge-text">You won't be charged yet</div>
 
                  <div className="price-breakdown">
-                    <div className="pb-row">
-                       <span>₹{listing.price.toLocaleString('en-IN')} x {nights} nights</span>
-                       <span>₹{totalBasePrice.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="pb-row">
-                       <span>Service fee</span>
-                       <span>₹{serviceFee.toLocaleString('en-IN')}</span>
-                    </div>
-                 </div>
+                     <div className="pb-row">
+                        <span>
+                          {priceStats.weekendNights > 0 ? (
+                            `₹${listing.price.toLocaleString('en-IN')} x ${priceStats.weekdayNights} weekdays + ₹${listing.weekendPrice.toLocaleString('en-IN')} x ${priceStats.weekendNights} weekends`
+                          ) : (
+                            `₹${listing.price.toLocaleString('en-IN')} x ${nights} nights`
+                          )}
+                        </span>
+                        <span>₹{priceStats.subtotal.toLocaleString('en-IN')}</span>
+                     </div>
+                     {priceStats.discountAmount > 0 && (
+                        <div className="pb-row discount-row" style={{ color: '#008a05', fontWeight: '600' }}>
+                           <span className="discount-label">{priceStats.discountBadge}</span>
+                           <span className="discount-value">-₹{priceStats.discountAmount.toLocaleString('en-IN')}</span>
+                        </div>
+                     )}
+                     <div className="pb-row">
+                        <span>Service fee</span>
+                        <span>₹{priceStats.serviceFee.toLocaleString('en-IN')}</span>
+                     </div>
+                  </div>
 
-                 <div className="total-row">
-                    <span>Total before taxes</span>
-                    <span>₹{totalPrice.toLocaleString('en-IN')}</span>
-                 </div>
+                  <div className="total-row">
+                     <span>Total before taxes</span>
+                     <span>₹{priceStats.totalPrice.toLocaleString('en-IN')}</span>
+                  </div>
               </div>
            </div>
         </div>
@@ -266,8 +391,27 @@ const RoomDetails = () => {
               {listing.rating} · {listing.reviewsCount} reviews
            </div>
 
+           {reviewStats && (
+              <div className="review-categories-grid">
+                 {Object.entries(reviewStats).map(([key, value]) => (
+                    <div key={key} className="category-item">
+                       <div className="category-label">{key.charAt(0).toUpperCase() + key.slice(1)}</div>
+                       <div className="category-bar-wrapper">
+                          <div className="category-bar">
+                             <div 
+                               className="category-progress" 
+                               style={{ width: `${(value / 5) * 100}%` }}
+                             ></div>
+                          </div>
+                          <span className="category-value">{value}</span>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+           )}
+
            <div className="reviews-grid">
-              {displayedReviews && displayedReviews.length > 0 ? (
+              {(displayedReviews && displayedReviews.length > 0) ? (
                 displayedReviews.map(review => (
                   <div key={review.id} className="review-item">
                      <div className="review-user-info">

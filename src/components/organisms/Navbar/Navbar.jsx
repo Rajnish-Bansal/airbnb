@@ -8,7 +8,7 @@ import './Navbar.css';
 
 const Navbar = ({ onSearch, onLogoClick }) => {
   const { listings } = useHost();
-  const { user, login, logout, isAuthModalOpen, openAuthModal, closeAuthModal, allUsers } = useAuth();
+  const { user, logout, isAuthModalOpen, openAuthModal, closeAuthModal, allUsers } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
   
@@ -44,7 +44,6 @@ const Navbar = ({ onSearch, onLogoClick }) => {
       const isHostUser = userInDb?.role === 'Host' || userData.isHost;
       userData.isHost = isHostUser;
 
-      login(userData);
       if (redirectAfterLogin) {
         navigate(redirectAfterLogin);
         setRedirectAfterLogin(null);
@@ -73,7 +72,7 @@ const Navbar = ({ onSearch, onLogoClick }) => {
                 if (onLogoClick) onLogoClick();
               }}
             >
-               <span className="logo-text">airbnb</span>
+               <span className="logo-text">Hostify</span>
             </Link>
           </div>
 
@@ -96,7 +95,7 @@ const Navbar = ({ onSearch, onLogoClick }) => {
             <Link to="/notifications" className="globe-button" style={{ marginLeft: '8px', cursor: 'pointer', color: 'inherit', textDecoration: 'none', padding: '12px' }}>
                <span style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                  <Bell size={18} />
-                 <span style={{ position: 'absolute', top: '-2px', right: '-1px', width: '8px', height: '8px', backgroundColor: '#ff385c', borderRadius: '50%', border: '1px solid white' }}></span>
+                 <span style={{ position: 'absolute', top: '-2px', right: '-1px', width: '8px', height: '8px', backgroundColor: 'var(--primary)', borderRadius: '50%', border: '1px solid white' }}></span>
                </span>
             </Link>
 
@@ -124,7 +123,7 @@ const Navbar = ({ onSearch, onLogoClick }) => {
                       <div className="menu-item" style={{ cursor: 'default', paddingTop: '0', fontSize: '12px', color: '#717171' }}>{user.email}</div>
                       <div className="menu-divider"></div>
                       
-                      <div className="menu-item-bold">Messages</div>
+                      <Link to="/inbox" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Messages</Link>
                       <Link to="/notifications" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Notifications</Link>
                       <Link to="/bookings" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>My Bookings</Link>
                       <Link to="/wishlists" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Wishlists</Link>
@@ -139,8 +138,8 @@ const Navbar = ({ onSearch, onLogoClick }) => {
                      ) : (
                         <>
 
-                          <Link to="/login" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Log in</Link>
-                          <Link to="/signup" className="menu-item" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Sign up</Link>
+                          <div className="menu-item-bold" onClick={() => { openAuthModal(); setIsUserMenuOpen(false); }}>Log in</div>
+                          <div className="menu-item" onClick={() => { openAuthModal(); setIsUserMenuOpen(false); }}>Sign up</div>
                           <div className="menu-divider"></div>
                           <div className="menu-item" onClick={() => { setRedirectAfterLogin('/become-a-host'); openAuthModal(); setIsUserMenuOpen(false); }}>Become a host</div>
                           <div className="menu-item">Help Center</div>

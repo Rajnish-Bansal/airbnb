@@ -98,7 +98,7 @@ const HostStep6 = () => {
           
           <div className="price-inputs-grid">
             <div className="price-field-container">
-              <label>Weekday Price <span style={{ color: '#ff385c' }}>*</span></label>
+              <label>Weekday Price <span style={{ color: 'var(--primary)' }}>*</span></label>
               <div className="price-input-wrapper large focus-glow">
                  <span className="currency gradient-text">₹</span>
                  <input 
@@ -312,7 +312,7 @@ const HostStep6 = () => {
 
         {/* Stay Requirements Section */}
         <section className="step-section" style={{ marginTop: '48px' }}>
-          <h2 className="step-heading">Stay Requirements <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Stay Requirements <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div>
@@ -366,7 +366,7 @@ const HostStep6 = () => {
 
         {/* Cancellation Policy Section */}
         <section className="step-section">
-          <h2 className="step-heading">Cancellation Policy <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Cancellation Policy <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
             <p style={{ fontSize: '14px', color: '#717171', marginBottom: '24px' }}>
               Choose a standard cancellation policy for your listing:

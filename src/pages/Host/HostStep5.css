@@ -19,13 +19,13 @@
 }
 
 .photo-upload-zone:hover {
-  border-color: #ff385c;
+  border-color: var(--primary);
   background: rgba(255, 56, 92, 0.02);
 }
 
 .photo-upload-zone.drag-active {
   background: rgba(255, 56, 92, 0.05);
-  border-color: #ff385c;
+  border-color: var(--primary);
   transform: scale(1.02);
 }
 
@@ -41,7 +41,7 @@
 }
 
 .upload-cloud-icon {
-  color: #ff385c;
+  color: var(--primary);
 }
 
 .upload-instruction {
@@ -183,7 +183,7 @@
 
 .delete-photo-btn:hover {
   background: white;
-  color: #ff385c;
+  color: var(--primary);
   transform: scale(1.1);
 }
 

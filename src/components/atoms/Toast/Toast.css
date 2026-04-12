@@ -17,11 +17,11 @@
 }
 
 .toast-container.error {
-  background-color: #c13515; /* Airbnb Error Red */
+  background-color: #c13515; /* Hostify Error Red */
 }
 
 .toast-container.success {
-  background-color: #008a05; /* Airbnb Success Green */
+  background-color: #008a05; /* Hostify Success Green */
 }
 
 .toast-content {

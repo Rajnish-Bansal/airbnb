@@ -21,8 +21,6 @@ import { BookingProvider } from './context/BookingContext';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
 import Profile from './pages/Profile/Profile';
-import Signup from './pages/Auth/Signup';
-import Login from './pages/Auth/Login';
 import Notifications from './pages/Notifications/Notifications';
 import Bookings from './pages/Bookings/Bookings';
 import Wishlist from './pages/Wishlist/Wishlist';
@@ -30,6 +28,7 @@ import Account from './pages/Account/Account';
 import Wallet from './pages/Wallet/Wallet';
 import RoomDetails from './pages/Rooms/RoomDetails';
 import Checkout from './pages/Checkout/Checkout';
+import Inbox from './pages/Inbox/Inbox';
 
 function App() {
   return (
@@ -46,11 +45,10 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
               <Route path="/account" element={<Account />} />
               <Route path="/wallet" element={<Wallet />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/wishlists" element={<Wishlist />} />
+              <Route path="/inbox" element={<Inbox />} />
               <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Admin Routes - Protected */}

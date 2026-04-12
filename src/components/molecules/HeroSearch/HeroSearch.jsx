@@ -187,13 +187,14 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
           <div style={{ fontSize: '14px', fontWeight: 500, color: totalGuests > 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
               {totalGuests > 0 ? `${totalGuests} guest${totalGuests > 1 ? 's' : ''}` : 'Add guests'}
           </div>
-          
-          <button className="hero-search-button" onClick={(e) => {
-              e.stopPropagation();
-              handleSearchClick();
-          }}>
-            <Search size={18} strokeWidth={2.5} color="white" />
-          </button>
+        </div>
+
+        <button className="hero-search-button" onClick={(e) => {
+            e.stopPropagation();
+            handleSearchClick();
+        }}>
+          <Search size={18} strokeWidth={2.5} color="white" />
+        </button>
 
           {/* Guest Popover */}
           {showGuestPopover && (
@@ -253,7 +254,6 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
                   </div>
               </div>
           )}
-        </div>
       </div>
     </div>
   );

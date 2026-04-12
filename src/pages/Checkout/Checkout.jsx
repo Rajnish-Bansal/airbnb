@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Star, CreditCard, Wallet, Smartphone, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import Navbar from '../../components/organisms/Navbar/Navbar';
-import { mockListings } from '../../data/mockListings';
+import { fetchListingById } from '../../services/api';
 import { useBooking } from '../../context/BookingContext';
 import './Checkout.css';
 
@@ -13,9 +13,27 @@ const Checkout = () => {
   const location = useLocation();
   const { addBooking } = useBooking();
   
-  // Prioritize listing and data from state
+  const [listing, setListing] = useState(location.state?.listing || null);
+  const [loading, setLoading] = useState(!location.state?.listing);
+  
+  // Fetch listing if not in state
+  React.useEffect(() => {
+    if (!listing && id) {
+      const getListing = async () => {
+        try {
+          const data = await fetchListingById(id);
+          setListing(data);
+        } catch (err) {
+          console.error("Failed to fetch listing for checkout:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      getListing();
+    }
+  }, [id, listing]);
+
   const stateData = location.state || {};
-  const listing = stateData.listing || mockListings.find(l => l.id === parseInt(id));
   
   // Get dynamic data from state or use fallbacks
   const bookingData = {
@@ -35,8 +53,43 @@ const Checkout = () => {
   const guestsLabel = `${totalGuestsCount} guest${totalGuestsCount > 1 ? 's' : ''}`;
 
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const [couponError, setCouponError] = useState('');
 
-  if (!listing) return <div>Listing not found</div>;
+  if (loading) return <div className="loading-container">Loading checkout details...</div>;
+  if (!listing) return <div className="error-container">Listing not found</div>;
+
+  const handleApplyCoupon = () => {
+    setCouponError('');
+    if (!couponCode.trim()) {
+       setCouponError('Please enter a coupon code');
+       return;
+    }
+
+    // Mock valid coupon: SAVE20 gives 20% off
+    if (couponCode.trim().toUpperCase() === 'SAVE20') {
+       const calculatedDiscount = Math.floor(totalPrice * 0.20);
+       setDiscount(calculatedDiscount);
+       setIsCouponApplied(true);
+    } else {
+       setCouponError('Invalid or expired coupon code');
+       setDiscount(0);
+       setIsCouponApplied(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode('');
+    setDiscount(0);
+    setIsCouponApplied(false);
+    setCouponError('');
+  };
+
+  const finalPrice = totalPrice - discount;
 
   const handleConfirmPay = () => {
     setIsProcessing(true);
@@ -48,7 +101,7 @@ const Checkout = () => {
           location: listing.location,
           dates: formattedDates,
           guests: guestsLabel,
-          price: `₹${totalPrice.toLocaleString('en-IN')}`,
+          price: `₹${finalPrice.toLocaleString('en-IN')}`,
           image: listing.image,
           host: listing.host
        };
@@ -61,15 +114,15 @@ const Checkout = () => {
   return (
     <>
       <div className="checkout-navbar">
-         <div className="checkout-nav-container">
-            <div className="logo-text" onClick={() => navigate('/')} style={{cursor: 'pointer'}}>airbnb</div>
+         <div className="checkout-nav-container" style={{ padding: '0 48px', width: '100%', display: 'flex', alignItems: 'center' }}>
+            <div className="logo-text" onClick={() => navigate('/')} style={{ cursor: 'pointer', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.02em' }}>Hostify</div>
          </div>
       </div>
       
       <div className="checkout-container">
          <div className="checkout-header">
-            <button className="back-btn" onClick={() => navigate(-1)}><ChevronLeft size={18} /></button>
-            <h1>Request to book</h1>
+            <button className="back-btn" onClick={() => navigate(-1)}><ChevronLeft size={20} /></button>
+            <h1>Confirm and pay</h1>
          </div>
 
          <div className="checkout-grid">
@@ -95,79 +148,98 @@ const Checkout = () => {
                   </div>
                </div>
 
-               <div className="checkout-divider"></div>
+               <div className="checkout-divider" style={{ height: '1px', background: 'var(--border-light)', margin: '48px 0' }}></div>
 
                <div className="checkout-section">
                   <h2>Pay with</h2>
                    <div className="payment-method-selector">
                       <div className="pm-option selected">
                          <div className="pm-info">
-                            <CreditCard size={20} />
+                            <CreditCard size={22} strokeWidth={1.5} />
                             <span>Credit or debit card</span>
                          </div>
-                         <div className="pm-radio-outer"><div className="pm-radio-inner"></div></div>
+                         <div className="pm-radio-outer">
+                            <div className="pm-radio-inner"></div>
+                         </div>
                       </div>
                       <div className="pm-option">
                          <div className="pm-info">
-                            <Smartphone size={20} />
-                            <span>UPI</span>
+                            <Smartphone size={22} strokeWidth={1.5} />
+                            <span>UPI (PhonePe, Google Pay)</span>
                          </div>
-                         <div className="pm-radio-outer"></div>
+                         <div className="pm-radio-outer">
+                            <div className="pm-radio-inner"></div>
+                         </div>
                       </div>
                       <div className="pm-option">
                          <div className="pm-info">
-                            <Wallet size={20} />
-                            <span>Net Banking</span>
+                            <Wallet size={22} strokeWidth={1.5} />
+                            <span>Digital Wallets</span>
                          </div>
-                         <div className="pm-radio-outer"></div>
+                         <div className="pm-radio-outer">
+                            <div className="pm-radio-inner"></div>
+                         </div>
                       </div>
                    </div>
 
                   <div className="card-form">
-                     <input type="text" placeholder="Card number" className="card-input full-width" />
-                     <div className="card-row">
-                        <input type="text" placeholder="Expiration" className="card-input half-width" />
-                        <input type="text" placeholder="CVV" className="card-input half-width" />
+                     <div className="input-group">
+                        <input type="text" placeholder="Card number" className="card-input" />
                      </div>
-                     <input type="text" placeholder="Zip code" className="card-input full-width" />
-                     <input type="text" placeholder="Country/Region" className="card-input full-width" defaultValue="India" />
+                     <div className="card-row">
+                        <input type="text" placeholder="Exp date" className="card-input" />
+                        <input type="text" placeholder="CVV" className="card-input" />
+                     </div>
+                     <div className="input-group">
+                        <input type="text" placeholder="Cardholder name" className="card-input" />
+                     </div>
                   </div>
                </div>
 
-               <div className="checkout-divider"></div>
+               <div className="checkout-divider" style={{ height: '1px', background: 'var(--border-light)', margin: '48px 0' }}></div>
 
                <div className="checkout-section">
-                  <h2>Required for your trip</h2>
-                  <div className="message-host">
-                     <div className="mh-text">
-                        <h3>Message the Host</h3>
-                        <p>Let {listing.host.name} know why you're traveling and when you'll check in.</p>
+                  <h2>Trust & Safety</h2>
+                  <div className="trust-badges">
+                     <div className="trust-item">
+                        <ShieldCheck size={28} strokeWidth={1.5} />
+                        <div className="trust-text">
+                           <h4>Secure Booking</h4>
+                           <p>Your data is encrypted and transactions are processed through enterprise-grade security layers.</p>
+                        </div>
                      </div>
-                     <button className="add-btn-outline">Add</button>
+                     <div className="trust-item">
+                        <Star size={28} strokeWidth={1.5} />
+                        <div className="trust-text">
+                           <h4>Price Guarantee</h4>
+                           <p>Found a better price? We'll match it and give you an extra 5% discount on your next stay.</p>
+                        </div>
+                     </div>
                   </div>
                </div>
                 
-               <div className="checkout-divider"></div>
+               <button className="confirm-btn" onClick={handleConfirmPay} disabled={isProcessing}>
+                  {isProcessing ? 'Processing Transaction...' : 'Confirm and Pay Now'}
+               </button>
 
-                <button className="confirm-btn" onClick={handleConfirmPay} disabled={isProcessing}>
-                   {isProcessing ? 'Processing...' : 'Confirm and pay'}
-                </button>
-
-                <div className="secure-checkout">
-                   <ShieldCheck size={16} />
-                   <span>Secure checkout</span>
-                </div>
+               <div className="secure-checkout">
+                  <span style={{ opacity: 0.6 }}>Guaranteed safe & secure checkout</span>
+               </div>
             </div>
 
-            {/* Right Column: Listing Summary */}
+            {/* Right Column: Listing Summary (Sticky) */}
             <div className="checkout-right">
                <div className="listing-summary-card">
                   <div className="summary-header">
                      <div className="summary-image" style={{backgroundImage: `url(${listing.image})`}}></div>
-                     <div className="summary-info">
-                        <div className="summary-category">Entire home</div>
-                        <div className="summary-title">{listing.title || listing.description.substring(0, 40) + '...'}</div>
-                        <div className="summary-rating"><Star size={12} fill="black" /> {listing.rating} (124 reviews)</div>
+                     <div className="summary-container">
+                        <div className="summary-category">Boutique Stay</div>
+                        <div className="summary-title">{listing.title || 'Premium Property'}</div>
+                        <div className="summary-rating">
+                           <Star size={14} fill="currentColor" /> 
+                           <span>{listing.rating}</span>
+                           <span style={{ color: 'var(--text-secondary)', fontWeight: 'normal' }}>(124 reviews)</span>
+                        </div>
                      </div>
                   </div>
 
@@ -180,16 +252,49 @@ const Checkout = () => {
                      <span>₹{(listing.price * nights).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="summary-row">
-                     <span>Service fee</span>
+                     <span>Service & cleaning fee</span>
                      <span>₹2,500</span>
                   </div>
+                  
+                  {isCouponApplied && (
+                     <div className="summary-row discount-row" style={{ color: '#16a34a', fontWeight: '600' }}>
+                        <span>Coupon ({couponCode.toUpperCase()})</span>
+                        <span>-₹{discount.toLocaleString('en-IN')}</span>
+                     </div>
+                  )}
                   
                   <div className="summary-divider"></div>
 
                   <div className="summary-total">
                      <span>Total (INR)</span>
-                     <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+                     <span>₹{finalPrice.toLocaleString('en-IN')}</span>
                   </div>
+
+                  {!isCouponApplied ? (
+                    <div className="coupon-inline" style={{ marginTop: '32px' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                           <input 
+                              type="text" 
+                              style={{ flex: 1, padding: '12px', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }} 
+                              placeholder="Add coupon" 
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value)}
+                           />
+                           <button 
+                             onClick={handleApplyCoupon}
+                             style={{ padding: '0 20px', background: 'var(--secondary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: '600', cursor: 'pointer' }}
+                           >
+                             Apply
+                           </button>
+                        </div>
+                        {couponError && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px' }}>{couponError}</div>}
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '32px', padding: '16px', background: '#f0fdf4', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#16a34a', fontWeight: '600', fontSize: '14px' }}>✓ Coupon Applied</span>
+                        <button onClick={handleRemoveCoupon} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', fontSize: '13px' }}>Remove</button>
+                    </div>
+                  )}
                </div>
             </div>
          </div>

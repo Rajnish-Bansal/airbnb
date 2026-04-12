@@ -12,7 +12,7 @@ const AdminLogin = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (email === 'admin@airbnb.com' && password === 'admin123') {
+    if (email === 'admin@Hostify.com' && password === 'admin123') {
       login({
         name: 'Administrator',
         email: email,
@@ -52,7 +52,7 @@ const AdminLogin = () => {
           alignItems: 'center', 
           justifyContent: 'center', 
           margin: '0 auto 24px',
-          color: '#ff385c'
+          color: 'var(--primary)'
         }}>
           <Shield size={32} />
         </div>
@@ -118,7 +118,7 @@ const AdminLogin = () => {
           <button type="submit" style={{
             width: '100%',
             padding: '14px',
-            background: 'linear-gradient(to right, #ff385c, #e61e4d)',
+            background: 'linear-gradient(to right, var(--primary), #e61e4d)',
             color: 'white',
             border: 'none',
             borderRadius: '8px',

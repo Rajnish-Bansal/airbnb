@@ -37,7 +37,7 @@ const HostLayoutContent = () => {
       <div className="host-layout">
         <header className="host-header">
            <Link to="/" className="host-logo">
-             <span className="logo-text">airbnb</span>
+             <span className="logo-text">Hostify</span>
            </Link>
            <div className="host-header-actions">
              {isDashboardOrLanding && (
@@ -71,8 +71,8 @@ const HostLayoutContent = () => {
 
                 {isUserMenuOpen && (
                   <div className="user-dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', padding: '8px 0', width: '240px', zIndex: 100 }}>
-                      <div className="menu-item" style={{ fontWeight: '600', cursor: 'default', paddingBottom: '4px' }}>{user.name || 'User'}</div>
-                      <div className="menu-item" style={{ cursor: 'default', paddingTop: '0', fontSize: '12px', color: '#717171' }}>{user.email}</div>
+                      <div className="menu-item" style={{ fontWeight: '600', cursor: 'default', paddingBottom: '4px' }}>{user?.name || 'User'}</div>
+                      <div className="menu-item" style={{ cursor: 'default', paddingTop: '0', fontSize: '12px', color: '#717171' }}>{user?.email}</div>
                       <div style={{ height: '1px', background: '#ebebeb', margin: '8px 0' }}></div>
                       <div className="menu-item" style={{ padding: '10px 16px', cursor: 'pointer' }}>Profile</div>
                       <div className="menu-item" onClick={handleLogout} style={{ padding: '10px 16px', cursor: 'pointer' }}>Log out</div>

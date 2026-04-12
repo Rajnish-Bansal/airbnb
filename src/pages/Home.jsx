@@ -7,20 +7,39 @@ import FilterPanel from '../components/molecules/FilterPanel/FilterPanel';
 // import FilterSidebar from '../components/molecules/FilterSidebar/FilterSidebar'; // Option 3: Always-visible sidebar
 import FilterChips from '../components/molecules/FilterChips/FilterChips';
 import MapView from '../components/molecules/MapView/MapView';
+import { Helmet } from 'react-helmet-async';
 import './Home.css';
 
-import { mockListings } from '../data/mockListings';
+import { fetchListings } from '../services/api';
 import { Link } from 'react-router-dom';
 import { Sliders, Map, List } from 'lucide-react';
 import { useSearch } from '../context/SearchContext';
 
 const Home = () => {
-  const [filteredListings, setFilteredListings] = React.useState(mockListings);
+  const [allListings, setAllListings] = React.useState([]);
+  const [filteredListings, setFilteredListings] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const [searchKey, setSearchKey] = React.useState(0);
   const [showFilters, setShowFilters] = React.useState(false);
   const [showMap, setShowMap] = React.useState(false);
   const { filters, recentlyViewed, searchParams, updateSearchParams, updateFilters } = useSearch();
   
+  // Fetch listings on mount
+  React.useEffect(() => {
+    const getListings = async () => {
+      try {
+        const data = await fetchListings();
+        setAllListings(data);
+        setFilteredListings(data);
+      } catch (err) {
+        console.error("Failed to fetch listings:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getListings();
+  }, []);
+
   // Automatically hide map when search is cleared
   React.useEffect(() => {
     if (!searchParams.destination && showMap) {
@@ -30,16 +49,18 @@ const Home = () => {
 
   // Sync filtered listings with context on mount and when filters/params change
   React.useEffect(() => {
-    applyFilters(searchParams, filters);
-  }, [searchParams, filters]);
+    if (allListings.length > 0) {
+      applyFilters(searchParams, filters);
+    }
+  }, [searchParams, filters, allListings]);
   
   // Extract unique locations for autocomplete
-  const allLocations = [...new Set(mockListings.map(item => item.location))];
+  const allLocations = [...new Set(allListings.map(item => item.location))];
 
   const applyFilters = (searchParams, currentFilters) => {
     const { destination, guests, startDate, endDate } = searchParams;
     
-    let filtered = mockListings;
+    let filtered = [...allListings];
 
     // Filter by Destination
     if (destination) {
@@ -60,7 +81,11 @@ const Home = () => {
     if (startDate && endDate) {
       filtered = filtered.filter(listing => {
         if (!listing.availableFrom || !listing.availableTo) return false;
-        return listing.availableFrom <= startDate && listing.availableTo >= endDate;
+        const availFrom = new Date(listing.availableFrom);
+        const availTo = new Date(listing.availableTo);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return availFrom <= start && availTo >= end;
       });
     }
 
@@ -102,22 +127,26 @@ const Home = () => {
 
   const handleSearch = (newSearchParams) => {
     updateSearchParams(newSearchParams);
-    applyFilters(newSearchParams, filters);
   };
 
   const handleFilterApply = (newFilters) => {
     updateFilters(newFilters);
-    applyFilters(searchParams, newFilters);
   };
 
   const handleReset = () => {
     updateSearchParams({ destination: '', guests: null, startDate: null, endDate: null });
-    setFilteredListings(mockListings);
+    setFilteredListings(allListings);
     setSearchKey(prev => prev + 1);
   };
 
   return (
     <div className="home-container">
+      <Helmet>
+        <title>Hostify - Find your next home away from home</title>
+        <meta name="description" content="Discover unique properties around the world. Book your perfect stay with Hostify." />
+        <meta property="og:title" content="Hostify - Premium Vacation Rentals" />
+        <meta property="og:image" content="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop" />
+      </Helmet>
       <Navbar onSearch={handleSearch} onLogoClick={handleReset} />
       <div style={{ paddingTop: '80px' }}>
         <HeroSearch key={searchKey} onSearch={handleSearch} allLocations={allLocations} />
@@ -165,10 +194,11 @@ const Home = () => {
         ) : (
           <div className="listings-grid">
             {filteredListings.map(listing => {
-              const isRecentlyViewed = recentlyViewed.some(item => item.id === listing.id);
+              const listingId = listing._id || listing.id;
+              const isRecentlyViewed = recentlyViewed.some(item => (item._id || item.id) === listingId);
               return (
-                <Link to={`/rooms/${listing.id}`} key={listing.id} style={{textDecoration: 'none', color: 'inherit', display: 'block'}}>
-                  <ListingCard {...listing} isRecentlyViewed={isRecentlyViewed} />
+                <Link to={`/rooms/${listingId}`} key={listingId} style={{textDecoration: 'none', color: 'inherit', display: 'block'}}>
+                  <ListingCard {...listing} id={listingId} isRecentlyViewed={isRecentlyViewed} />
                 </Link>
               );
             })}

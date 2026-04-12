@@ -1,264 +1,189 @@
 .hero-search-container {
   display: flex;
   justify-content: center;
-  padding: 20px 0;
-  width: 100%;
+  padding: 0 var(--spacing-xl);
+  margin-top: 120px;
   position: relative;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .hero-search {
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: #FFFFFF; /* Hardcoded fallback for reliability */
+  background-color: var(--bg-primary); 
   border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
   border-radius: var(--radius-full);
-  box-shadow: 0 3px 12px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.08);
-  max-width: 850px;
+  padding: 0 10px;
+  max-width: 900px;
   width: 100%;
-  height: 66px;
-  transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+  height: 68px; /* Slightly more compact */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
 }
 
 .hero-search:hover {
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  background-color: var(--bg-secondary);
+  box-shadow: var(--shadow-floating);
 }
 
 .hero-search-group {
   flex: 1;
-  height: 100%;
   padding: 14px 24px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
-  cursor: pointer;
-  border-radius: var(--radius-full);
-  transition: background-color 0.2s ease;
+  overflow: hidden;
 }
 
 .hero-search-group:hover {
-  background-color: #EBEBEB;
+  background-color: rgba(15, 23, 42, 0.05);
 }
 
 .hero-search-group.active {
   background-color: white;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  z-index: 10;
-}
-
-/* Divider logic */
-.hero-divider {
-  width: 1px;
-  height: 32px;
-  background-color: var(--border-light);
-  transition: opacity 0.1s ease;
-}
-
-.hero-search-group:hover + .hero-divider,
-.hero-search-group.active + .hero-divider,
-.hero-search-group:has(+ .hero-search-group:hover) .hero-divider,
-.hero-search-group:has(+ .hero-search-group.active) .hero-divider {
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* "Where" section - slightly larger usually */
-.hero-search-group:first-child {
-  flex: 1.5;
-  padding-left: 32px;
+  box-shadow: var(--shadow-md);
 }
 
 .hero-search-group label {
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
   font-weight: 800;
-  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--secondary);
   margin-bottom: 2px;
-  letter-spacing: 0.04em;
 }
 
 .hero-search-group input {
   border: none;
   background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  outline: none;
   width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden; 
-  white-space: nowrap;
-  padding: 0;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .hero-search-group input::placeholder {
   color: var(--text-secondary);
-  font-weight: 400;
 }
 
-/* Search Button Wrapper */
+.hero-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border-light);
+}
+
 .hero-search-button {
-  background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
-  border: none;
-  width: 48px;
-  height: 48px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.25s ease;
-  margin-right: 8px; /* Spacing from right edge */
-  flex-shrink: 0;
   color: white;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-right: 2px; /* Pull it slightly from the edge */
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
 }
 
 .hero-search-button:hover {
-  transform: translateY(-50%) scale(1.05);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
 }
 
-/* Make the last group relative for the button */
-.hero-search-group:last-child {
-    padding-right: 60px; /* Make room for button */
+/* Suggestions & Popovers */
+.search-suggestions, .guest-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  width: 350px;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-floating);
+  border: 1px solid var(--border-light);
+  padding: 16px;
+  z-index: 2000;
+  animation: fadeInDown 0.25s ease-out;
 }
 
-/* --- Added Styles for Functionality --- */
-
-/* Wrapper to position DatePicker correctly */
-.datepicker-wrapper {
-  width: 100%;
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.datepicker-wrapper .react-datepicker-wrapper {
-  width: 100%;
-}
-
-.datepicker-wrapper input {
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
-/* Guest Counter Popover */
-.guest-popover {
-  position: absolute;
-  top: 75px; /* Below the search bar */
-  right: 0;
-  width: 350px;
-  background: white;
-  border-radius: 32px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  padding: 24px;
-  z-index: 1000;
-  cursor: default;
+.suggestion-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.suggestion-icon {
+  background-color: #F1F5F9;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .guest-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-}
-
-.guest-row:last-child {
-  border-bottom: none;
+  align-items: center;
+  padding-bottom: 16px;
 }
 
 .guest-info h4 {
-  margin: 0;
   font-size: 16px;
-  font-weight: 600;
+  margin-bottom: 2px;
 }
 
 .guest-info p {
-  margin: 4px 0 0;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 
 .guest-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.guest-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--border-light);
-  background: white;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.guest-btn:hover:not(:disabled) {
-  border-color: black;
-  color: black;
-}
-
-.guest-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  border-color: var(--border-light) !important;
-  color: var(--text-secondary) !important;
-}
-
-.guest-count {
-  width: 20px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-/* Search Suggestions Dropdown */
-.search-suggestions {
-  position: absolute;
-  top: 75px; 
-  left: 32px; /* Align with input start */
-  width: 300px;
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  padding: 16px 0;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: background-color 0.2s;
   gap: 16px;
 }
 
-.suggestion-item:hover {
-  background-color: #F7F7F7;
-}
-
-.suggestion-icon {
-  width: 48px;
-  height: 48px;
-  background-color: #EBEBEB;
-  border-radius: 12px;
+.guest-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: var(--text-primary);
+  color: var(--secondary);
 }
 
-.suggestion-item span {
-  font-size: 16px;
-  color: var(--text-primary);
-  font-weight: 500;
+.guest-btn:hover:not(:disabled) {
+  border-color: var(--secondary);
+  background-color: var(--bg-secondary);
+}
+
+.guest-count {
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
 }

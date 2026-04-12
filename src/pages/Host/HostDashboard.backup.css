@@ -20,7 +20,7 @@
 .sidebar-brand {
   font-size: 20px;
   font-weight: 800;
-  color: #ff385c;
+  color: var(--primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -94,7 +94,7 @@
 }
 
 .badge-count {
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   font-size: 12px;
   padding: 2px 8px;
@@ -332,7 +332,7 @@
 
 .request-alert-banner {
   background-color: #fff8f6;
-  border: 1px solid #ff385c;
+  border: 1px solid var(--primary);
   border-radius: 8px;
   padding: 8px 12px;
   margin-top: 12px;
@@ -372,7 +372,7 @@
 }
 
 .btn-primary-small {
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   border: none;
   padding: 6px 14px;
@@ -554,7 +554,7 @@
 
 .btn-activate-full {
   width: 100%;
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   border: none;
   padding: 10px;
@@ -570,7 +570,7 @@
 }
 
 .btn-recharge {
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   border: none;
   padding: 8px;
@@ -615,8 +615,8 @@
 
 .btn-action-outline.delete:hover {
   background: #fff8f6;
-  border-color: #ff385c;
-  color: #ff385c;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-icon {
@@ -891,7 +891,7 @@
   height: 8px;
   border-radius: 50%;
 }
-.dot.booked { background: #ff385c; }
+.dot.booked { background: var(--primary); }
 .dot.available { background: #ebebeb; }
 
 .weekdays-grid {
@@ -976,7 +976,7 @@
 }
 
 .booking-strip {
-  background: #ff385c;
+  background: var(--primary);
   color: white;
   font-size: 10px; /* Slightly smaller for stacking */
   padding: 2px 4px;
@@ -1586,7 +1586,7 @@
 }
 
 .btn-activate-premium {
-  background: linear-gradient(90deg, #ff385c 0%, #d90b3e 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, #d90b3e 100%);
   color: white;
   border: none;
   padding: 16px 48px;

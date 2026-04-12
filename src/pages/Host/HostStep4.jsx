@@ -83,7 +83,7 @@ const HostStep4 = () => {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ background: '#FF385C', padding: '8px', borderRadius: '50%', color: 'white' }}>
+                <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '50%', color: 'white' }}>
                   <MessageSquare size={24} />
                 </div>
                 {!listingData.instantBooking && <div className="checked-icon"><CheckCircle size={24} fill="#222" color="white" /></div>}
@@ -114,7 +114,7 @@ const HostStep4 = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div>
                   <div style={{ fontSize: '16px', fontWeight: '600', color: '#222', marginBottom: '4px' }}>Government-issued ID</div>
-                  <div style={{ fontSize: '14px', color: '#717171' }}>Require guests to submit ID to Airbnb.</div>
+                  <div style={{ fontSize: '14px', color: '#717171' }}>Require guests to submit ID to Hostify.</div>
                 </div>
                 <div 
                   className={`toggle-switch ${listingData.guestRequirements?.verifiedID ? 'active' : ''}`}

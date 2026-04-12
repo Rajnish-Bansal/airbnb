@@ -84,7 +84,7 @@ const HostStep3 = () => {
         {/* Amenities Section */}
         <section className="step-section">
           <h2 className="step-heading" style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            Amenities <span style={{ color: '#ff385c' }}>*</span>
+            Amenities <span style={{ color: 'var(--primary)' }}>*</span>
             <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#717171' }}>(Select minimum 3)</span>
           </h2>
           <div className="amenities-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
@@ -95,7 +95,7 @@ const HostStep3 = () => {
                 onClick={() => toggleAmenity(name)}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', padding: '24px' }}
               >
-                <Icon size={32} strokeWidth={1.5} color={listingData.amenities?.includes(name) ? '#ff385c' : '#222'} />
+                <Icon size={32} strokeWidth={1.5} color={listingData.amenities?.includes(name) ? 'var(--primary)' : '#222'} />
                 <div className="amenity-label" style={{ fontWeight: '600', fontSize: '16px' }}>{name}</div>
               </div>
             ))}

@@ -338,7 +338,7 @@ const HostDashboard = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `airbnb_calendar_${selectedListingId === 'all' ? 'all' : selectedListingId}.ics`);
+    link.setAttribute('download', `Hostify_calendar_${selectedListingId === 'all' ? 'all' : selectedListingId}.ics`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -384,7 +384,7 @@ const HostDashboard = () => {
 
         </nav>
         <div className="sidebar-footer">
-           <Link to="/" className="exit-link">Exit to Airbnb</Link>
+           <Link to="/" className="exit-link">Exit to Hostify</Link>
         </div>
       </aside>
 
@@ -698,7 +698,7 @@ const HostDashboard = () => {
                              <div className="bookings-stack">
                                 {dailyReservations.map((res, i) => (
                                    <div key={res.id} className="booking-strip" style={{
-                                      backgroundColor: i % 2 === 0 ? '#ff385c' : '#222', // Alternating colors
+                                      backgroundColor: i % 2 === 0 ? 'var(--primary)' : '#222', // Alternating colors
                                    }}>
                                       {selectedListingId === 'all' 
                                          ? (listings.find(l => l.id === res.listingId)?.title?.split(' ').slice(0, 2).join(' ') || 'Listing')

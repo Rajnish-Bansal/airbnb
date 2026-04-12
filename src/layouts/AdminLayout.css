@@ -31,7 +31,7 @@
 .admin-logo {
   font-size: 24px;
   font-weight: 700;
-  color: #ff385c;
+  color: var(--primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -66,7 +66,7 @@
 
 .admin-nav-item.active {
   background-color: #f0f0f0;
-  color: #ff385c;
+  color: var(--primary);
   font-weight: 600;
 }
 

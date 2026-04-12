@@ -18,7 +18,7 @@
 .host-landing-title {
   font-size: 64px;
   font-weight: 800;
-  color: #ff385c;
+  color: var(--primary);
   margin-bottom: 24px;
   letter-spacing: -2px;
 }
@@ -75,7 +75,7 @@
 .slider-thumb {
   width: 24px;
   height: 24px;
-  background: #ff385c;
+  background: var(--primary);
   border: 2px solid white;
   border-radius: 50%;
   position: absolute;
@@ -94,7 +94,7 @@
   display: flex;
   align-items: center;
   text-align: left;
-  background: linear-gradient(90deg, #ff385c 0%, #bd1e59 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, #bd1e59 100%);
   padding: 16px 24px;
   border-radius: 12px;
   color: white;

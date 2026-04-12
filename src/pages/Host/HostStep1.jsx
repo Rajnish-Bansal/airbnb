@@ -41,7 +41,7 @@ const HostStep1 = () => {
         
         {/* Property Type Section */}
         <section className="step-section">
-          <h2 className="step-heading">Property Category <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Property Category <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div className="type-grid">
             {propertyTypes.map(type => (
                <div 
@@ -58,7 +58,7 @@ const HostStep1 = () => {
 
         {/* Place Type Section */}
         <section className="step-section">
-            <h2 className="step-heading">Privacy Level <span style={{ color: '#ff385c' }}>*</span></h2>
+            <h2 className="step-heading">Privacy Level <span style={{ color: 'var(--primary)' }}>*</span></h2>
             <div className="place-type-list">
               {placeTypes.map(place => (
                  <div 
@@ -77,7 +77,7 @@ const HostStep1 = () => {
 
         {/* Multi-Unit Section */}
         <section className="step-section">
-          <h2 className="step-heading">Inventory & Units <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Inventory & Units <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: listingData.isMultiUnit ? '20px' : '0' }}>
                 <div>
@@ -119,7 +119,7 @@ const HostStep1 = () => {
         {/* Conditional: Shared Spaces Section (only for private rooms) */}
         {listingData.placeType === 'private' && (
           <section className="step-section">
-            <h2 className="step-heading">Shared Spaces <span style={{ color: '#ff385c' }}>*</span></h2>
+            <h2 className="step-heading">Shared Spaces <span style={{ color: 'var(--primary)' }}>*</span></h2>
             <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
               <p style={{ fontSize: '14px', color: '#717171', marginBottom: '20px' }}>
                 Which areas can guests access?
@@ -271,7 +271,7 @@ const HostStep1 = () => {
         {/* Property Capacity Section - Conditional based on placeType */}
         <section className="step-section">
           <h2 className="step-heading">
-            {listingData.placeType === 'private' ? 'Room Capacity' : 'Property Capacity'} <span style={{ color: '#ff385c' }}>*</span>
+            {listingData.placeType === 'private' ? 'Room Capacity' : 'Property Capacity'} <span style={{ color: 'var(--primary)' }}>*</span>
           </h2>
           
           {/* For Entire Place: Show Bedrooms, Bathrooms, Guests */}
@@ -377,7 +377,7 @@ const HostStep1 = () => {
 
         {/* Check-in/Check-out Times Section */}
         <section className="step-section">
-          <h2 className="step-heading">Check-in and Check-out Times <span style={{ color: '#ff385c' }}>*</span></h2>
+          <h2 className="step-heading">Check-in and Check-out Times <span style={{ color: 'var(--primary)' }}>*</span></h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#222' }}>Check-in</label>
