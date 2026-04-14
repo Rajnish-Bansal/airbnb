@@ -70,8 +70,17 @@ const listingSchema = new mongoose.Schema({
     status: { type: String, enum: ['Active', 'Expired', 'Inactive'], default: 'Inactive' },
     expiryDate: { type: Date },
     autoRenew: { type: Boolean, default: true }
-  }
+  },
+  customId: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
+
+// Pre-save hook to generate customId
+const { generateCustomId } = require('../utils/idGenerator');
+listingSchema.pre('save', async function() {
+  if (!this.customId) {
+    this.customId = generateCustomId('PROP');
+  }
+});
 
 // Index for search optimization
 listingSchema.index({ location: 'text', description: 'text' });

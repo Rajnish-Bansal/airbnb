@@ -26,4 +26,12 @@ const bookingSchema = new mongoose.Schema({
   processingFee: { type: Number, default: 0 }
 }, { timestamps: true });
 
+// Pre-save hook to generate code (BOOK-XXXXX)
+const { generateCustomId } = require('../utils/idGenerator');
+bookingSchema.pre('save', async function() {
+  if (!this.code) {
+    this.code = generateCustomId('BOOK');
+  }
+});
+
 module.exports = mongoose.model('Booking', bookingSchema);

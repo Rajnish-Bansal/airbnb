@@ -27,7 +27,9 @@ const InvoiceModal = ({ isOpen, onClose, booking }) => {
   const gstAmount = Math.round(basePrice * (gstRate / (1 + gstRate))); 
   const subtotal = basePrice - gstAmount;
 
-  const invoiceNumber = booking.code || 'REC-' + Math.floor(100000 + Math.random() * 900000);
+  const invoiceNumber = booking.code || 'REC-GENERATING';
+  const guestsId = booking.user?.customId || 'USER-PENDING';
+  const propertyId = booking.listing?.customId || 'PROP-PENDING';
   const invoiceDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
@@ -85,8 +87,8 @@ const InvoiceModal = ({ isOpen, onClose, booking }) => {
             <div className="detail-column">
               <h3 className="column-title">BILLED TO</h3>
               <div className="entity-info">
-                <div className="entity-name">Guest User</div>
-                <div className="entity-id">ID: {booking.userId || 'GUEST-4492'}</div>
+                <div className="entity-name">{booking.user?.name || 'Guest User'}</div>
+                <div className="entity-id">ID: {guestsId}</div>
               </div>
             </div>
           </div>
@@ -96,7 +98,7 @@ const InvoiceModal = ({ isOpen, onClose, booking }) => {
             <div className="stay-banner">
               <div className="banner-item">
                 <Building size={16} />
-                <span>{booking.title}</span>
+                <span>[{propertyId}] {booking.title}</span>
               </div>
               <div className="banner-item">
                 <MapPin size={16} />

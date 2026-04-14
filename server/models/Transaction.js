@@ -28,7 +28,16 @@ const transactionSchema = new mongoose.Schema({
     guestName: String,
     payoutDate: Date,
     planName: String
-  }
+  },
+  displayId: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
+
+// Pre-save hook to generate displayId
+const { generateCustomId } = require('../utils/idGenerator');
+transactionSchema.pre('save', async function() {
+  if (!this.displayId) {
+    this.displayId = generateCustomId('TX');
+  }
+});
 
 module.exports = mongoose.model('Transaction', transactionSchema);

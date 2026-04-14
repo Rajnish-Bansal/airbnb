@@ -51,7 +51,6 @@ router.post('/', authenticateToken, async (req, res) => {
       guests,
       totalPrice,
       status: 'Confirmed', 
-      code: 'RES-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
       payoutDate,
       processingFee: totalPrice * 0.03
     });
@@ -113,7 +112,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.get('/my-trips', authenticateToken, async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user.id })
-      .populate('listing')
+      .populate('listing', 'location title image photos price customId')
       .sort({ startDate: -1 });
     res.json(bookings);
   } catch (err) {
@@ -138,8 +137,8 @@ router.get('/my-listings', authenticateToken, async (req, res) => {
 
     // Find all bookings for those listings
     const bookings = await Booking.find({ listing: { $in: listingIds } })
-      .populate('listing', 'location title image photos price')
-      .populate('user', 'name email avatar phone')
+      .populate('listing', 'location title image photos price customId')
+      .populate('user', 'name email avatar phone customId')
       .sort({ createdAt: -1 });
 
     res.json(bookings);

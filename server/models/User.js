@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+  customId: { type: String, unique: true, sparse: true },
   name: { type: String },
   email: { type: String, unique: true, sparse: true },
   phone: { type: String, unique: true, sparse: true },
@@ -15,5 +16,13 @@ const userSchema = new mongoose.Schema({
   status: { type: String, enum: ['Active', 'Suspended'], default: 'Active' },
   joinDate: { type: Date, default: Date.now }
 }, { timestamps: true });
+
+// Pre-save hook to generate customId
+const { generateCustomId } = require('../utils/idGenerator');
+userSchema.pre('save', async function() {
+  if (!this.customId) {
+    this.customId = generateCustomId('USER');
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);

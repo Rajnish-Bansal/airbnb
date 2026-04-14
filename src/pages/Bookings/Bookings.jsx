@@ -27,7 +27,7 @@ const Bookings = () => {
       price: "₹32,500",
       nights: 5,
       status: "Completed",
-      code: "HST-44921",
+      code: "BOOK-HMLYN88",
       image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop",
       host: {
         name: "Rajesh",
@@ -43,7 +43,7 @@ const Bookings = () => {
        price: "₹45,000",
        nights: 4,
        status: "Completed",
-       code: "BVF-99021",
+       code: "BOOK-BEACH92",
        image: "https://images.unsplash.com/photo-1544124499-58912cbddaad?w=800&auto=format&fit=crop",
        host: {
          name: "Anya",
