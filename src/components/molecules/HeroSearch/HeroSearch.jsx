@@ -199,9 +199,15 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
         {/* Room/Guests */}
         <div 
             className={`hero-search-group ${activeField === 'guests' ? 'active' : ''}`}
-            onClick={() => {
-                setActiveField('guests');
-                setShowGuestPopover(true);
+            onClick={(e) => {
+                e.stopPropagation();
+                if (activeField === 'guests' && showGuestPopover) {
+                    setShowGuestPopover(false);
+                    setActiveField(null);
+                } else {
+                    setActiveField('guests');
+                    setShowGuestPopover(true);
+                }
             }}
         >
           <label>Guests</label>
