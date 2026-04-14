@@ -90,11 +90,12 @@
 .hero-search-button {
   background-color: var(--primary);
   height: 48px;
-  width: 48px; /* Square/Circular search button */
-  border-radius: 50%;
+  padding: 0 24px; /* Pill shape */
+  border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: white;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -114,7 +115,9 @@
 }
 
 .search-btn-text {
-  display: none; /* Hide text for a cleaner look when banner is gone */
+  display: inline-block;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 /* Suggestions & Popovers */
