@@ -5,7 +5,35 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hostify_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
+
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const ENABLE_DUMMY_OTP = !IS_PRODUCTION && process.env.ENABLE_DUMMY_OTP === 'true';
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const OTP_RATE_WINDOW_MS = 10 * 60 * 1000;
+const OTP_RATE_MAX = 5;
+const otpSendTracker = new Map();
+
+const isOtpRateLimited = (phone) => {
+  const now = Date.now();
+  const entry = otpSendTracker.get(phone);
+
+  if (!entry || now - entry.windowStart > OTP_RATE_WINDOW_MS) {
+    otpSendTracker.set(phone, { count: 1, windowStart: now });
+    return false;
+  }
+
+  entry.count += 1;
+  if (entry.count > OTP_RATE_MAX) {
+    return true;
+  }
+
+  return false;
+};
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @route   POST api/auth/send-otp
@@ -15,9 +43,13 @@ router.post('/send-otp', async (req, res) => {
   if (!phone) return res.status(400).json({ message: 'Phone number is required' });
 
   try {
+    if (isOtpRateLimited(phone)) {
+      return res.status(429).json({ message: 'Too many OTP requests. Please try again later.' });
+    }
+
     // Mock/Dummy bypass for testing
     let code;
-    if (phone === '9999999999') {
+    if (ENABLE_DUMMY_OTP && phone === '9999999999') {
       code = '000000';
     } else {
       code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -51,11 +83,15 @@ router.post('/verify-otp', async (req, res) => {
 
   try {
     // Check for dummy bypass
-    const isDummy = phone === '9999999999' && code === '000000';
+    const isDummy = ENABLE_DUMMY_OTP && phone === '9999999999' && code === '000000';
     let otpRecord = null;
 
     if (!isDummy) {
-      otpRecord = await Otp.findOne({ phone, code });
+      otpRecord = await Otp.findOne({
+        phone,
+        code,
+        createdAt: { $gte: new Date(Date.now() - OTP_EXPIRY_MS) }
+      });
       if (!otpRecord) {
         return res.status(400).json({ message: 'Invalid or expired OTP' });
       }

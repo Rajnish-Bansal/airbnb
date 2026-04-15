@@ -21,19 +21,50 @@ const subscriptionRoutes = require('./routes/subscriptions');
 
 const Message = require('./models/Message');
 const Conversation = require('./models/Conversation');
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173,https://hostify-ssub.onrender.com')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
+if (!process.env.MONGODB_URI) {
+  throw new Error('MONGODB_URI is required');
+}
+if (IS_PRODUCTION && !process.env.GOOGLE_CLIENT_ID) {
+  console.warn('⚠️ GOOGLE_CLIENT_ID is not set. Google login will fail in production.');
+}
 
 // Middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const isAllowedOrigin = !origin || allowedOrigins.includes(origin);
+
+  if (!isAllowedOrigin) {
+    return res.status(403).json({ message: 'Origin not allowed' });
+  }
+
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
+
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('X-Frame-Options', 'DENY');
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.header('Cross-Origin-Resource-Policy', 'same-site');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   next();
 });
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(express.json({ limit: '1mb' }));
 
 // Request Logger
 app.use((req, res, next) => {
@@ -248,7 +279,11 @@ app.get('/api/search', async (req, res) => {
 
 // 3. Health Check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+  res.status(200).json({
+    status: 'OK',
+    message: 'Server is running',
+    dbState: mongoose.connection.readyState
+  });
 });
 
 const http = require('http');
@@ -257,7 +292,12 @@ const { Server } = require('socket.io');
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: '*',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Origin not allowed'), false);
+    },
     methods: ['GET', 'POST']
   }
 });
@@ -297,3 +337,14 @@ app.get(/^(?!\/api).*/, (req, res) => {
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server + Real-time Messaging running on http://0.0.0.0:${PORT}`);
 });
+
+const shutdown = async (signal) => {
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+  httpServer.close(async () => {
+    await mongoose.connection.close();
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

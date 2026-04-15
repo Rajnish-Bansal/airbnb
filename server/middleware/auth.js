@@ -1,4 +1,9 @@
 const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
 
 const auth = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -9,8 +14,7 @@ const auth = (req, res, next) => {
   }
 
   try {
-    const secret = process.env.JWT_SECRET || 'hostify_secret_key';
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, JWT_SECRET);
     console.log('[AUTH SUCCESS] User:', decoded.id);
     req.user = decoded;
     next();
