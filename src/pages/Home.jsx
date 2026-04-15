@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import Navbar from '../components/organisms/Navbar/Navbar';
 import HeroSearch from '../components/molecules/HeroSearch/HeroSearch';
 import Categories from '../components/molecules/Categories/Categories';
@@ -6,7 +6,6 @@ import ListingCard from '../components/molecules/ListingCard/ListingCard';
 import FilterPanel from '../components/molecules/FilterPanel/FilterPanel';
 // import FilterSidebar from '../components/molecules/FilterSidebar/FilterSidebar'; // Option 3: Always-visible sidebar
 import FilterChips from '../components/molecules/FilterChips/FilterChips';
-import MapView from '../components/molecules/MapView/MapView';
 import { Helmet } from 'react-helmet-async';
 import './Home.css';
 
@@ -17,6 +16,8 @@ import { useSearch } from '../context/SearchContext';
 import Footer from '../components/organisms/Footer/Footer';
 
 import { DUMMY_LISTINGS } from '../constants/mockData';
+
+const MapView = lazy(() => import('../components/molecules/MapView/MapView'));
 
 const Home = () => {
   const [allListings, setAllListings] = useState([]);
@@ -204,7 +205,9 @@ const Home = () => {
 
         {/* Map or List View */}
         {showMap ? (
-          <MapView listings={filteredListings} />
+          <Suspense fallback={<div className="map-loading">Loading map...</div>}>
+            <MapView listings={filteredListings} />
+          </Suspense>
         ) : (
           <div className="listings-grid">
             {filteredListings.map(listing => {
