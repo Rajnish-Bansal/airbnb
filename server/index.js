@@ -106,8 +106,14 @@ app.post('/api/listings/import-external', async (req, res) => {
 });
 
 app.get('/api/listings/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: 'Invalid listing ID format' });
+  }
+
   try {
-    const listing = await Listing.findById(req.params.id);
+    const listing = await Listing.findById(id);
     if (!listing) return res.status(404).json({ message: 'Listing not found' });
     res.json(listing);
   } catch (err) {
