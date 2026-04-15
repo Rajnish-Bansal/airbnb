@@ -21,7 +21,7 @@ async function scrapeExternal(url) {
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
     // Go to the URL
-    console.log(`[Scraper] Visiting: \${url}`);
+    console.log(`[Scraper] Visiting: ${url}`);
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
     // Extract the JSON data from the script tag with id="env-setup-dot-json" or "__INITIAL_STATE__"
@@ -68,10 +68,10 @@ async function scrapeExternal(url) {
 
     if (!dataState) {
       const timestamp = new Date().getTime();
-      const screenshotPath = \`error_screenshot_\${timestamp}.png\`;
-      const htmlPath = \`error_page_\${timestamp}.html\`;
+      const screenshotPath = `error_screenshot_${timestamp}.png`;
+      const htmlPath = `error_page_${timestamp}.html`;
       
-      console.error(\`[Scraper] Extraction failed. Capturing debug info to \${screenshotPath} and \${htmlPath}\`);
+      console.error(`[Scraper] Extraction failed. Capturing debug info to ${screenshotPath} and ${htmlPath}`);
       
       await page.screenshot({ path: screenshotPath }).catch(e => console.error('Failed to take screenshot', e.message));
       const html = await page.content();
@@ -144,7 +144,7 @@ async function scrapeExternal(url) {
     };
 
   } catch (error) {
-    console.error(\`[Scraper Error]: \${error.message}\`);
+    console.error(`[Scraper Error]: ${error.message}`);
     throw error;
   } finally {
     if (browser) await browser.close();
