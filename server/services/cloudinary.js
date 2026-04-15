@@ -12,11 +12,11 @@ cloudinary.config({
  * Uploads a buffer to Cloudinary using a stream.
  * This is more memory-efficient than saving to local disk first.
  */
-const uploadFromBuffer = (buffer) => {
+const uploadFromBuffer = (buffer, folder = 'hostify/listings') => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: 'hostify/listings',
+        folder,
         resource_type: 'auto',
       },
       (error, result) => {
@@ -29,7 +29,24 @@ const uploadFromBuffer = (buffer) => {
   });
 };
 
+const uploadFromUrl = (url, folder = 'hostify/listings') => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(
+      url,
+      {
+        folder,
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+  });
+};
+
 module.exports = {
   cloudinary,
   uploadFromBuffer,
+  uploadFromUrl,
 };
