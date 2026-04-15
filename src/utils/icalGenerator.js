@@ -9,7 +9,7 @@ export const generateICalData = (reservations, listings, selectedListingId) => {
   let icalContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Hostify Clone//Host Dashboard//EN',
+    'PRODID:-//Hostify//Host Dashboard//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];

@@ -6,10 +6,10 @@ import './HostLanding.css';
 import hostHero from '../../assets/host_hero.png';
 
 const HostLanding = () => {
-  const { listings, importAirbnbListing } = useHost();
+  const { listings, importhostifyListing } = useHost();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [airbnbUrl, setAirbnbUrl] = useState('');
+  const [hostifyUrl, sethostifyUrl] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -20,11 +20,11 @@ const HostLanding = () => {
   }, [listings, navigate]);
 
   const handleImport = async () => {
-    if (!airbnbUrl) return;
+    if (!hostifyUrl) return;
     setIsImporting(true);
     setError(null);
     try {
-      await importAirbnbListing(airbnbUrl);
+      await importhostifyListing(hostifyUrl);
       navigate('/become-a-host/step1');
     } catch (err) {
       setError(err.message || 'Failed to import listing. Please check the URL.');
@@ -111,16 +111,16 @@ const HostLanding = () => {
                 <input 
                   type="text" 
                   placeholder="https://www.platform.com/rooms/..." 
-                  value={airbnbUrl}
-                  onChange={(e) => setAirbnbUrl(e.target.value)}
+                  value={hostifyUrl}
+                  onChange={(e) => sethostifyUrl(e.target.value)}
                   className="modal-input"
                 />
                 {error && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '20px', fontWeight: '500' }}>{error}</p>}
                 <button 
                   onClick={handleImport}
-                  disabled={!airbnbUrl}
+                  disabled={!hostifyUrl}
                   className="btn-magic-start"
-                  style={{ opacity: airbnbUrl ? 1 : 0.6 }}
+                  style={{ opacity: hostifyUrl ? 1 : 0.6 }}
                 >
                   Confirm & Sync
                 </button>

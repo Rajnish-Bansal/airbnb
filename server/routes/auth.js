@@ -5,7 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'airbnb_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'hostify_secret_key';
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @route   POST api/auth/send-otp
