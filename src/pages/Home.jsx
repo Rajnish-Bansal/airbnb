@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '../components/organisms/Navbar/Navbar';
 import HeroSearch from '../components/molecules/HeroSearch/HeroSearch';
 import Categories from '../components/molecules/Categories/Categories';
@@ -19,22 +19,28 @@ import Footer from '../components/organisms/Footer/Footer';
 import { DUMMY_LISTINGS } from '../constants/mockData';
 
 const Home = () => {
-  const [allListings, setAllListings] = React.useState([]);
-  const [filteredListings, setFilteredListings] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [searchKey, setSearchKey] = React.useState(0);
-  const [showFilters, setShowFilters] = React.useState(false);
-  const [showMap, setShowMap] = React.useState(false);
-  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [allListings, setAllListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchKey, setSearchKey] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { filters, recentlyViewed, searchParams, updateSearchParams, updateFilters } = useSearch();
   
-  // Handle Scroll Morph
-  React.useEffect(() => {
+  // Handle Scroll Morph (Throttled)
+  useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      if (window.scrollY > 80) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > 80) {
+            setIsScrolled(true);
+          } else {
+            setIsScrolled(false);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
     window.addEventListener('scroll', handleScroll);
@@ -42,22 +48,19 @@ const Home = () => {
   }, []);
 
   // Fetch listings on mount
-  React.useEffect(() => {
+  useEffect(() => {
     const getListings = async () => {
       try {
         const data = await fetchListings();
         if (data && data.length > 0) {
           setAllListings(data);
-          setFilteredListings(data);
         } else {
           // Fallback to dummy data for design demo if API is empty
           setAllListings(DUMMY_LISTINGS);
-          setFilteredListings(DUMMY_LISTINGS);
         }
       } catch (err) {
         console.error("Failed to fetch listings, using fallback:", err);
         setAllListings(DUMMY_LISTINGS);
-        setFilteredListings(DUMMY_LISTINGS);
       } finally {
         setLoading(false);
       }
@@ -67,21 +70,9 @@ const Home = () => {
 
 
 
-  // Sync filtered listings with context on mount and when filters/params change
-  React.useEffect(() => {
-    if (allListings.length > 0) {
-      applyFilters(searchParams, filters);
-    }
-  }, [searchParams, filters, allListings]);
-  
-  // Extract unique locations for autocomplete
-  const allLocations = [...new Set(allListings.map(item => item.location))];
-
-  const applyFilters = (searchParams, currentFilters) => {
-    const { destination, guests, startDate, endDate } = searchParams;
-    
-    console.log('[Home] Applying filters:', { searchParams, currentFilters });
-    let filtered = [...allListings];
+  const applyFilters = (listings, params, currentFilters) => {
+    const { destination, guests, startDate, endDate } = params;
+    let filtered = [...listings];
 
     // Filter by Destination
     if (destination) {
@@ -111,20 +102,17 @@ const Home = () => {
     }
 
     // Apply advanced filters
-    // Price Range
     filtered = filtered.filter(listing => 
       listing.price >= currentFilters.priceRange[0] && 
       listing.price <= currentFilters.priceRange[1]
     );
 
-    // Property Types
     if (currentFilters.propertyTypes.length > 0) {
       filtered = filtered.filter(listing => 
         currentFilters.propertyTypes.includes(listing.propertyType)
       );
     }
 
-    // Amenities
     if (currentFilters.amenities.length > 0) {
       filtered = filtered.filter(listing => 
         currentFilters.amenities.every(amenity => 
@@ -133,32 +121,39 @@ const Home = () => {
       );
     }
 
-    // Instant Book
     if (currentFilters.instantBook) {
       filtered = filtered.filter(listing => listing.instantBook === true);
     }
 
-    // Minimum Rating
     if (currentFilters.minRating > 0) {
       filtered = filtered.filter(listing => listing.rating >= currentFilters.minRating);
     }
 
-    setFilteredListings(filtered);
+    return filtered;
   };
 
-  const handleSearch = (newSearchParams) => {
+  const filteredListings = useMemo(() => {
+    if (loading || allListings.length === 0) return [];
+    return applyFilters(allListings, searchParams, filters);
+  }, [allListings, searchParams, filters, loading]);
+  
+  const allLocations = useMemo(() => 
+    [...new Set(allListings.map(item => item.location))],
+    [allListings]
+  );
+
+  const handleSearch = useCallback((newSearchParams) => {
     updateSearchParams(newSearchParams);
-  };
+  }, [updateSearchParams]);
 
-  const handleFilterApply = (newFilters) => {
+  const handleFilterApply = useCallback((newFilters) => {
     updateFilters(newFilters);
-  };
+  }, [updateFilters]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     updateSearchParams({ destination: '', guests: null, startDate: null, endDate: null });
-    setFilteredListings(allListings);
     setSearchKey(prev => prev + 1);
-  };
+  }, [updateSearchParams]);
 
   return (
     <>
