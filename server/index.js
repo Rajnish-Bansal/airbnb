@@ -70,19 +70,6 @@ app.get('/api/listings', async (req, res) => {
   }
 });
 
-app.post('/api/listings/import-external', async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ message: 'URL is required' });
-
-  try {
-    console.log(`[API] Starting import for: ${url}`);
-    const data = await scrapeExternal(url);
-    res.json(data);
-  } catch (err) {
-    console.error('[API] Import failed:', err.message);
-    res.status(500).json({ message: 'Failed to import listing', error: err.message });
-  }
-});
 
 app.post('/api/listings/sync', async (req, res) => {
   try {
@@ -101,6 +88,20 @@ app.get('/api/listings/mine', authenticateToken, async (req, res) => {
     res.json(listings);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching your listings', error: err.message });
+  }
+});
+
+app.post('/api/listings/import-external', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ message: 'URL is required' });
+
+  try {
+    console.log(`[API] Starting import for: ${url}`);
+    const data = await scrapeExternal(url);
+    res.json(data);
+  } catch (err) {
+    console.error('[API] Import failed:', err.message);
+    res.status(500).json({ message: 'Failed to import listing', error: err.message });
   }
 });
 
