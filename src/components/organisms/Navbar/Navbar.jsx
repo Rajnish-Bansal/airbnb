@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Globe, Menu, User, Bell } from 'lucide-react';
+import { Globe, Menu, User, Bell, Search } from 'lucide-react';
 import { useHost } from '../../../context/HostContext';
 import { useAuth } from '../../../context/AuthContext';
 import AuthModal from '../../molecules/AuthModal/AuthModal';
