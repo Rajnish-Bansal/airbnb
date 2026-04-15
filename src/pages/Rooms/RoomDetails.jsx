@@ -12,7 +12,7 @@ import { fetchListingById } from '../../services/api';
 import { differenceInDays, format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import MapView from '../../components/molecules/MapView/MapView';
-import './RoomDetails.css';
+import { DUMMY_LISTINGS } from '../../constants/mockData';
 
 const RoomDetails = () => {
   const { id } = useParams();
@@ -29,7 +29,7 @@ const RoomDetails = () => {
   useEffect(() => {
     const getListing = async () => {
       try {
-        // Try to find in host listings first (local state)
+        // 1. Try to find in host listings first (local state)
         const localListing = hostListings.find(l => (l._id || l.id) == id);
         if (localListing) {
           setListing({
@@ -40,7 +40,15 @@ const RoomDetails = () => {
           return;
         }
 
-        // Otherwise fetch from API
+        // 2. Try to find in DUMMY_LISTINGS (mock data fallback)
+        const mockListing = DUMMY_LISTINGS.find(l => (l._id || l.id) == id);
+        if (mockListing) {
+          setListing(mockListing);
+          setLoading(false);
+          return;
+        }
+
+        // 3. Otherwise fetch from API
         const data = await fetchListingById(id);
         const normalizedData = {
           ...data,
