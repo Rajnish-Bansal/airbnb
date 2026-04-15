@@ -13,6 +13,7 @@ import { differenceInDays, format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import MapView from '../../components/molecules/MapView/MapView';
 import { DUMMY_LISTINGS } from '../../constants/mockData';
+import './RoomDetails.css';
 
 const RoomDetails = () => {
   const { id } = useParams();
