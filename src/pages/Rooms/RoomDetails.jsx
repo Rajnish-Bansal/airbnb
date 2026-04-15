@@ -195,8 +195,8 @@ const RoomDetails = () => {
 
   const reviewsToDisplay = getAugmentedReviews();
   const displayedReviews = showAllReviews ? reviewsToDisplay : reviewsToDisplay.slice(0, 6);
-  const hostName = listing.host?.name || 'Host';
-  const hostImage = listing.host?.image || 'https://i.pravatar.cc/150?u=hostify';
+  const hostName = listing?.host?.name || 'Host';
+  const hostImage = listing?.host?.image || 'https://i.pravatar.cc/150?u=hostify';
 
   if (loading) return <div className="loading-container">Loading property details...</div>;
   if (!listing) return <div className="error-container">Property not found</div>;
