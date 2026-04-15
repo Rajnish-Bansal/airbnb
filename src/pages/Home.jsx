@@ -265,7 +265,7 @@ const Home = () => {
 
       <div className="sticky-sub-navbar">
         <div className="sub-navbar-container">
-          <Categories />
+          {/* Categories removed as requested */}
           <div className="sub-navbar-filters">
             <button className="filter-trigger-btn elevate" onClick={() => setShowFilters(true)}>
               <Sliders size={18} />
