@@ -9,7 +9,6 @@ const HostStep5 = () => {
   const navigate = useNavigate();
   const { listingData, updateListingData, saveDraft } = useHost();
   const [dragActive, setDragActive] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const handleSaveAndExit = () => {
     saveDraft(5);
@@ -27,7 +26,6 @@ const HostStep5 = () => {
   };
 
   const addPhotos = async (files) => {
-    setUploading(true);
     const currentPhotos = [...(listingData.photos || [])];
     
     try {
@@ -43,8 +41,8 @@ const HostStep5 = () => {
           category: (currentPhotos.length + i) === 0 ? 'cover' : 'other'
         };
         
-        updateListingData({ 
-          photos: [...currentPhotos, ...files.slice(0, i).map((_, idx) => ({})), tempPhoto] // This logic is tricky with state, better to handle one by one
+        updateListingData({
+          photos: [...currentPhotos, tempPhoto]
         });
 
         // 2. Perform real upload
@@ -64,8 +62,6 @@ const HostStep5 = () => {
     } catch (err) {
       console.error('Upload failed:', err);
       alert('Failed to upload some photos. Please check your connection and Cloudinary keys.');
-    } finally {
-      setUploading(false);
     }
   };
 

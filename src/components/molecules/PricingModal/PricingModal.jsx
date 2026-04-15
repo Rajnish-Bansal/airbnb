@@ -30,10 +30,6 @@ const PricingModal = ({ isOpen, onClose, listing, onUpdate }) => {
     }
   };
 
-  // Pricing Preview Logic
-  const weekendTotal = weekendPrice * 2;
-  const weeklyTotal = basePrice * 7 * (1 - weeklyDiscount / 100);
-
   return (
     <div className="modal-overlay">
       <div className="pricing-modal-container">

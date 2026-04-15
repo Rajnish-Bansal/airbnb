@@ -6,6 +6,9 @@ const LimitManagementModal = ({ isOpen, onClose, currentLimit, currentUnits, onP
   const COST_PER_UNIT = 500;
 
   useEffect(() => {
+    // Sync the slider when the modal opens or the current unit count changes.
+    // This is an intentional prop-to-state reset for this modal.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isOpen) setTargetUnits(currentUnits);
   }, [isOpen, currentUnits]);
 

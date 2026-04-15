@@ -60,7 +60,7 @@ const Profile = () => {
       setFormData(prev => ({ ...prev, governmentId: imageUrl, isIdVerified: true })); // Immediately verified for demo
       const updatedUser = await updateUserProfile({ governmentId: imageUrl, isIdVerified: true });
       updateUser(updatedUser);
-    } catch (err) {
+    } catch {
       alert('Failed to upload ID. Please try again.');
     }
   };
@@ -86,7 +86,7 @@ const Profile = () => {
       // Save immediately to prevent loss
       await updateUserProfile({ avatar: imageUrl });
       updateUser({ avatar: imageUrl });
-    } catch (err) {
+    } catch {
       alert('Failed to upload image. Please try again.');
     }
   };

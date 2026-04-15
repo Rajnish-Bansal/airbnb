@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const SearchContext = createContext();
 
@@ -85,7 +85,7 @@ export const SearchProvider = ({ children }) => {
     });
   };
 
-  const value = React.useMemo(() => ({
+  const value = {
     searchParams,
     updateSearchParams,
     filters,
@@ -97,7 +97,7 @@ export const SearchProvider = ({ children }) => {
     loadSavedSearch,
     recentlyViewed,
     addToRecentlyViewed,
-  }), [searchParams, filters, savedSearches, recentlyViewed]);
+  };
 
   return (
     <SearchContext.Provider value={value}>

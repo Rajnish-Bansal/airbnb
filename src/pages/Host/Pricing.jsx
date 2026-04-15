@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Zap, Shield, Crown, Loader2, Sparkles } from 'lucide-react';
 import { fetchPlans, subscribeToPlan, fetchSubscriptionStatus } from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
 import './Pricing.css';
 
 const Pricing = ({ listingId, onSubscribed }) => {
-  const { updateUser } = useAuth();
   const [plans, setPlans] = useState([]);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [loading, setLoading] = useState(true);

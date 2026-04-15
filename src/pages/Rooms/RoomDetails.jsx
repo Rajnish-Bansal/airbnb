@@ -223,7 +223,6 @@ const RoomDetails = () => {
   };
 
   const priceStats = calculateDetailedPrice();
-  const { nightsArr } = { nightsArr: Array.from({length: nights}) }; // Helper for labels if needed
 
   const guestLabel = `${totalGuests} guest${totalGuests > 1 ? 's' : ''}`;
 

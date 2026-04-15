@@ -14,7 +14,7 @@ class MapErrorBoundary extends Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error) {
     return { hasError: true };
   }
 
@@ -55,7 +55,7 @@ const createCustomIcon = (price, isHovered = false) => {
       iconAnchor: [20, 20],
       popupAnchor: [0, -20]
     });
-  } catch (err) {
+  } catch {
     return L.divIcon({ className: 'fallback-marker', html: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>' });
   }
 };
@@ -92,6 +92,8 @@ const MapUpdater = ({ listings, isSingle }) => {
           duration: 1
         });
       }
+      // Keep this local cache in sync with the current listing set.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLastListingsId(currentId);
     } catch (err) {
       console.warn("Map interaction warning:", err);

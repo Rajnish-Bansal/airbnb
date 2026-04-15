@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const AdminListings = () => {
   const { listings, approveListing, rejectListing, deleteListing } = useHost();
   const [filter, setFilter] = useState('All'); // All, Pending, Active, Rejected
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm] = useState('');
 
   const filteredListings = listings.filter(l => {
     const matchesFilter = filter === 'All' ? true : 

@@ -11,9 +11,6 @@ const { authenticateToken } = require('../middleware/auth');
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const listings = await Listing.find({ 'host.email': req.user.email });
-    const listingIds = listings.map(l => l._id);
-
     // Mock analytics logic (can be expanded with real logging)
     const analytics = {
         viewsCount: 1240,

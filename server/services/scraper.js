@@ -33,7 +33,7 @@ async function scrapeExternal(url) {
         try {
           const parsed = JSON.parse(deferredScript.textContent);
           if (parsed.niobeClientData) return parsed;
-        } catch (e) {}
+        } catch {}
       }
 
       // 2. Try niobe-minimal-client-data-atom
@@ -41,7 +41,7 @@ async function scrapeExternal(url) {
       if (niobeScript) {
         try {
           return JSON.parse(niobeScript.textContent);
-        } catch (e) {}
+        } catch {}
       }
 
       // 3. Try env-setup-dot-json
@@ -49,7 +49,7 @@ async function scrapeExternal(url) {
       if (envScript) {
         try {
           return JSON.parse(envScript.textContent);
-        } catch (e) {}
+        } catch {}
       }
 
       // 4. Fallback search
@@ -60,7 +60,7 @@ async function scrapeExternal(url) {
           const match = fallback.textContent.match(/({.*"niobeClientData".*})/) || 
                         fallback.textContent.match(/window\.__INITIAL_STATE__\s*=\s*({.*?});/);
           if (match) return JSON.parse(match[1]);
-        } catch (e) {}
+        } catch {}
       }
 
       return null;

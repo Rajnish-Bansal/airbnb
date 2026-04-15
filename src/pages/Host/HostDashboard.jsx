@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
 import { useAuth } from '../../context/AuthContext';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, parseISO, isWithinInterval } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
 import { User as UserIcon, Menu, ChevronLeft, ChevronRight, Download, Trash2, Camera, Upload, Link2, Star, Eye, DollarSign, Calendar, TrendingUp, IndianRupee, Info, MessageSquare, CreditCard, ShieldCheck, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import './HostDashboard.css';
 import { generateICalData } from '../../utils/icalGenerator';
@@ -12,12 +12,12 @@ import SubscriptionModal from '../../components/molecules/SubscriptionModal/Subs
 import LimitManagementModal from '../../components/molecules/LimitManagementModal/LimitManagementModal';
 import PricingModal from '../../components/molecules/PricingModal/PricingModal';
 import Pricing from './Pricing';
-import { fetchPayoutStats, fetchHostAnalytics, updateListingPricing, fetchHostBookings, updateBookingStatus, fetchConversations, fetchMessages, startConversation, sendMessage, fetchUserProfile, updateUserProfile, uploadImage, fetchTransactions } from '../../services/api';
+import { fetchPayoutStats, fetchHostAnalytics, updateListingPricing, fetchHostBookings, fetchConversations, fetchMessages, startConversation, sendMessage, fetchUserProfile, updateUserProfile, uploadImage, fetchTransactions } from '../../services/api';
 
 const socket = io(window.location.origin); // Use the current host for Socket.io in production
 
 const HostDashboard = () => {
-  const { listings, updateListingStatus, loadListingForEdit, deleteListing, resetListingData, activateUnits, refreshListings } = useHost();
+  const { listings, loadListingForEdit, deleteListing, resetListingData, refreshListings } = useHost();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,7 +25,7 @@ const HostDashboard = () => {
 
   // Performance Analytics State
   const [analyticsData, setAnalyticsData] = useState(null);
-  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+  const [, setLoadingAnalytics] = useState(true);
 
   // Read from URL, fallback to defaults
   const activeTab = searchParams.get('tab') || 'overview';
@@ -56,17 +56,6 @@ const HostDashboard = () => {
 
   // Unsaved Changes State for Calendar
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  const handlePriceChange = () => {
-     setHasUnsavedChanges(true);
-  };
-
-  const handleBlockSelection = () => {
-     if (selectedListingId === 'all') {
-        showStatus("Selection Required", "Please select a specific listing to block dates for.");
-        return;
-     }
-   }
 
   const handleSaveDraft = () => {
      // Save draft logic...
@@ -192,11 +181,6 @@ const HostDashboard = () => {
   const cancelDelete = () => {
     setIsDeleteModalOpen(false);
     setListingToDelete(null);
-  };
-
-  const handleRemoveBlockClick = (resId) => {
-    setBlockToUnblock(resId);
-    setIsUnblockModalOpen(true);
   };
 
   const confirmUnblock = () => {
@@ -334,8 +318,6 @@ const HostDashboard = () => {
   // iCal Automated Sync State
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [syncUrl, setSyncUrl] = useState('');
-  const [syncedCalendars, setSyncedCalendars] = useState([]); // Array of URLs
-
   const handleMockAutoSync = (url) => {
     if (selectedListingId === 'all') {
       showStatus("Selection Required", "Please select a specific listing to enable auto-sync.");
@@ -503,9 +485,6 @@ const HostDashboard = () => {
   };
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [activeTxnTab, setActiveTxnTab] = useState('bookings');
-  const [txnStartDate, setTxnStartDate] = useState('');
-  const [txnEndDate, setTxnEndDate] = useState('');
 
   // Profile State
   const [profile, setProfile] = useState({
@@ -570,7 +549,7 @@ const HostDashboard = () => {
         setProfile(prev => ({ ...prev, avatar: imageUrl }));
         // Automatically save to profile
         await updateUserProfile({ avatar: imageUrl });
-      } catch (err) {
+      } catch {
         showStatus("Upload Error", "Failed to upload profile picture.");
       }
     }
@@ -675,21 +654,12 @@ const HostDashboard = () => {
   }, [activeTab]);
 
   // Mock Data for "Interactive" feel
-  const stats = {
-    earnings: '₹45,000',
-    views: 128,
-    bookings: 3,
-    rating: 4.8
-  };
-
   // Reservations state — starts with mocks, replaced by real API data
   const [reservations, setReservations] = useState([
     { id: 1, listingId: 1700001, guest: 'Alice Johnson', dates: 'Oct 12 - 15', startDate: '2025-10-12', endDate: '2025-10-15', price: '₹12,400', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=alice', rating: 4.9 },
     { id: 2, listingId: 1700001, guest: 'Bob Smith', dates: 'Nov 02 - 05', startDate: '2025-11-02', endDate: '2025-11-05', price: '₹8,200', status: 'Pending', img: 'https://i.pravatar.cc/150?u=bob', rating: 4.5 },
     { id: 3, listingId: 1700002, guest: 'Charlie Brown', dates: 'Feb 10 - 14', startDate: '2026-02-10', endDate: '2026-02-14', price: '₹34,000', status: 'Confirmed', img: 'https://i.pravatar.cc/150?u=charlie', rating: 5.0 },
   ]);
-  const [loadingReservations, setLoadingReservations] = useState(true);
-
   // Fetch real bookings from backend
   React.useEffect(() => {
     const getHostBookings = async () => {
@@ -720,23 +690,10 @@ const HostDashboard = () => {
         }
       } catch (err) {
         console.warn('Could not load real bookings, showing mock data:', err.message);
-      } finally {
-        setLoadingReservations(false);
       }
     };
     getHostBookings();
   }, []);
-
-  const handleUpdateReservationStatus = async (reservationId, newStatus) => {
-    try {
-      await updateBookingStatus(reservationId, newStatus);
-      setReservations(prev => prev.map(r =>
-        r.id === reservationId ? { ...r, status: newStatus } : r
-      ));
-    } catch (err) {
-      showStatus("Error", 'Failed to update booking: ' + err.message);
-    }
-  };
 
 
   // Inline Block Dates State
@@ -760,15 +717,6 @@ const HostDashboard = () => {
   };
 
   // Mock Transactions Data
-  const mockTransactions = [
-    { id: 'TX-1001', date: '2025-10-15', type: 'Payout', description: 'Payout for Alice Johnson', amount: 12400, status: 'Completed', method: 'Bank Transfer •••• 4242' },
-    { id: 'TX-1002', date: '2025-11-01', type: 'Payment', description: 'Professional Host Plan (Monthly)', amount: -999, status: 'Completed', method: 'Visa •••• 1234', propertyName: 'Seaside Villa', expiryDate: '2025-12-01' },
-    { id: 'TX-1003', date: '2025-11-05', type: 'Payout', description: 'Payout for Bob Smith', amount: 8200, status: 'Completed', method: 'Bank Transfer •••• 4242' },
-    { id: 'TX-1004', date: '2025-12-01', type: 'Payment', description: 'Professional Host Plan (Monthly)', amount: -999, status: 'Completed', method: 'Visa •••• 1234', propertyName: 'Seaside Villa', expiryDate: '2026-01-01' },
-    { id: 'TX-1005', date: '2026-01-01', type: 'Payment', description: 'Professional Host Plan (Monthly)', amount: -999, status: 'Completed', method: 'Visa •••• 1234', propertyName: 'Seaside Villa', expiryDate: '2026-02-01' },
-    { id: 'TX-1006', date: '2026-02-01', type: 'Payment', description: 'Professional Host Plan (Monthly)', amount: -999, status: 'Completed', method: 'Visa •••• 1234', propertyName: 'Mountain Retreat', expiryDate: '2026-03-01' },
-    { id: 'TX-1007', date: '2026-02-14', type: 'Payout', description: 'Payout for Charlie Brown', amount: 34000, status: 'Completed', method: 'Bank Transfer •••• 4242' },
-  ];
 
   /* Calendar Logic */
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -1015,7 +963,7 @@ const HostDashboard = () => {
         if (refreshListings) await refreshListings();
         resetPricingSelection();
       }
-    } catch (err) {
+    } catch {
       showStatus("Update Failed", "Could not save pricing changes.");
     }
   };
@@ -1464,15 +1412,11 @@ const HostDashboard = () => {
                         const isValidDate = !isNaN(expiryDate.getTime());
                         const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
                         const isExpired = listing.status === 'Active' && diffInDays <= 0;
-                        const isExpiringSoon = listing.status === 'Active' && diffInDays > 0 && diffInDays <= 7;
                         const isPending = listing.status === 'Pending';
                         const isPaymentRequired = listing.status === 'Payment Required';
-                        const currentStatus = isExpired ? 'Expired' : listing.status;
                         
 
                         // Calculate pending requests
-                        const pendingRequests = reservations.filter(r => r.listingId === listing.id && r.status === 'Pending').length;
-
                         return (
                             <div key={listing.id} className={`listing-card-premium ${isExpired ? 'is-expired' : isPaymentRequired ? 'is-pending' : isPending ? 'is-pending' : 'is-active'}`}>
                               {/* Top Status Header */}
@@ -1857,7 +1801,7 @@ const HostDashboard = () => {
                         </div>
                         
                         <div className="days-grid">
-                            {calendarDays.map((day, idx) => {
+                            {calendarDays.map((day) => {
                               const dailyReservations = getDailyReservations(new Date(day));
                               const activeLimit = selectedListingId === "all" ? listings.reduce((sum, l) => sum + (l.unitCount || 1), 0) : (selectedListing ? (selectedListing.unitCount || 1) : 1);
                               const isToday = isSameDay(day, new Date());
@@ -2533,7 +2477,6 @@ const HostDashboard = () => {
         onClose={() => setIsLimitModalOpen(false)}
         listingId={selectedListingId}
         currentLimit={getListingLimit(selectedListingId)}
-        onSave={(newLimit) => setInventoryLimits(prev => ({...prev, [selectedListingId]: newLimit}))}
       />
 
       {/* iCal Automated Sync Modal */}
@@ -2560,7 +2503,6 @@ const HostDashboard = () => {
                 className="btn-primary" 
                 onClick={() => {
                   if (syncUrl) {
-                    setSyncedCalendars(prev => [...prev, syncUrl]);
                     setIsSyncModalOpen(false);
                     handleMockAutoSync(syncUrl);
                     setSyncUrl('');

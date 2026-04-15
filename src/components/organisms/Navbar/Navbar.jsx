@@ -6,7 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import AuthModal from '../../molecules/AuthModal/AuthModal';
 import './Navbar.css';
 
-const Navbar = ({ onSearch, onLogoClick, scrolled }) => {
+const Navbar = ({ onLogoClick, scrolled }) => {
   const { listings } = useHost();
   const { user, logout, isAuthModalOpen, openAuthModal, closeAuthModal, allUsers } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);

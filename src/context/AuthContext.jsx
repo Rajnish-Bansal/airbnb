@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const saved = localStorage.getItem('hostify_user');
     try {
       return saved ? JSON.parse(saved) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });

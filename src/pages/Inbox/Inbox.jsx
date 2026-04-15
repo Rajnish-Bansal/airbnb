@@ -11,7 +11,6 @@ const socket = io(window.location.origin); // Use the current host for Socket.io
 const Inbox = () => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]); // Clear mock data
-  const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState('all'); 
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -23,13 +22,10 @@ const Inbox = () => {
   useEffect(() => {
     const loadConversations = async () => {
       try {
-        setLoading(true);
         const data = await fetchConversations();
         setConversations(data);
       } catch (err) {
         console.error('Failed to load conversations:', err);
-      } finally {
-        setLoading(false);
       }
     };
     if (user) loadConversations();
