@@ -15,6 +15,38 @@ import MapView from '../../components/molecules/MapView/MapView';
 import { DUMMY_LISTINGS } from '../../constants/mockData';
 import './RoomDetails.css';
 
+const normalizeListing = (data) => {
+  if (!data) return null;
+
+  const firstPhoto =
+    data.image ||
+    (Array.isArray(data.photos) && data.photos.length > 0
+      ? (typeof data.photos[0] === 'string' ? data.photos[0] : data.photos[0]?.url)
+      : '') ||
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop';
+
+  return {
+    ...data,
+    id: data.id || data._id,
+    title: data.title || data.description?.split(' - ')[0] || 'Stay',
+    location: data.location || data.city || 'Unknown location',
+    propertyType: data.propertyType || data.type || 'Stay',
+    description: data.description || 'A beautiful place to stay.',
+    image: firstPhoto,
+    photos: Array.isArray(data.photos) ? data.photos : [firstPhoto],
+    rating: data.rating ?? 0,
+    reviewsCount: data.reviewsCount ?? 0,
+    price: Number(data.price || 0),
+    weekendPrice: Number(data.weekendPrice || data.price || 0),
+    amenities: Array.isArray(data.amenities) ? data.amenities : [],
+    host: data.host || {
+      name: 'Hostify Host',
+      image: 'https://i.pravatar.cc/150?u=hostify'
+    },
+    coordinates: data.coordinates || { lat: 20.5937, lng: 78.9629 }
+  };
+};
+
 const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,7 +64,7 @@ const RoomDetails = () => {
     const getListing = async () => {
       try {
         if (routeListing && (routeListing.id || routeListing._id) == id) {
-          setListing(routeListing);
+          setListing(normalizeListing(routeListing));
           setLoading(false);
           return;
         }
@@ -40,10 +72,7 @@ const RoomDetails = () => {
         // 1. Try to find in host listings first (local state)
         const localListing = hostListings.find(l => (l._id || l.id) == id);
         if (localListing) {
-          setListing({
-            ...localListing,
-            image: localListing.image || (localListing.photos && localListing.photos[0])
-          });
+          setListing(normalizeListing(localListing));
           setLoading(false);
           return;
         }
@@ -51,18 +80,14 @@ const RoomDetails = () => {
         // 2. Try to find in DUMMY_LISTINGS (mock data fallback)
         const mockListing = DUMMY_LISTINGS.find(l => (l._id || l.id) == id);
         if (mockListing) {
-          setListing(mockListing);
+          setListing(normalizeListing(mockListing));
           setLoading(false);
           return;
         }
 
         // 3. Otherwise fetch from API
         const data = await fetchListingById(id);
-        const normalizedData = {
-          ...data,
-          image: data.image || (data.photos && data.photos[0])
-        };
-        setListing(normalizedData);
+        setListing(normalizeListing(data));
       } catch (err) {
         console.error("Failed to fetch listing details:", err);
       } finally {
@@ -170,6 +195,8 @@ const RoomDetails = () => {
 
   const reviewsToDisplay = getAugmentedReviews();
   const displayedReviews = showAllReviews ? reviewsToDisplay : reviewsToDisplay.slice(0, 6);
+  const hostName = listing.host?.name || 'Host';
+  const hostImage = listing.host?.image || 'https://i.pravatar.cc/150?u=hostify';
 
   if (loading) return <div className="loading-container">Loading property details...</div>;
   if (!listing) return <div className="error-container">Property not found</div>;
@@ -361,10 +388,10 @@ const RoomDetails = () => {
            <div className="room-details-left">
               <div className="host-section">
                  <div className="host-info">
-                    <h2>Hosted by {listing.host.name}</h2>
+                    <h2>Hosted by {hostName}</h2>
                     <p>4 guests · 2 bedrooms · 2 beds · 2 baths</p>
                  </div>
-                 <div className="host-avatar" style={{backgroundImage: `url(${listing.host.image})`}}></div>
+                 <div className="host-avatar" style={{backgroundImage: `url(${hostImage})`}}></div>
               </div>
 
               {/* Highlights */}
