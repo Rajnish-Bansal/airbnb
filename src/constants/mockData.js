@@ -25,7 +25,7 @@ export const DUMMY_LISTINGS = [
     price: 4200,
     rating: 4.95,
     reviewsCount: 156,
-    photos: ["https://images.unsplash.com/photo-1590393533633-9118c7ed663f?w=400&auto=format&fit=crop"],
+    photos: ["https://images.unsplash.com/photo-1545105511-20993075c3f3?w=800&auto=format&fit=crop"],
     title: "Ganges View Yoga Retreat",
     propertyType: "Retreat",
     maxGuests: 2,
