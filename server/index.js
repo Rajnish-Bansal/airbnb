@@ -27,12 +27,15 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,http:
   .map(o => o.trim())
   .filter(Boolean);
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET is required');
-}
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI is required');
-}
+const REQUIRED_VARS = ['JWT_SECRET', 'MONGODB_URI'];
+REQUIRED_VARS.forEach(varName => {
+  if (!process.env[varName]) {
+    console.error(`❌ CRITICAL ERROR: Environment variable "${varName}" is missing!`);
+    if (IS_PRODUCTION) {
+      throw new Error(`Deployment failed: Missing required environment variable "${varName}". Please add it in your Render Dashboard > Environment settings.`);
+    }
+  }
+});
 if (IS_PRODUCTION && !process.env.GOOGLE_CLIENT_ID) {
   console.warn('⚠️ GOOGLE_CLIENT_ID is not set. Google login will fail in production.');
 }

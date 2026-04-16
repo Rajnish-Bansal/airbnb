@@ -5,9 +5,10 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is required');
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'dev_secret_only');
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  // This is a safety fallback, though index.js should catch it first
+  throw new Error('JWT_SECRET is required in production');
 }
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
