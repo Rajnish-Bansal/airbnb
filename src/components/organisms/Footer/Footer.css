@@ -139,6 +139,7 @@
 @media (max-width: 768px) {
   .footer-links-group {
     grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
   }
 
   .footer-bottom {
@@ -148,6 +149,35 @@
   }
 
   .footer-inner {
-    padding: 40px 20px 24px;
+    padding: 32px 20px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-top {
+    gap: 32px;
+  }
+
+  .footer-links-group {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footer-col h4 {
+    margin-bottom: 12px;
+  }
+
+  .footer-col a {
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .footer-bottom-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .logo-text {
+    font-size: 20px;
   }
 }
