@@ -307,8 +307,9 @@
     position: absolute;
     top: calc(100% + 12px);
     bottom: auto;
-    left: auto;
-    right: 0;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     border-radius: var(--radius-xl);
     margin: 0;
     max-height: none;
