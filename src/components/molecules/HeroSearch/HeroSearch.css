@@ -305,12 +305,33 @@
     right: 0;
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
     margin: 0;
-    max-height: 70vh;
-    padding: 32px 24px;
+    max-height: 50vh; /* Reduced from 70vh */
+    padding: 24px 20px; /* Reduced from 32px 24px */
     overflow-y: auto;
     box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
     z-index: 2100;
     animation: slideUpMobile 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .guest-row {
+    padding: 8px 0; /* Reduced from 12px */
+  }
+
+  .guest-info h4 {
+    font-size: 14px; /* Reduced from 16px */
+  }
+
+  .guest-info p {
+    font-size: 12px; /* Reduced from 14px */
+  }
+
+  .guest-controls {
+    gap: 12px; /* Reduced from 18px */
+  }
+
+  .guest-btn {
+    width: 32px; /* Reduced from 40px */
+    height: 32px; /* Reduced from 40px */
   }
 }
 
