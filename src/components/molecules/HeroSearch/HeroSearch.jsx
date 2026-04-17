@@ -28,19 +28,27 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20 && isMobileExpanded) {
+        setIsMobileExpanded(false);
+        setActiveField(null);
+      }
+    };
+
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setActiveField(null);
-        // We might want to collapse back on click outside, but usually Airbnb keeps it expanded once opened.
       }
     };
-    // ... rest of effect
 
+    window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
+    
     return () => {
+      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isMobileExpanded]);
 
   const handleSearchClick = () => {
     if (onSearch) {
