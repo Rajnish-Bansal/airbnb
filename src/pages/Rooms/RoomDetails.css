@@ -804,3 +804,60 @@
   width: 100%;
   margin: 32px 0;
 }
+
+/* --- Visual Polish & Layout Fixes --- */
+
+@media (max-width: 768px) {
+  .room-gallery {
+    height: 320px !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  .main-image {
+    height: 100% !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  
+  .room-header-meta {
+    margin-bottom: 20px !important;
+  }
+
+  .left-meta {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  /* Booking Bar Layout Improvement */
+  .reservation-card {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 16px 20px !important;
+    z-index: 9999;
+  }
+
+  .mobile-price-display {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .reserve-btn {
+    min-width: 120px !important;
+    flex-shrink: 0;
+  }
+
+  .no-charge-text {
+    display: none !important; /* Hide on mobile to save space, keeping it clean */
+  }
+}
+
+/* Ensure Side images stay hidden on mobile */
+@media (max-width: 767px) {
+  .side-images {
+    display: none !important;
+  }
+}
