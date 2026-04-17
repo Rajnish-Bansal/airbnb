@@ -6,7 +6,7 @@ import './ListingCard.css';
 
 const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyViewed, ...listing }) => {
   const navigate = useNavigate();
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, showNotification } = useAuth();
 
   const handleCardClick = () => {
     navigate(`/rooms/${id}`, {
@@ -54,7 +54,7 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
           onClick={(e) => {
             e.stopPropagation();
             if (!user) {
-              openAuthModal();
+              showNotification('To save property, please login', 'info');
             } else {
               // Future: implementation for actual saving/wishlist
               console.log('Saved listing:', id);

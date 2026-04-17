@@ -51,7 +51,7 @@ const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, showNotification } = useAuth();
   const { listings: hostListings } = useHost();
   const { addToRecentlyViewed } = useSearch();
   const routeListing = location.state?.listing || null;
@@ -316,7 +316,7 @@ const RoomDetails = () => {
 
   const handleSave = () => {
     if (!user) {
-      openAuthModal();
+      showNotification('To save property, please login', 'info');
       return;
     }
     // Future: implement wishlist logic

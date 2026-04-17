@@ -4,6 +4,8 @@ import { HostProvider } from './context/HostContext';
 import { BookingProvider } from './context/BookingContext';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
+import { useAuth } from './context/AuthContext';
+import Toast from './components/atoms/Toast/Toast';
 
 const Home = lazy(() => import('./pages/Home'));
 const HostLayout = lazy(() => import('./layouts/HostLayout'));
@@ -38,23 +40,24 @@ const RefundPolicy = lazy(() => import('./pages/Legal/RefundPolicy'));
 const Contact = lazy(() => import('./pages/Legal/Contact'));
 const About = lazy(() => import('./pages/Legal/About'));
 
-function App() {
+function AppContent() {
+  const { notification, setNotification } = useAuth();
+
   return (
-    <AuthProvider>
-      <SearchProvider>
-        <HostProvider>
-          <BookingProvider>
-            <BrowserRouter>
-              <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/rooms/:id" element={<RoomDetails />} />
-                  {/* Legal Pages */}
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/refund-policy" element={<RefundPolicy />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/about" element={<About />} />
+    <SearchProvider>
+      <HostProvider>
+        <BookingProvider>
+          <BrowserRouter>
+            <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/rooms/:id" element={<RoomDetails />} />
+                {/* Legal Pages */}
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
 
                 {/* Protected Routes - Require Login */}
                 <Route element={<ProtectedRoute />}>
@@ -70,7 +73,7 @@ function App() {
                 </Route>
                 <Route path="/admin/login" element={<AdminLogin />} />
 
-              {/* Admin Routes - Protected */}
+                {/* Admin Routes - Protected */}
                 <Route element={<ProtectedAdminRoute />}>
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<AdminDashboard />} />
@@ -79,25 +82,36 @@ function App() {
                   </Route>
                 </Route>
 
-              {/* Host Flow Routes */}
-              <Route path="/become-a-host" element={<HostLayout />}>
-                <Route index element={<HostLanding />} />
-                <Route path="dashboard" element={<HostDashboard />} />
-                <Route path="step1" element={<HostStep1 />} />
-                <Route path="step2" element={<HostStep3 />} />
-                <Route path="step3" element={<HostStep2 />} />
-                <Route path="step4" element={<HostStep4 />} />
-                <Route path="step5" element={<HostStep5 />} />
-                <Route path="step6" element={<HostStep6 />} />
-                <Route path="step7" element={<HostStep7 />} />
-                {/* Future steps will go here */}
-              </Route>
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
+                {/* Host Flow Routes */}
+                <Route path="/become-a-host" element={<HostLayout />}>
+                  <Route index element={<HostLanding />} />
+                  <Route path="dashboard" element={<HostDashboard />} />
+                  <Route path="step1" element={<HostStep1 />} />
+                  <Route path="step2" element={<HostStep3 />} />
+                  <Route path="step3" element={<HostStep2 />} />
+                  <Route path="step4" element={<HostStep4 />} />
+                  <Route path="step5" element={<HostStep5 />} />
+                  <Route path="step6" element={<HostStep6 />} />
+                  <Route path="step7" element={<HostStep7 />} />
+                  {/* Future steps will go here */}
+                </Route>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          <Toast 
+            notification={notification} 
+            onClear={() => setNotification(null)} 
+          />
         </BookingProvider>
       </HostProvider>
-      </SearchProvider>
+    </SearchProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   )
 }

@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const requestOtp = async (phone) => {
     setLoading(true);
@@ -79,6 +80,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('hostify_user');
   };
 
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+  };
+
   const updateUser = (updates) => {
     setUser(prev => {
       const newUser = { ...prev, ...updates };
@@ -99,7 +104,10 @@ export const AuthProvider = ({ children }) => {
       openAuthModal, 
       closeAuthModal, 
       loading, 
-      error 
+      error,
+      notification,
+      setNotification,
+      showNotification
     }}>
       {children}
     </AuthContext.Provider>
