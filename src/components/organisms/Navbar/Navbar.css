@@ -52,7 +52,20 @@
   white-space: nowrap;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 600px) {
+  .navbar-made-in-india {
+    margin-left: 10px;
+    padding-left: 10px;
+    font-size: 8px;
+  }
+  
+  .navbar-made-in-india span {
+    padding: 2px 4px;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 400px) {
   .navbar-made-in-india {
     display: none;
   }
