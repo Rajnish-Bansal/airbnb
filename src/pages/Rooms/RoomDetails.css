@@ -697,3 +697,110 @@
     gap: 12px;
   }
 }
+
+/* --- Technical UI Fixes (Mobile & Responsive) --- */
+
+/* Responsive Utilities */
+.show-only-mobile {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .show-only-mobile {
+    display: block !important;
+  }
+  
+  .show-only-mobile.flex {
+    display: flex !important;
+  }
+  
+  .room-content {
+    padding-top: 80px !important;
+    padding-bottom: 100px !important;
+  }
+
+  .room-title {
+    font-size: 24px !important;
+  }
+
+  .room-gallery {
+    height: 280px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .back-button {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* Layout Fixes for Missing Classes */
+.room-details-left {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.highlights-section {
+  display: flex !important;
+  flex-direction: column;
+  gap: 24px;
+  margin: 32px 0;
+}
+
+.highlight-item {
+  display: flex !important;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.h-icon {
+  flex-shrink: 0;
+}
+
+.amenities-grid {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .amenities-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+.amenity-item {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Sticky Mobile Card Refinement */
+@media (max-width: 1023px) {
+  .reservation-card {
+    padding: 12px 20px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(10px);
+  }
+  
+  .reserve-btn {
+    padding: 12px 20px !important;
+    font-size: 13px !important;
+  }
+  
+  .price-large {
+    font-size: 24px !important;
+  }
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-light);
+  width: 100%;
+  margin: 32px 0;
+}
