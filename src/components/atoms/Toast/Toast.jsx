@@ -17,7 +17,8 @@ const Toast = ({ notification, onClear }) => {
     <div className={`toast-container ${notification.type}`}>
       <div className="toast-content">
         <span className="toast-icon">
-          {notification.type === 'error' ? '⚠️' : '✅'}
+          {notification.type === 'error' ? '⚠️' : 
+           notification.type === 'info' ? '🔒' : '✅'}
         </span>
         <span className="toast-message">{notification.message}</span>
       </div>
