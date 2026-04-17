@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Heart, Eye } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -8,6 +8,14 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
   const navigate = useNavigate();
   const { user, openAuthModal, showNotification } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showNudge, setShowNudge] = useState(false);
+  
+  useEffect(() => {
+    if (showNudge) {
+      const timer = setTimeout(() => setShowNudge(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNudge]);
 
   const handleCardClick = () => {
     navigate(`/rooms/${id}`, {
@@ -55,7 +63,7 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
           onClick={(e) => {
             e.stopPropagation();
             if (!user) {
-              showNotification('To save property, please login', 'info');
+              setShowNudge(true);
               return;
             }
             
@@ -72,6 +80,11 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
             stroke={isFavorite ? 'var(--primary)' : 'white'}
           />
         </button>
+        {showNudge && (
+          <div className="listing-nudge fade-in">
+            <span>🔒 To save property, please login</span>
+          </div>
+        )}
         {isRecentlyViewed && (
           <div className="recently-viewed-badge">
             <Eye size={12} />

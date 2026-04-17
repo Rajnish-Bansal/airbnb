@@ -59,6 +59,14 @@ const RoomDetails = () => {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showNudge, setShowNudge] = useState(false);
+  
+  useEffect(() => {
+    if (showNudge) {
+      const timer = setTimeout(() => setShowNudge(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNudge]);
 
   // Fetch listing data
   useEffect(() => {
@@ -317,7 +325,7 @@ const RoomDetails = () => {
 
   const handleSave = () => {
     if (!user) {
-      showNotification('To save property, please login', 'info');
+      setShowNudge(true);
       return;
     }
     
@@ -382,7 +390,7 @@ const RoomDetails = () => {
             <button 
               className={`action-btn ${isFavorite ? 'active' : ''}`} 
               onClick={handleSave}
-              style={{ color: isFavorite ? 'var(--primary)' : 'inherit' }}
+              style={{ color: isFavorite ? 'var(--primary)' : 'inherit', position: 'relative' }}
             >
               <Heart 
                 size={16} 
@@ -390,6 +398,12 @@ const RoomDetails = () => {
                 stroke={isFavorite ? 'var(--primary)' : 'currentColor'} 
               /> 
               {isFavorite ? 'Saved' : 'Save'}
+              
+              {showNudge && (
+                <div className="details-nudge fade-in">
+                   <span>🔒 To save property, please login</span>
+                </div>
+              )}
             </button>
           </div>
         </div>
