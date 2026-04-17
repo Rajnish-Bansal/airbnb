@@ -7,21 +7,37 @@ const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { loginWithGoogle, login } = useAuth(); // Assuming useAuth has a generic login or we'll add one
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email === 'admin@Hostify.com' && password === 'admin123') {
-      login({
-        name: 'Administrator',
-        email: email,
-        isAdmin: true,
-        role: 'Admin'
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      // Update global context with admin user
+      login(data.user);
+      localStorage.setItem('hostify_token', data.token);
+      
       navigate('/admin');
-    } else {
-      setError('Invalid admin credentials');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,7 +143,7 @@ const AdminLogin = () => {
             cursor: 'pointer',
             transition: 'opacity 0.2s'
           }}>
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
         

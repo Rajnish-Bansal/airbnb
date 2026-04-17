@@ -1,29 +1,37 @@
 import React, { useState } from 'react';
 import { Search, MoreVertical, Trash2, Ban } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 const AdminUsers = () => {
-  const { user, allUsers, suspendUser, deleteUser } = useAuth();
+  const [usersList, setUsersList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Combine mocked database users with the currently logged in user (if unique)
-  // In a real app, 'user' would be part of 'allUsers' fetched from DB
-  const displayUsers = [...allUsers];
-  
-  // Ensure current admin user is visible if not in the list (for demo consistency)
-  if (user && !displayUsers.find(u => u.email === user.email)) {
-     displayUsers.unshift({
-       ...user,
-       id: 999,
-       role: user.role || 'Admin',
-       status: 'Active',
-       joinDate: new Date().toISOString().split('T')[0]
-     });
-  }
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('hostify_token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsersList(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user directory:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredUsers = displayUsers.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  React.useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = usersList.filter(u => 
+    (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

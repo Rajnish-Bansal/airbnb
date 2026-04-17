@@ -18,6 +18,7 @@ const conversationRoutes = require('./routes/conversations');
 const userRoutes = require('./routes/users');
 const transactionRoutes = require('./routes/transactions');
 const subscriptionRoutes = require('./routes/subscriptions');
+const adminRoutes = require('./routes/admin');
 
 const Message = require('./models/Message');
 const Conversation = require('./models/Conversation');
@@ -90,6 +91,7 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 const { scrapeExternal } = require('./services/scraper');
 

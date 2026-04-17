@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   governmentId: { type: String, default: null },
   isPhoneVerified: { type: Boolean, default: false },
   isIdVerified: { type: Boolean, default: false },
-  role: { type: String, enum: ['Guest', 'Host'], default: 'Guest' },
+  role: { type: String, enum: ['Guest', 'Host', 'Admin'], default: 'Guest' },
   status: { type: String, enum: ['Active', 'Suspended'], default: 'Active' },
   joinDate: { type: Date, default: Date.now }
 }, { timestamps: true });

@@ -6,24 +6,62 @@ import { ShoppingBag, Users as UsersIcon, List, AlertCircle, TrendingUp } from '
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const [realStats, setRealStats] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
   const { listings } = useHost();
-  const { user, allUsers } = useAuth(); 
   
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/admin/stats', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('hostify_token')}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setRealStats(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const pendingListings = listings.filter(l => l.status === 'Pending');
-  const activeListings = listings.filter(l => l.status === 'Active' || l.status === 'Payment Required');
-  
-  // Calculate Stats
-  const totalUsers = (allUsers?.length || 0) + (user ? 1 : 0); // Mock + Current
-  
-  // Mock Revenue Calculation: Sum of price * 3 (avg nights) for active listings
-  const revenueValue = activeListings.reduce((acc, curr) => acc + (Number(curr.price) || 0) * 3, 0);
-  const totalRevenue = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(revenueValue + 4500000); // Base revenue + dynamic
   
   const stats = [
-    { label: 'Total Revenue', value: totalRevenue, icon: <TrendingUp size={24} />, color: '#1890ff', bg: '#e6f7ff' },
-    { label: 'Total Users', value: totalUsers, icon: <UsersIcon size={24} />, color: '#52c41a', bg: '#f6ffed' },
-    { label: 'Active Listings', value: activeListings.length, icon: <ShoppingBag size={24} />, color: '#722ed1', bg: '#f9f0ff' },
-    { label: 'Pending Approval', value: pendingListings.length, icon: <AlertCircle size={24} />, color: '#faad14', bg: '#fffbe6' },
+    { 
+      label: 'Total Revenue', 
+      value: realStats?.totalRevenue || '₹0.00', 
+      icon: <TrendingUp size={24} />, 
+      color: '#1890ff', 
+      bg: '#e6f7ff' 
+    },
+    { 
+      label: 'Total Users', 
+      value: realStats?.totalUsers || 0, 
+      icon: <UsersIcon size={24} />, 
+      color: '#52c41a', 
+      bg: '#f6ffed' 
+    },
+    { 
+      label: 'Active Listings', 
+      value: realStats?.activeListings || 0, 
+      icon: <ShoppingBag size={24} />, 
+      color: '#722ed1', 
+      bg: '#f9f0ff' 
+    },
+    { 
+      label: 'Pending Approval', 
+      value: realStats?.pendingListings || pendingListings.length, 
+      icon: <AlertCircle size={24} />, 
+      color: '#faad14', 
+      bg: '#fffbe6' 
+    },
   ];
 
   return (
