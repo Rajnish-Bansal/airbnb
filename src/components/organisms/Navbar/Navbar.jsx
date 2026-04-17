@@ -77,18 +77,7 @@ const Navbar = ({ onLogoClick, scrolled }) => {
             <span className="navbar-made-in-india"><span>🇮🇳</span> Made in India</span>
           </div>
 
-          {/* Search Pill - Only visible on scroll */}
-          {scrolled && (
-            <div className="navbar-search-pill" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="search-pill-content">
-                <span className="pill-text desktop-only">Anywhere • Any week • Add guests</span>
-                <span className="pill-text mobile-only">Search...</span>
-                <div className="pill-search-icon">
-                  <Search size={12} className="pill-icon-inner" />
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Search Pill - Only visible on scroll - REMOVED per user request */}
 
           {/* User Menu */}
           <div className="navbar-user">
