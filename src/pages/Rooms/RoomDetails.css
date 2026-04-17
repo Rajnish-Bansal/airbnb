@@ -861,3 +861,19 @@
     display: none !important;
   }
 }
+
+/* --- Gallery Aspect Ratio & Container Fixes --- */
+@media (max-width: 768px) {
+  .room-gallery {
+    height: 280px !important;
+    margin: 0 0 24px !important; /* Remove negative margins */
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .main-image {
+    background-size: cover !important;
+    background-position: center !important;
+  }
+}
