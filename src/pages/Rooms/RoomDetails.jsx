@@ -314,6 +314,15 @@ const RoomDetails = () => {
     });
   };
 
+  const handleSave = () => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    // Future: implement wishlist logic
+    console.log('Saved listing:', id);
+  };
+
   return (
     <div className="room-details">
       <Helmet>
@@ -366,7 +375,7 @@ const RoomDetails = () => {
           </div>
           <div className="right-actions">
             <button className="action-btn"><Share size={16} /> Share</button>
-            <button className="action-btn"><Heart size={16} /> Save</button>
+            <button className="action-btn" onClick={handleSave}><Heart size={16} /> Save</button>
           </div>
         </div>
 

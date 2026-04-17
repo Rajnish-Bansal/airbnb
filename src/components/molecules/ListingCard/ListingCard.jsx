@@ -49,7 +49,18 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
     <div className="listing-card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <div className="listing-image-wrapper">
         <img src={image} alt={location} className="listing-image" />
-        <button className="favorite-button" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="favorite-button" 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!user) {
+              openAuthModal();
+            } else {
+              // Future: implementation for actual saving/wishlist
+              console.log('Saved listing:', id);
+            }
+          }}
+        >
           <Heart size={20} className="heart-icon" />
         </button>
         {isRecentlyViewed && (
