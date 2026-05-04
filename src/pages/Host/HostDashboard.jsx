@@ -2207,12 +2207,11 @@ const HostDashboard = () => {
                {/* Financial Summary Cards */}
                <div className="financials-hero-section">
                   <div className="balance-card-main">
-                     <div className="balance-label">Available for Withdrawal</div>
+                     <div className="balance-label">Total Earnings</div>
                      <div className="balance-amount-large">₹{payoutData?.summary?.availableBalance?.toLocaleString('en-IN') || '0'}</div>
-                     <button className="btn-withdraw-now" disabled={!payoutData?.summary?.availableBalance}>
-                        <Wallet size={18} /> Withdraw Funds
-                     </button>
-                     <p className="balance-subtext">Transfer time: 2-3 business days</p>
+                     <p className="balance-subtext" style={{ color: '#059669', background: '#ecfdf5', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content' }}>
+                        ✓ Transferred automatically after check-in
+                     </p>
                   </div>
                   
                   <div className="summary-side-cards">
@@ -2233,7 +2232,56 @@ const HostDashboard = () => {
                   </div>
                </div>
 
-                <div className="financials-grid-content">
+                {/* Bank & Tax Details Section - Prominent Row */}
+                <div className="prominent-bank-tax-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', margin: '32px 0' }}>
+                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                         <div>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Bank Account</h3>
+                            <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Where you receive your money.</p>
+                         </div>
+                         <button className="btn-edit-small" onClick={() => setActiveTab('payout-details')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
+                      </div>
+                      
+                      {bankDetails.accountNumber ? (
+                         <div className="saved-bank-box" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                            <div className="bank-logo-placeholder" style={{ fontSize: '24px' }}>🏦</div>
+                            <div className="bank-names">
+                               <div className="bank-primary-name" style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>{bankDetails.bankName}</div>
+                               <div className="bank-acc-hidden" style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>•••• {bankDetails.accountNumber.slice(-4)}</div>
+                            </div>
+                         </div>
+                      ) : (
+                         <div className="empty-bank-box" onClick={() => setActiveTab('payout-details')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px dashed #cbd5e1', cursor: 'pointer' }}>
+                            <span className="plus-icon" style={{ fontSize: '18px', fontWeight: 'bold' }}>+</span>
+                            <span style={{ fontSize: '14px', color: '#475569', fontWeight: '600' }}>Add bank account</span>
+                         </div>
+                      )}
+                   </div>
+
+                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                         <div>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Tax Information</h3>
+                            <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Entity type & identification details.</p>
+                         </div>
+                         <button onClick={() => setActiveTab('payout-details')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
+                      </div>
+
+                      <div className="tax-summary-mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                         <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '13px', color: '#64748b' }}>Entity Type</span>
+                            <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? 'Individual' : 'Business'}</strong>
+                         </div>
+                         <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '13px', color: '#64748b' }}>PAN Number</span>
+                            <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? taxInfo.pan || 'Not Provided' : companyDetails.pan || 'Not Provided'}</strong>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="financials-grid-content" style={{ display: 'grid', gridTemplateColumns: '1fr', width: '100%' }}>
                    {/* Transaction History Sub-Tab */}
                    <div className="txn-history-section">
                       <div className="section-header-row">
@@ -2351,55 +2399,6 @@ const HostDashboard = () => {
                            )}
                         </div>
                       </div>
-                  </div>
-
-                  {/* Bank & Tax Details Section */}
-                  <div className="financial-settings-section">
-                     <div className="settings-card-premium">
-                        <h3>Bank Account</h3>
-                        <p className="card-desc">Where you want to receive your money.</p>
-                        
-                        {bankDetails.accountNumber ? (
-                           <div className="saved-bank-box">
-                              <div className="bank-info-main">
-                                 <div className="bank-logo-placeholder">🏦</div>
-                                 <div className="bank-names">
-                                    <div className="bank-primary-name">{bankDetails.bankName}</div>
-                                    <div className="bank-acc-hidden">•••• {bankDetails.accountNumber.slice(-4)}</div>
-                                 </div>
-                              </div>
-                              <button className="btn-edit-small" onClick={() => setActiveTab('payout-details')}>Edit</button>
-                           </div>
-                        ) : (
-                           <div className="empty-bank-box" onClick={() => setActiveTab('payout-details')}>
-                              <span className="plus-icon">+</span>
-                              <span>Add bank account</span>
-                           </div>
-                        )}
-
-                        <div className="divider-lite"></div>
-
-                        <h3>Tax Information</h3>
-                        <div className="tax-summary-mini">
-                           <div className="tax-row">
-                              <span>Entity Type</span>
-                              <strong>{hostType === 'individual' ? 'Individual' : 'Business'}</strong>
-                           </div>
-                           <div className="tax-row">
-                              <span>PAN Number</span>
-                              <strong>{hostType === 'individual' ? taxInfo.pan || 'Not Provided' : companyDetails.pan || 'Not Provided'}</strong>
-                           </div>
-                        </div>
-                        <button className="btn-full-width-outline" onClick={() => setActiveTab('payout-details')}>Manage Tax Profile</button>
-                     </div>
-
-                     <div className="service-fee-info-card">
-                        <div className="info-card-icon"><Info size={18} /></div>
-                        <div className="info-card-text">
-                           <h4>Platform Fee Structure</h4>
-                           <p>You are on a <strong>Flat Monthly Fee</strong> plan. We charge <strong>0% Commission</strong> per booking. Only estimated payment processing fees are deducted.</p>
-                        </div>
-                     </div>
                   </div>
                </div>
             </div>
