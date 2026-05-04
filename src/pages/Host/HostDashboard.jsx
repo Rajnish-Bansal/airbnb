@@ -2204,28 +2204,32 @@ const HostDashboard = () => {
 
          {activeTab === 'financials' && (
             <div className="financials-layout-premium">
-               {/* Financial Summary Cards */}
-               <div className="financials-hero-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                  <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '20px 24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                     <div className="balance-label" style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Earnings</div>
-                     <div className="balance-amount-large" style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>₹{payoutData?.summary?.availableBalance?.toLocaleString('en-IN') || '0'}</div>
-                     <p className="balance-subtext" style={{ color: '#059669', background: '#ecfdf5', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
-                        ✓ Transferred automatically after check-in
-                     </p>
-                  </div>
-                  
-                  <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '20px 24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                     <div className="balance-label" style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upcoming Earnings</div>
-                     <div className="balance-amount-large" style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>₹{payoutData?.summary?.pendingBalance?.toLocaleString('en-IN') || '0'}</div>
-                     <p className="balance-subtext" style={{ color: '#475569', background: '#f1f5f9', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
-                        ℹ Held in escrow until guest check-in
-                     </p>
-                  </div>
-               </div>
+                {/* Financial Summary Cards */}
+                <div className="financials-hero-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                   <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #10b981', padding: '24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', minHeight: '160px' }}>
+                      <div className="balance-label" style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Earnings</div>
+                      <div className="balance-amount-large" style={{ fontSize: '34px', fontWeight: '800', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                         <span style={{ fontSize: '24px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.availableBalance?.toLocaleString('en-IN') || '0'}
+                      </div>
+                      <p className="balance-subtext" style={{ color: '#059669', background: '#ecfdf5', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
+                         ✓ Transferred automatically after check-in
+                      </p>
+                   </div>
+                   
+                   <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #3b82f6', padding: '24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', minHeight: '160px' }}>
+                      <div className="balance-label" style={{ fontSize: '12px', fontWeight: '700', color: '#3b82f6', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming Earnings</div>
+                      <div className="balance-amount-large" style={{ fontSize: '34px', fontWeight: '800', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                         <span style={{ fontSize: '24px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.pendingBalance?.toLocaleString('en-IN') || '0'}
+                      </div>
+                      <p className="balance-subtext" style={{ color: '#1e40af', background: '#eff6ff', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
+                         ℹ Held in escrow until guest check-in
+                      </p>
+                   </div>
+                </div>
 
                 {/* Bank & Tax Details Section - Prominent Row */}
                 <div className="prominent-bank-tax-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', margin: '32px 0' }}>
-                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                          <div>
                             <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Bank Account</h3>
@@ -2250,7 +2254,7 @@ const HostDashboard = () => {
                       )}
                    </div>
 
-                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                          <div>
                             <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Tax Information</h3>
