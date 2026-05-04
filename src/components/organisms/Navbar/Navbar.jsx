@@ -124,20 +124,20 @@ const Navbar = ({ onLogoClick, scrolled }) => {
                     <div className="user-dropdown-menu">
                        {user ? (
                           <>
-                        {/* Name Display */}
-                        <Link to="/profile" className="menu-item-bold user-profile-link" onClick={() => setIsUserMenuOpen(false)}>
-                          {user.name || 'User'}
-                        </Link>
-                        <div className="menu-item user-email-display">{user.email}</div>
+                        <div className="user-profile-header" onClick={() => { navigate('/profile'); setIsUserMenuOpen(false); }}>
+                          <div className="user-name-display">{user.name || 'User'}</div>
+                          {user.email && <div className="user-email-display">{user.email}</div>}
+                        </div>
                         <div className="menu-divider"></div>
                         
-                        <Link to="/wallet" className="menu-item-bold" style={{textDecoration: 'none', display: 'block', color: 'inherit'}} onClick={() => setIsUserMenuOpen(false)}>Wallet</Link>
+                        <Link to="/profile" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Profile</Link>
+                        <Link to="/bookings" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>My Bookings</Link>
+                        <Link to="/wallet" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Wallet</Link>
                         <div className="menu-divider"></div>
-                        <Link to="/account" className="menu-item" style={{textDecoration: 'none'}}>Account</Link>
-                         <div className="menu-item" onClick={() => {
-                            logout();
-                            setIsUserMenuOpen(false);
-                         }}>Log out</div>
+                        <div className="menu-item" onClick={() => {
+                           logout();
+                           setIsUserMenuOpen(false);
+                        }}>Logout</div>
                           </>
                        ) : (
                           <>

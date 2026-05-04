@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
 import {
@@ -40,7 +40,13 @@ const HostStep7 = () => {
 
   const coverPhotoUrl = getCoverPhoto();
 
+  const [showExitModal, setShowExitModal] = useState(false);
+
   const handleSaveAndExit = () => {
+    setShowExitModal(true);
+  };
+
+  const confirmSaveAndExit = () => {
     saveDraft(7);
     navigate('/become-a-host/dashboard');
   };
@@ -240,6 +246,48 @@ const HostStep7 = () => {
            <button className="next-btn btn-solid" style={{ paddingLeft: '40px', paddingRight: '40px' }} onClick={handlePublish}>Publish Listing</button>
         </div>
       </div>
+
+      {showExitModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div className="glass-card premium-border" style={{
+            background: 'white', padding: '32px', borderRadius: '24px',
+            maxWidth: '400px', width: '90%', textAlign: 'center',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.12)'
+          }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '12px', color: '#222' }}>
+              Save and Exit?
+            </h3>
+            <p style={{ fontSize: '14px', color: '#717171', marginBottom: '24px', lineHeight: '1.5' }}>
+              Are you sure you want to save your progress and exit the onboarding? You can always continue where you left off.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setShowExitModal(false)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #ddd',
+                  background: 'white', fontWeight: '600', cursor: 'pointer', color: '#222'
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmSaveAndExit}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
+                  background: 'var(--primary, #FF385C)', color: 'white', fontWeight: '600', cursor: 'pointer'
+                }}
+              >
+                Yes, Save & Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

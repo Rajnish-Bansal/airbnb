@@ -324,10 +324,23 @@
   border-color: #222;
 }
 
+.cancel-btn {
+  background: #ff385c !important;
+  color: white !important;
+  border: 1px solid #ff385c !important;
+  font-weight: 700 !important;
+  padding: 10px 18px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 .cancel-btn:hover {
-  background: #fffafa !important;
-  color: #ff385c !important;
-  border-color: #ff385c !important;
+  background: #e31c5f !important;
+  border-color: #e31c5f !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
 }
 
 .empty-state {

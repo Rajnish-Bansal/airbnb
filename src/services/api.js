@@ -60,6 +60,19 @@ export const fetchListingById = async (id) => {
   return response.json();
 };
 
+export const deleteListing = async (id) => {
+  const response = await fetch(`${API_URL}/listings/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete listing');
+  }
+  return response.json();
+};
+
+
 export const fetchMyListings = async () => {
   const response = await fetch(`${API_URL}/listings/mine`, {
     headers: getHeaders()

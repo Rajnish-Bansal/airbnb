@@ -17,11 +17,31 @@ import { fetchPayoutStats, fetchHostAnalytics, updateListingPricing, fetchHostBo
 const socket = io(window.location.origin); // Use the current host for Socket.io in production
 
 const HostDashboard = () => {
-  const { listings, loadListingForEdit, deleteListing, resetListingData, refreshListings } = useHost();
+  const { listings, loadListingForEdit, deleteListing, resetListingData, refreshListings, importhostifyListing } = useHost();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Magic Import States
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [hostifyUrl, sethostifyUrl] = useState('');
+  const [isImportingListing, setIsImportingListing] = useState(false);
+  const [importError, setImportError] = useState(null);
+
+  const handleHostifyImport = async () => {
+    if (!hostifyUrl) return;
+    setIsImportingListing(true);
+    setImportError(null);
+    try {
+      await importhostifyListing(hostifyUrl);
+      navigate('/become-a-host/step1');
+    } catch (err) {
+      setImportError(err.message || 'Failed to import listing. Please check the URL.');
+    } finally {
+      setIsImportingListing(false);
+    }
+  };
 
   // Performance Analytics State
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -169,9 +189,9 @@ const HostDashboard = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (listingToDelete) {
-      deleteListing(listingToDelete);
+      await deleteListing(listingToDelete);
       setIsDeleteModalOpen(false);
       setListingToDelete(null);
       showStatus("Deleted", "Listing has been successfully removed.");
@@ -487,12 +507,22 @@ const HostDashboard = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Profile State
+  // Profile State
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
   const [profile, setProfile] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     bio: '',
-    avatar: user?.avatar || null 
+    avatar: user?.avatar || null,
+    governmentId: user?.governmentId || '',
+    isIdVerified: user?.isIdVerified || false
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -502,12 +532,20 @@ const HostDashboard = () => {
       try {
         setLoadingProfile(true);
         const data = await fetchUserProfile();
+        const parts = (data.name || '').trim().split(/\s+/);
+        const first = parts[0] || '';
+        const last = parts.slice(1).join(' ') || '';
+        setFirstName(first);
+        setLastName(last);
+
         setProfile({
            name: data.name || '',
            email: data.email || '',
            phone: data.phone || '',
            bio: data.bio || '',
-           avatar: data.avatar || null
+           avatar: data.avatar || null,
+           governmentId: data.governmentId || '',
+           isIdVerified: data.isIdVerified || false
         });
       } catch (err) {
         console.error("Error loading profile:", err);
@@ -526,18 +564,35 @@ const HostDashboard = () => {
   const handleSaveProfile = async () => {
     try {
       setIsSavingProfile(true);
+      const fullName = `${firstName} ${lastName}`.trim();
       const updated = await updateUserProfile({
-        name: profile.name,
+        name: fullName || profile.name,
         bio: profile.bio,
         phone: profile.phone,
-        avatar: profile.avatar
+        avatar: profile.avatar,
+        password: password || undefined
       });
       setProfile(updated);
+      setPassword('');
       showStatus("Profile Updated", "Your profile changes have been saved successfully.");
     } catch (err) {
       showStatus("Update Failed", err.message);
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleIdUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const { imageUrl } = await uploadImage(file);
+      setProfile(prev => ({ ...prev, governmentId: imageUrl, isIdVerified: true }));
+      const updatedUser = await updateUserProfile({ governmentId: imageUrl, isIdVerified: true });
+      setProfile(updatedUser);
+      showStatus("ID Verified", "Your government ID has been uploaded and verified successfully.");
+    } catch {
+      showStatus("Upload Failed", "Failed to upload ID. Please try again.");
     }
   };
 
@@ -555,26 +610,64 @@ const HostDashboard = () => {
     }
   };
 
+  const handleSendOtp = async () => {
+    if (!profile.phone) return;
+    try {
+      setOtpError('');
+      await sendOtp(profile.phone);
+      setIsOtpSent(true);
+      showStatus("OTP Sent", "Verification code has been sent to your phone number.");
+    } catch (err) {
+      setOtpError(err.message || 'Failed to send OTP.');
+      showStatus("OTP Failed", err.message || 'Failed to send OTP.');
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    if (!otpCode) return;
+    try {
+      setOtpError('');
+      await verifyOtp(profile.phone, otpCode);
+      const updatedUser = await updateUserProfile({ phone: profile.phone, isPhoneVerified: true });
+      setProfile(prev => ({ ...prev, ...updatedUser, isPhoneVerified: true }));
+      setIsOtpSent(false);
+      setOtpCode('');
+      showStatus("Phone Verified", "Your phone number has been verified successfully.");
+    } catch (err) {
+      setOtpError(err.message || 'Invalid OTP code.');
+      showStatus("OTP Error", err.message || 'Invalid OTP code.');
+    }
+  };
+
 
   // Financial Details State
-  const [bankDetails, setBankDetails] = useState({
-    accountNumber: '',
-    ifsc: '',
-    holderName: '',
-    bankName: ''
+  const [bankDetails, setBankDetails] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hostify_bank_details');
+      return saved ? JSON.parse(saved) : { accountNumber: '', ifsc: '', holderName: '', bankName: '' };
+    } catch {
+      return { accountNumber: '', ifsc: '', holderName: '', bankName: '' };
+    }
   });
 
-  const [taxInfo, setTaxInfo] = useState({
-    pan: '',
-    gstin: ''
+  const [taxInfo, setTaxInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hostify_tax_info');
+      return saved ? JSON.parse(saved) : { pan: '', gstin: '' };
+    } catch {
+      return { pan: '', gstin: '' };
+    }
   });
 
   // Host Type State
-  const [hostType, setHostType] = useState('individual'); // 'individual' or 'company'
-  const [companyDetails, setCompanyDetails] = useState({
-    name: '',
-    pan: '',
-    gstin: ''
+  const [hostType, setHostType] = useState(() => localStorage.getItem('hostify_host_type') || 'individual'); // 'individual' or 'company'
+  const [companyDetails, setCompanyDetails] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hostify_company_details');
+      return saved ? JSON.parse(saved) : { name: '', pan: '', gstin: '' };
+    } catch {
+      return { name: '', pan: '', gstin: '' };
+    }
   });
 
 
@@ -1062,13 +1155,67 @@ const HostDashboard = () => {
      }
    ]);
 
-  const filteredListings = listings.filter(listing => {
+  const filteredListings = (listings || []).filter(listing => {
+    const statusLower = (listing.status || '').toLowerCase();
+    const isDeleted = listing.isDeleted || statusLower === 'deleted';
+
+    if (listingFilter === 'Deleted') return isDeleted;
     if (listingFilter === 'All') return true;
-    if (listingFilter === 'Active') return listing.status === 'Active';
-    if (listingFilter === 'Inactive') return listing.status === 'Inactive' || listing.status === 'Payment Required';
-    if (listingFilter === 'Pending Approval') return listing.status === 'Pending';
+    if (isDeleted) return false;
+
+    const createdAt = listing.createdAt ? new Date(listing.createdAt) : new Date();
+    const expiryDate = new Date(createdAt);
+    expiryDate.setMonth(createdAt.getMonth() + 1);
+    const isValidDate = !isNaN(expiryDate.getTime());
+    const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+    const isExpired = diffInDays <= 0;
+
+    let isInactive = statusLower === 'inactive' || statusLower === 'payment required' || statusLower === 'expired' || isExpired;
+    if (diffInDays > 0) {
+      isInactive = false;
+    }
+    const isPending = statusLower === 'pending';
+
+    if (listingFilter === 'All') return true;
+    if (listingFilter === 'Active') return !isInactive && !isPending;
+    if (listingFilter === 'Inactive') return isInactive;
+    if (listingFilter === 'Pending Approval') return isPending;
     return true;
   });
+
+  filteredListings.sort((a, b) => {
+    const getPriorityScore = (l) => {
+      const statusLower = (l.status || '').toLowerCase();
+      const isDeleted = l.isDeleted || statusLower === 'deleted';
+      if (isDeleted) return 3;
+
+      const isPending = statusLower === 'pending';
+      if (isPending) return 2;
+
+      const createdAt = l.createdAt ? new Date(l.createdAt) : new Date();
+      const expiryDate = new Date(createdAt);
+      expiryDate.setMonth(createdAt.getMonth() + 1);
+      const isValidDate = !isNaN(expiryDate.getTime());
+      const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+      const isExpired = diffInDays <= 0;
+
+      if (isExpired) return 1;
+
+      let isInactive = statusLower === 'inactive' || statusLower === 'payment required' || statusLower === 'expired';
+      if (diffInDays > 0) {
+        isInactive = false;
+      }
+      if (isInactive) return 1;
+
+      return 0; // Active
+    };
+
+    return getPriorityScore(a) - getPriorityScore(b);
+  });
+
+
+
+
 
   return (
     <div className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
@@ -1374,14 +1521,46 @@ const HostDashboard = () => {
 
         {activeTab === 'listings' && (
              <div className="listings-content">
-                <div className="listings-header-wrapper">
-                   <div className="listing-filters-tabs">
-                     {['All', 'Active', 'Inactive', 'Pending Approval'].map(filter => {
+                <div className="listings-header-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+                   <div className="listing-filters-tabs" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                     {['All', 'Active', 'Inactive', 'Pending Approval', 'Deleted'].map(filter => {
                        let count = 0;
-                       if (filter === 'All') count = listings.length;
-                       else if (filter === 'Active') count = listings.filter(l => l.status === 'Active').length;
-                       else if (filter === 'Inactive') count = listings.filter(l => l.status === 'Inactive' || l.status === 'Payment Required').length;
-                       else if (filter === 'Pending Approval') count = listings.filter(l => l.status === 'Pending').length;
+                       const validListings = (listings || []).filter(l => !(l.isDeleted || (l.status || '').toLowerCase() === 'deleted'));
+                       const deletedListings = (listings || []).filter(l => l.isDeleted || (l.status || '').toLowerCase() === 'deleted');
+
+                       if (filter === 'All') count = (listings || []).length;
+                       else if (filter === 'Active') count = validListings.filter(l => {
+                          const s = (l.status || '').toLowerCase();
+                          const createdAt = l.createdAt ? new Date(l.createdAt) : new Date();
+                          const expiryDate = new Date(createdAt);
+                          expiryDate.setMonth(createdAt.getMonth() + 1);
+                          const isValidDate = !isNaN(expiryDate.getTime());
+                          const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+                          const isExpired = diffInDays <= 0;
+
+                          let isInactive = s === 'inactive' || s === 'payment required' || s === 'expired' || isExpired;
+                          if (diffInDays > 0) {
+                            isInactive = false;
+                          }
+                          return !isInactive && s !== 'pending';
+                       }).length;
+                       else if (filter === 'Inactive') count = validListings.filter(l => {
+                          const s = (l.status || '').toLowerCase();
+                          const createdAt = l.createdAt ? new Date(l.createdAt) : new Date();
+                          const expiryDate = new Date(createdAt);
+                          expiryDate.setMonth(createdAt.getMonth() + 1);
+                          const isValidDate = !isNaN(expiryDate.getTime());
+                          const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+                          const isExpired = diffInDays <= 0;
+
+                          let isInactive = s === 'inactive' || s === 'payment required' || s === 'expired' || isExpired;
+                          if (diffInDays > 0) {
+                            isInactive = false;
+                          }
+                          return isInactive;
+                       }).length;
+                       else if (filter === 'Pending Approval') count = validListings.filter(l => (l.status || '').toLowerCase() === 'pending').length;
+                       else if (filter === 'Deleted') count = deletedListings.length;
 
                        return (
                          <button
@@ -1395,6 +1574,54 @@ const HostDashboard = () => {
                      })}
                    </div>
                 </div>
+
+                {/* Magic Import Modal */}
+                {isImportModalOpen && (
+                  <div className="import-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+                    <div className="import-modal-content" style={{ background: 'white', padding: '40px', borderRadius: '28px', maxWidth: '540px', width: '100%', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #f1f5f9' }}>
+                      <button className="close-btn-modal" onClick={() => setIsImportModalOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      </button>
+                      
+                      <div className="modal-header-icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+                        <div style={{ background: '#fff7ed', color: '#f97316', padding: '20px', borderRadius: '24px' }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                      </div>
+                      
+                      <h2 style={{ fontSize: '30px', fontWeight: '800', marginBottom: '12px', color: '#0f172a', textAlign: 'center' }}>Sparkles Magic Import</h2>
+                      <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '32px', lineHeight: '1.6', textAlign: 'center' }}>
+                        Paste your Airbnb listing URL below. Our system will import and populate your photos, description, and amenities instantly.
+                      </p>
+
+                      {isImportingListing ? (
+                        <div className="importing-state" style={{ textAlign: 'center', padding: '20px 0' }}>
+                          <div className="spinner" style={{ width: '44px', height: '44px', border: '4px solid #f3f3f3', borderTop: '4px solid #f97316', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
+                          <p style={{ fontWeight: '600', color: '#0f172a', fontSize: '16px' }}>Synthesizing listing data...</p>
+                          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                        </div>
+                      ) : (
+                        <div className="import-form">
+                          <input 
+                            type="text" 
+                            placeholder="https://www.airbnb.com/rooms/..." 
+                            value={hostifyUrl}
+                            onChange={(e) => sethostifyUrl(e.target.value)}
+                            style={{ width: '100%', padding: '16px 20px', borderRadius: '14px', border: '2px solid #e2e8f0', fontSize: '15px', marginBottom: '16px', outline: 'none', transition: 'all 0.2s', background: '#f8fafc' }}
+                          />
+                          {importError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', fontWeight: '500', textAlign: 'left' }}>{importError}</p>}
+                          <button 
+                            onClick={handleHostifyImport}
+                            disabled={!hostifyUrl}
+                            style={{ width: '100%', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', transition: 'all 0.2s', opacity: hostifyUrl ? 1 : 0.6, fontSize: '16px', boxShadow: '0 4px 12px rgba(236, 72, 153, 0.2)' }}
+                          >
+                            Confirm & Sync
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="listings-grid-v2">
                        {filteredListings.length === 0 ? (
@@ -1405,36 +1632,42 @@ const HostDashboard = () => {
                             <Link to="/become-a-host" className="btn-save-draft" style={{ display: 'inline-flex', textDecoration: 'none' }}>Create Your First Listing</Link>
                          </div>
                        ) : filteredListings.map(listing => {
-                        const createdAt = listing.createdAt ? new Date(listing.createdAt) : new Date();
-                        const expiryDate = new Date(createdAt);
-                        expiryDate.setMonth(createdAt.getMonth() + 1);
-                        
-                        const isValidDate = !isNaN(expiryDate.getTime());
-                        const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-                        const isExpired = listing.status === 'Active' && diffInDays <= 0;
-                        const isPending = listing.status === 'Pending';
-                        const isPaymentRequired = listing.status === 'Payment Required';
+                         const createdAt = listing.createdAt ? new Date(listing.createdAt) : new Date();
+                         const expiryDate = new Date(createdAt);
+                         expiryDate.setMonth(createdAt.getMonth() + 1);
+                         
+                         const isValidDate = !isNaN(expiryDate.getTime());
+                         const diffInDays = isValidDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+                         const isExpired = diffInDays <= 0;
+                         const isPending = (listing.status || '').toLowerCase() === 'pending';
+                         const isPaymentRequired = (listing.status || '').toLowerCase() === 'payment required';
+                         const isDeleted = listing.isDeleted || (listing.status || '').toLowerCase() === 'deleted';
+
+                         let isCardActive = !isExpired && !isPending && (listing.status || '').toLowerCase() !== 'inactive' && !isDeleted;
+                         if (diffInDays > 0 && (listing.status || '').toLowerCase() === 'payment required') {
+                           isCardActive = true;
+                         }
                         
 
                         // Calculate pending requests
                         return (
-                            <div key={listing.id} className={`listing-card-premium ${isExpired ? 'is-expired' : isPaymentRequired ? 'is-pending' : isPending ? 'is-pending' : 'is-active'}`}>
+                            <div key={listing.id} className={`listing-card-premium ${isDeleted ? 'is-deleted disabled-card' : !isCardActive ? (isExpired ? 'is-expired' : 'is-pending') : 'is-active'}`} style={isDeleted ? { opacity: 0.6, pointerEvents: 'none', filter: 'grayscale(1)' } : {}}>
                               {/* Top Status Header */}
                               <div className="card-top-header">
                                  <div className="status-indicator">
-                                    <span className="status-icon">{isExpired ? '✕' : isPaymentRequired ? '!' : isPending ? '⏳' : '✓'}</span>
+                                    <span className="status-icon">{isDeleted ? '🗑️' : !isCardActive ? (isExpired ? '✕' : isPending ? '⏳' : '!') : '✓'}</span>
                                     <div className="status-text-group">
-                                       <span className="status-text">{isExpired ? 'EXPIRED LISTING' : isPaymentRequired ? 'PAYMENT REQUIRED' : isPending ? 'PENDING APPROVAL' : 'ACTIVE LISTING'}</span>
+                                       <span className="status-text">{isDeleted ? 'DELETED' : !isCardActive ? (isExpired ? 'EXPIRED LISTING' : isPaymentRequired ? 'PAYMENT REQUIRED' : isPending ? 'PENDING APPROVAL' : 'INACTIVE LISTING') : 'ACTIVE LISTING'}</span>
                                     </div>
                                  </div>
                                  <div className="status-date">
-                                    {isExpired ? `Expired on ${expiryDate.toLocaleDateString()}` : isPending ? `Submitted on ${createdAt.toLocaleDateString()}` : `Valid until ${expiryDate.toLocaleDateString()}`}
+                                    {isDeleted ? 'Deleted from listings' : isExpired ? `Expired on ${expiryDate.toLocaleDateString()}` : isPending ? `Submitted on ${createdAt.toLocaleDateString()}` : `Valid until ${expiryDate.toLocaleDateString()}`}
                                  </div>
                                  <button 
                                     className="btn-delete-card" 
                                     onClick={(e) => {
                                        e.stopPropagation();
-                                       handleDeleteClick(listing.id);
+                                       handleDeleteClick(listing._id || listing.id);
                                     }}
                                  >
                                     <Trash2 size={14} />
@@ -1463,9 +1696,12 @@ const HostDashboard = () => {
                                     return (
                                       <>
                                         <img src={imgUrl} alt={listing.title} className={isExpired || isPending ? 'desaturated' : ''} />
+                                        <div className="img-listing-id-badge" style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', backdropFilter: 'blur(4px)', zIndex: 10, letterSpacing: '0.5px' }}>
+                                           {listing.listingId || listing.customId || listing._id || listing.id}
+                                        </div>
                                         {isExpired && (
                                           <div className="expired-banner">
-                                            <span>EXPIRED</span>
+                                            <span>NO ACTIVE PLAN</span>
                                             <div className="status-tooltip-container">
                                               <Info size={14} className="info-icon-trigger" />
                                               <div className="status-tooltip">
@@ -1500,6 +1736,7 @@ const HostDashboard = () => {
                                        </div>
                                     </div>
                                     <p className="premium-location">{listing.location}</p>
+
                                  </div>
 
                                  <div className="card-bottom-section" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1531,7 +1768,12 @@ const HostDashboard = () => {
 
                                  {/* Action Buttons */}
                                  <div className="premium-card-actions">
-                                    {(isExpired || isPaymentRequired) ? (
+                                    {isPending ? (
+                                       <div className="pending-actions-row">
+                                          <button className="btn-premium-secondary disabled" disabled style={{ background: '#f8fafc', color: '#94a3b8', borderColor: '#e2e8f0', cursor: 'not-allowed' }}>Awaiting Approval</button>
+                                          <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit Listing</button>
+                                       </div>
+                                    ) : (!isCardActive) ? (
                                        <div className="expired-actions-stack">
                                           <button 
                                              className="btn-renew-primary"
@@ -1543,11 +1785,6 @@ const HostDashboard = () => {
                                              <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit</button>
                                              <button className="btn-premium-secondary" onClick={() => navigate(`/rooms/${listing._id || listing.id}`, { state: { fromHost: true } })}>Preview</button>
                                           </div>
-                                       </div>
-                                    ) : isPending ? (
-                                       <div className="pending-actions-row">
-                                          <button className="btn-premium-secondary disabled" disabled>Awaiting Approval</button>
-                                          <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit Listing</button>
                                        </div>
                                     ) : (
                                        <div className="active-actions-row">
@@ -2169,7 +2406,10 @@ const HostDashboard = () => {
          )}
 
          {activeTab === 'payout-details' && (
-            <div className="financials-content">
+            <div className="financials-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+               <button onClick={() => setActiveTab('financials')} className="btn-back-overview" style={{ background: 'none', border: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
+                  ← Back to Overview
+               </button>
                <div className="financials-card">
                   <div className="financials-header">
                      <div className="header-icon-wrapper">
@@ -2260,7 +2500,19 @@ const HostDashboard = () => {
                    </div>
 
                   <div className="financials-actions">
-                     <button className="btn-primary">Save Financial Details</button>
+                     <button 
+                        className="btn-primary"
+                        onClick={() => {
+                           localStorage.setItem('hostify_bank_details', JSON.stringify(bankDetails));
+                           localStorage.setItem('hostify_tax_info', JSON.stringify(taxInfo));
+                           localStorage.setItem('hostify_company_details', JSON.stringify(companyDetails));
+                           localStorage.setItem('hostify_host_type', hostType);
+                           alert('Your bank account and tax information has been securely updated!');
+                           setActiveTab('financials');
+                        }}
+                     >
+                        Save Financial Details
+                     </button>
                   </div>
                </div>
 
@@ -2350,128 +2602,462 @@ const HostDashboard = () => {
             </div>
          )}
          {activeTab === 'profile' && (
-            <div className="profile-tab-content-premium">
-               <div className="profile-layout-grid-premium">
-                  {/* Left Column: Avatar & Summary */}
-                  <div className="profile-sidebar-card-premium">
-                     <div className="profile-avatar-wrapper-premium">
-                        <div 
-                          className="profile-avatar-large-premium"
-                          style={{ 
-                            backgroundImage: profile.avatar ? `url(${profile.avatar})` : 'none',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        >
-                           {!profile.avatar && (profile.name?.charAt(0) || user?.name?.charAt(0) || 'H')}
-                        </div>
-                        <label className="avatar-upload-btn-premium">
-                           <Camera size={16} />
-                           Update Photo
-                           <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
-                        </label>
-                     </div>
-                     
-                     <div className="profile-summary-premium">
-                        <h3>{profile.name}</h3>
-                        <p className="p-role-badge">Verified Host</p>
-                        <div className="p-meta-stats">
-                           <div className="p-meta-item">
-                              <strong>{listings.length}</strong>
-                              <span>Listings</span>
-                           </div>
-                           <div className="p-divider"></div>
-                           <div className="p-meta-item">
-                              <strong>4.8</strong>
-                              <span>Rating</span>
-                           </div>
-                        </div>
-                     </div>
+             <div className="profile-tab-content-premium" style={{ 
+                padding: '40px',
+                background: 'linear-gradient(145deg, #f8fafc, #f1f5f9)', 
+                borderRadius: '32px', 
+                border: '1px solid rgba(226, 232, 240, 0.8)', 
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.03)',
+                marginTop: '16px'
+             }}>
+                <div className="profile-layout-grid-premium" style={{ 
+                   display: 'grid', 
+                   gridTemplateColumns: '340px 1fr', 
+                   gap: '40px', 
+                   alignItems: 'start'
+                }}>
+                   {/* Left Column: Avatar & Summary */}
+                   <div className="profile-sidebar-card-premium" style={{ 
+                      background: '#ffffff', 
+                      borderRadius: '24px', 
+                      border: '1px solid rgba(0, 0, 0, 0.05)', 
+                      padding: '36px 24px', 
+                      boxShadow: '0 20px 40px -4px rgba(0, 0, 0, 0.03)',
+                      textAlign: 'center'
+                   }}>
+                      <div className="profile-avatar-wrapper-premium" style={{ 
+                         position: 'relative', 
+                         width: '140px', 
+                         height: '140px', 
+                         margin: '0 auto 24px'
+                      }}>
+                         <div 
+                           className="profile-avatar-large-premium"
+                           style={{ 
+                             width: '140px',
+                             height: '140px',
+                             borderRadius: '50%',
+                             backgroundImage: profile.avatar ? `url(${profile.avatar})` : 'none',
+                             backgroundSize: 'cover',
+                             backgroundPosition: 'center',
+                             display: 'flex',
+                             alignItems: 'center',
+                             justifyContent: 'center',
+                             fontSize: '48px',
+                             fontWeight: 700,
+                             color: 'white',
+                             border: '4px solid #ffffff',
+                             boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+                             background: !profile.avatar ? 'linear-gradient(135deg, #2563eb, #38bdf8)' : 'none'
+                           }}
+                         >
+                            {!profile.avatar && (profile.name?.charAt(0) || user?.name?.charAt(0) || 'H')}
+                         </div>
+                         <label className="avatar-upload-btn-premium" style={{ 
+                            position: 'absolute',
+                            bottom: '0px',
+                            right: '0px',
+                            background: '#ffffff',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+                            border: '1px solid rgba(0,0,0,0.06)',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                            fontSize: '0' 
+                         }}>
+                            <Camera size={18} style={{ color: '#1e293b' }} />
+                            <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
+                         </label>
+                      </div>
+                      
+                      <div className="profile-summary-premium">
+                         <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.5px' }}>{profile.name}</h3>
+                         <p className="p-role-badge" style={{
+                            display: 'inline-block',
+                            background: 'rgba(59, 130, 246, 0.12)',
+                            color: '#2563eb',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            letterSpacing: '0.3px',
+                            textTransform: 'uppercase',
+                            marginBottom: '24px'
+                         }}>Verified Host</p>
+                         
+                         <div className="p-meta-stats" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '24px',
+                            borderTop: '1px solid #f1f5f9',
+                            borderBottom: '1px solid #f1f5f9',
+                            padding: '16px 0',
+                            marginBottom: '28px'
+                         }}>
+                            <div className="p-meta-item">
+                               <strong style={{ display: 'block', fontSize: '20px', color: '#0f172a', fontWeight: 800 }}>{listings.length}</strong>
+                               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500 }}>Listings</span>
+                            </div>
+                            <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }}></div>
+                            <div className="p-meta-item">
+                               <strong style={{ display: 'block', fontSize: '20px', color: '#0f172a', fontWeight: 800 }}>4.8</strong>
+                               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500 }}>Rating</span>
+                            </div>
+                         </div>
+                      </div>
 
-                     <div className="profile-verification-list">
-                        <div className="v-item verified">
-                           <ShieldCheck size={14} /> Email Verified
-                        </div>
-                        <div className="v-item verified">
-                           <ShieldCheck size={14} /> Identity Verified
-                        </div>
-                        <div className="v-item verified">
-                           <ShieldCheck size={14} /> Phone Verified
-                        </div>
-                     </div>
-                  </div>
+                      <div className="profile-verification-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                         <div className="v-item verified" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#15803d',
+                            background: '#f0fdf4',
+                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                            padding: '12px 16px',
+                            borderRadius: '16px'
+                         }}>
+                            <ShieldCheck size={18} style={{ color: '#16a34a' }} /> Email Verified
+                         </div>
+                         <div className="v-item verified" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#15803d',
+                            background: '#f0fdf4',
+                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                            padding: '12px 16px',
+                            borderRadius: '16px'
+                         }}>
+                            <ShieldCheck size={18} style={{ color: '#16a34a' }} /> Identity Verified
+                         </div>
+                         <div className={`v-item ${profile.isPhoneVerified ? 'verified' : 'pending'}`} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: profile.isPhoneVerified ? '#15803d' : '#64748b',
+                            background: profile.isPhoneVerified ? '#f0fdf4' : '#f8fafc',
+                            border: `1px solid ${profile.isPhoneVerified ? 'rgba(34, 197, 94, 0.2)' : '#e2e8f0'}`,
+                            padding: '12px 16px',
+                            borderRadius: '16px'
+                         }}>
+                            <ShieldCheck size={18} style={{ color: profile.isPhoneVerified ? '#16a34a' : '#94a3b8' }} /> {profile.isPhoneVerified ? 'Phone Verified' : 'Phone Unverified'}
+                         </div>
+                      </div>
+                   </div>
 
-                  {/* Right Column: Edit Form */}
-                  <div className="profile-main-edit-card-premium">
-                     <h3>Personal Details</h3>
-                     <p className="section-desc-premium">Your public profile name and bio will help guests get to know you before they book.</p>
-                     
-                     {loadingProfile ? (
-                        <div className="loading-profile-state">Fetching your details...</div>
-                     ) : (
-                        <div className="profile-edit-form-premium">
-                           <div className="form-row-premium">
-                              <div className="form-group-premium">
-                                 <label>Legal Name</label>
-                                 <input 
-                                   type="text" 
-                                   name="name" 
-                                   value={profile.name} 
-                                   onChange={handleProfileUpdate} 
-                                   placeholder="Your display name"
-                                 />
-                              </div>
-                              <div className="form-group-premium">
-                                 <label>Email Address</label>
-                                 <input 
-                                   type="email" 
-                                   value={profile.email} 
-                                   disabled 
-                                   className="input-disabled-premium"
-                                   title="Email cannot be changed"
-                                 />
-                                 <span className="input-hint-premium">Used for platform notifications</span>
-                              </div>
-                           </div>
+                   {/* Right Column: Edit Form */}
+                   <div className="profile-main-edit-card-premium" style={{ 
+                      background: '#ffffff', 
+                      borderRadius: '24px', 
+                      border: '1px solid rgba(0, 0, 0, 0.05)', 
+                      padding: '44px 40px', 
+                      boxShadow: '0 20px 40px -4px rgba(0, 0, 0, 0.03)'
+                   }}>
+                      <h3 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', marginBottom: '8px', letterSpacing: '-0.5px' }}>Personal Details</h3>
+                      <p className="section-desc-premium" style={{ fontSize: '15px', color: '#64748b', lineHeight: 1.5, marginBottom: '36px' }}>
+                        Your public profile name and bio will help guests get to know you before they book.
+                      </p>
+                      
+                      {loadingProfile ? (
+                          <div className="loading-profile-state" style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Fetching your details...</div>
+                       ) : (
+                          <div className="profile-edit-form-premium" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+                             <div className="form-row-premium" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
+                               <div className="form-group-premium" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>First Name</label>
+                                  <input 
+                                    type="text" 
+                                    value={firstName} 
+                                    onChange={(e) => setFirstName(e.target.value)} 
+                                    placeholder="First Name"
+                                    style={{
+                                       padding: '12px 16px',
+                                       borderRadius: '14px',
+                                       border: '1px solid #cbd5e1',
+                                       fontSize: '15px',
+                                       color: '#1e293b',
+                                       background: '#fff',
+                                       boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                    }}
+                                  />
+                               </div>
+                               <div className="form-group-premium" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Last Name</label>
+                                  <input 
+                                    type="text" 
+                                    value={lastName} 
+                                    onChange={(e) => setLastName(e.target.value)} 
+                                    placeholder="Last Name"
+                                    style={{
+                                       padding: '12px 16px',
+                                       borderRadius: '14px',
+                                       border: '1px solid #cbd5e1',
+                                       fontSize: '15px',
+                                       color: '#1e293b',
+                                       background: '#fff',
+                                       boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                    }}
+                                  />
+                               </div>
+                             </div>
 
+                             <div className="form-row-premium">
+                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Email Address</label>
+                                  <input 
+                                    type="email" 
+                                    value={profile.email} 
+                                    disabled 
+                                    className="input-disabled-premium"
+                                    title="Email cannot be changed"
+                                    style={{ 
+                                       width: '100%',
+                                       padding: '12px 16px',
+                                       borderRadius: '14px',
+                                       border: '1px solid #e2e8f0',
+                                       fontSize: '15px',
+                                       color: '#64748b',
+                                       background: '#f8fafc',
+                                       cursor: 'not-allowed'
+                                    }}
+                                  />
+                                  <span className="input-hint-premium" style={{ fontSize: '13px', color: '#64748b' }}>Used for platform notifications</span>
+                               </div>
+                             </div>
 
+                             <div className="form-row-premium">
+                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <div className="label-with-badge" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Phone Number</label>
+                                    <span className={`status-badge ${profile.isPhoneVerified ? 'badge-verified' : 'badge-pending'}`} style={{
+                                       fontSize: '12px',
+                                       padding: '3px 10px',
+                                       borderRadius: '8px',
+                                       background: profile.isPhoneVerified ? '#f0fdf4' : '#fffbeb',
+                                       color: profile.isPhoneVerified ? '#16a34a' : '#d97706',
+                                       border: `1px solid ${profile.isPhoneVerified ? 'rgba(34, 197, 94, 0.2)' : 'rgba(217, 119, 6, 0.2)'}`,
+                                       fontWeight: 700,
+                                       letterSpacing: '0.2px'
+                                    }}>
+                                      {profile.isPhoneVerified ? 'Verified' : 'Not Verified'}
+                                    </span>
+                                  </div>
+                                  <div className="phone-input-wrapper" style={{ display: 'flex', gap: '12px', marginTop: '2px' }}>
+                                    <input 
+                                      type="tel" 
+                                      name="phone" 
+                                      value={profile.phone} 
+                                      onChange={handleProfileUpdate} 
+                                      placeholder="e.g. +91 98765 43210"
+                                      style={{ 
+                                         flex: 1,
+                                         padding: '12px 16px',
+                                         borderRadius: '14px',
+                                         border: '1px solid #cbd5e1',
+                                         fontSize: '15px',
+                                         color: '#1e293b',
+                                         background: '#fff',
+                                         boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                      }}
+                                    />
+                                    {!profile.isPhoneVerified && (
+                                      <button 
+                                        type="button" 
+                                        className="btn-verify-mini" 
+                                        onClick={handleSendOtp}
+                                        style={{
+                                          whiteSpace: 'nowrap',
+                                          padding: '12px 20px',
+                                          borderRadius: '14px',
+                                          background: '#2563eb',
+                                          color: '#ffffff',
+                                          border: 'none',
+                                          fontWeight: 600,
+                                          fontSize: '14px',
+                                          cursor: 'pointer',
+                                          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                                          transition: 'all 0.2s ease'
+                                        }}
+                                      >
+                                        {isOtpSent ? 'Resend OTP' : 'Send OTP'}
+                                      </button>
+                                    )}
+                                  </div>
+                                  {isOtpSent && !profile.isPhoneVerified && (
+                                    <div className="otp-confirm-wrapper" style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                                      <input 
+                                        type="text" 
+                                        value={otpCode} 
+                                        onChange={(e) => setOtpCode(e.target.value)} 
+                                        placeholder="6-digit OTP"
+                                        style={{ 
+                                           flex: 1,
+                                           padding: '12px 16px',
+                                           borderRadius: '14px',
+                                           border: '1px solid #cbd5e1',
+                                           fontSize: '15px',
+                                           color: '#1e293b',
+                                           background: '#fff',
+                                           boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                        }}
+                                      />
+                                      <button 
+                                        type="button" 
+                                        className="btn-confirm-mini" 
+                                        onClick={handleConfirmOtp}
+                                        style={{
+                                          whiteSpace: 'nowrap',
+                                          padding: '12px 20px',
+                                          borderRadius: '14px',
+                                          background: '#16a34a',
+                                          color: '#ffffff',
+                                          border: 'none',
+                                          fontWeight: 600,
+                                          fontSize: '14px',
+                                          cursor: 'pointer',
+                                          boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
+                                          transition: 'all 0.2s ease'
+                                        }}
+                                      >
+                                        Verify OTP
+                                      </button>
+                                    </div>
+                                  )}
+                                  {otpError && <p className="error-text" style={{ color: '#dc2626', fontSize: '13px', marginTop: '6px', fontWeight: 500 }}>{otpError}</p>}
+                               </div>
+                             </div>
 
-                           <div className="form-row-premium">
-                              <div className="form-group-premium">
-                                 <label>Phone Number</label>
-                                 <input 
-                                   type="tel" 
-                                   name="phone" 
-                                   value={profile.phone} 
-                                   onChange={handleProfileUpdate} 
-                                   placeholder="e.g. +91 98765 43210"
-                                 />
-                              </div>
-                              <div className="form-group-premium">
-                                 <label>Host Since</label>
-                                 <input 
-                                   type="text" 
-                                   value={new Date(user?.createdAt || Date.now()).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })} 
-                                   disabled 
-                                   className="input-disabled-premium"
-                                 />
-                              </div>
-                           </div>
+                             <div className="form-row-premium" style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: '24px' }}>
+                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>About Me (Bio)</label>
+                                  <textarea
+                                    name="bio"
+                                    value={profile.bio}
+                                    onChange={handleProfileUpdate}
+                                    placeholder="Tell guests about yourself..."
+                                    style={{ 
+                                      width: '100%', 
+                                      padding: '12px 16px', 
+                                      borderRadius: '14px', 
+                                      border: '1px solid #cbd5e1', 
+                                      height: '92px',
+                                      resize: 'vertical',
+                                      fontFamily: 'inherit',
+                                      fontSize: '15px',
+                                      color: '#1e293b',
+                                      background: '#fff',
+                                      boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                    }}
+                                  />
+                               </div>
+                               <div className="form-group-premium" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Host Since</label>
+                                  <input 
+                                    type="text" 
+                                    value={new Date(user?.createdAt || Date.now()).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })} 
+                                    disabled 
+                                    className="input-disabled-premium"
+                                    style={{ 
+                                       width: '100%',
+                                       padding: '12px 16px',
+                                       borderRadius: '14px',
+                                       border: '1px solid #e2e8f0',
+                                       fontSize: '15px',
+                                       color: '#64748b',
+                                       background: '#f8fafc',
+                                       cursor: 'not-allowed'
+                                    }}
+                                  />
+                               </div>
+                             </div>
 
-                           <div className="form-actions-premium">
-                              <button 
-                                className="btn-save-profile-premium" 
-                                onClick={handleSaveProfile}
-                                disabled={isSavingProfile}
-                              >
-                                {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
-                              </button>
-                           </div>
-                        </div>
-                     )}
-                  </div>
-               </div>
-            </div>
+                             {!user?.googleId && (
+                               <div className="form-group-premium" style={{ width: '100%', marginTop: '4px' }}>
+                                 <button 
+                                   type="button" 
+                                   onClick={() => setShowPasswordSection(!showPasswordSection)}
+                                   style={{
+                                     background: '#fff',
+                                     border: '1px solid #cbd5e1',
+                                     padding: '12px 24px',
+                                     borderRadius: '14px',
+                                     fontWeight: 600,
+                                     fontSize: '14px',
+                                     cursor: 'pointer',
+                                     color: '#334155',
+                                     boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)',
+                                     transition: 'all 0.2s'
+                                   }}
+                                 >
+                                   {showPasswordSection ? 'Hide Password Options' : 'Change Password'}
+                                 </button>
+                                 {showPasswordSection && (
+                                   <div className="password-input-panel" style={{ marginTop: '16px', background: '#f8fafc', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px', color: '#334155' }}>New Password</label>
+                                     <input 
+                                       type="password" 
+                                       value={password} 
+                                       onChange={(e) => setPassword(e.target.value)}
+                                       placeholder="Enter your new password"
+                                       style={{ 
+                                          width: '100%',
+                                          padding: '12px 16px',
+                                          borderRadius: '12px',
+                                          border: '1px solid #cbd5e1',
+                                          fontSize: '15px',
+                                          color: '#1e293b',
+                                          background: '#fff',
+                                          boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
+                                       }}
+                                     />
+                                   </div>
+                                 )}
+                               </div>
+                             )}
+
+                             <div className="form-actions-premium" style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                                <button 
+                                  className="btn-save-profile-premium" 
+                                  onClick={handleSaveProfile}
+                                  disabled={isSavingProfile}
+                                  style={{
+                                     background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                                     color: '#ffffff',
+                                     padding: '14px 32px',
+                                     borderRadius: '14px',
+                                     border: 'none',
+                                     fontWeight: 700,
+                                     fontSize: '15px',
+                                     cursor: 'pointer',
+                                     boxShadow: '0 10px 20px -3px rgba(37, 99, 235, 0.25)',
+                                     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                                     display: 'inline-flex',
+                                     alignItems: 'center',
+                                     justifyContent: 'center',
+                                     minWidth: '220px'
+                                  }}
+                                >
+                                  {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                                </button>
+                             </div>
+                          </div>
+                       )}
+                   </div>
+                </div>
+             </div>
          )}
       </main>
 

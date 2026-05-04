@@ -89,9 +89,9 @@ function AppContent() {
                   <Route path="step1" element={<HostStep1 />} />
                   <Route path="step2" element={<HostStep3 />} />
                   <Route path="step3" element={<HostStep2 />} />
-                  <Route path="step4" element={<HostStep4 />} />
-                  <Route path="step5" element={<HostStep5 />} />
-                  <Route path="step6" element={<HostStep6 />} />
+                  <Route path="step4" element={<HostStep5 />} />
+                  <Route path="step5" element={<HostStep6 />} />
+                  <Route path="step6" element={<HostStep4 />} />
                   <Route path="step7" element={<HostStep7 />} />
                   {/* Future steps will go here */}
                 </Route>

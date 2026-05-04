@@ -189,6 +189,7 @@ router.post('/google-login', async (req, res) => {
         user.googleId = googleId;
         user.avatar = avatar || user.avatar;
         user.name = user.name || name;
+        user.email = user.email || email;
         await user.save();
     } else {
         user = new User({

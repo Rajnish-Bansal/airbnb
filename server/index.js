@@ -98,7 +98,7 @@ const { scrapeExternal } = require('./services/scraper');
 // 1. Listings
 app.get('/api/listings', async (req, res) => {
   try {
-    const listings = await Listing.find();
+    const listings = await Listing.find({ status: { $ne: 'Deleted' }, isDeleted: { $ne: true } });
     res.json(listings);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching listings', error: err.message });
@@ -125,6 +125,7 @@ app.get('/api/listings/mine', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Error fetching your listings', error: err.message });
   }
 });
+
 
 app.post('/api/listings/import-external', async (req, res) => {
   const { url } = req.body;
@@ -155,6 +156,36 @@ app.get('/api/listings/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching listing', error: err.message });
   }
 });
+
+app.delete('/api/listings/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: 'Invalid listing ID format' });
+  }
+
+  try {
+    const listing = await Listing.findById(id);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+    if (listing.hostId && listing.hostId.toString() !== req.user.id) {
+      const roleLower = (req.user.role || '').toLowerCase();
+      if (roleLower !== 'host' && roleLower !== 'admin') {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+    }
+
+    const updated = await Listing.findByIdAndUpdate(
+      id,
+      { $set: { status: 'Deleted', isDeleted: true } },
+      { new: true, runValidators: false }
+    );
+    res.json({ message: 'Listing deleted successfully', listing: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting listing', error: err.message });
+  }
+});
+
+
 
 app.put('/api/listings/:id/pricing', async (req, res) => {
   const { price, weekendPrice, discounts } = req.body;

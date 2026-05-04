@@ -1,12 +1,6 @@
 /* Aesthetic Pricing UI - Step 6 */
 
-.host-step-container.aesthetic-bg {
-  max-width: 680px;
-  margin: 0 auto;
-  padding-top: 60px;
-  padding-bottom: 120px;
-  position: relative;
-}
+
 
 /* Base Gradient Background Effect */
 .host-step-container.aesthetic-bg::before {
@@ -141,7 +135,7 @@
 
 .price-inputs-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 32px;
 }
 
@@ -632,4 +626,15 @@
 .save-exit-btn:hover {
   background: #222;
   color: white;
+}
+
+/* Hide Spinners (up/down arrows) in Price Inputs */
+.price-input-wrapper input::-webkit-outer-spin-button,
+.price-input-wrapper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.price-input-wrapper input[type=number] {
+  -moz-appearance: textfield;
 }

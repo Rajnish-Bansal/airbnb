@@ -143,6 +143,10 @@ const Home = () => {
     [allListings]
   );
 
+  const availablePropertyTypes = useMemo(() => {
+    return ['Apartment/Flat', 'Studio', 'Villa (Luxury)', 'House (Standard)'];
+  }, []);
+
   const handleSearch = useCallback((newSearchParams) => {
     updateSearchParams(newSearchParams);
   }, [updateSearchParams]);
@@ -173,22 +177,9 @@ const Home = () => {
           <HeroSearch key={searchKey} onSearch={handleSearch} allLocations={allLocations} />
         </div>
       </div>
-
-      <div className="sticky-sub-navbar">
-        <div className="sub-navbar-container">
-          {/* Categories removed as requested */}
-          <div className="sub-navbar-filters">
-            <button className="filter-trigger-btn elevate" onClick={() => setShowFilters(true)}>
-              <Sliders size={18} />
-              <span>Filters</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       <main className="main-content">
         {/* Results Header */}
-        <div className="results-header">
+        <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div className="results-info">
             <h2 className="section-title">
               {searchParams.destination ? `Stays in ${searchParams.destination}` : 'Recently added properties'}
@@ -197,7 +188,10 @@ const Home = () => {
               {filteredListings.length} {filteredListings.length === 1 ? 'property' : 'properties'} found
             </div>
           </div>
-          
+          <button className="filter-trigger-btn elevate" onClick={() => setShowFilters(true)} style={{ whiteSpace: 'nowrap' }}>
+            <Sliders size={18} />
+            <span>Filters</span>
+          </button>
         </div>
 
         {/* Active Filter Chips */}
@@ -231,6 +225,7 @@ const Home = () => {
         isOpen={showFilters} 
         onClose={() => setShowFilters(false)}
         onApply={handleFilterApply}
+        availablePropertyTypes={availablePropertyTypes}
       />
 
       {/* ========== OPTION 3: Always-Visible Sidebar (COMMENTED OUT) ========== */}

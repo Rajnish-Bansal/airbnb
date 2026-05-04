@@ -24,9 +24,9 @@ const HostLayoutContent = () => {
     { path: '/become-a-host/step1', name: 'Basics', description: 'Property type' },
     { path: '/become-a-host/step2', name: 'Amenities', description: 'What you offer' },
     { path: '/become-a-host/step3', name: 'Location', description: 'Where is it?' },
-    { path: '/become-a-host/step4', name: 'Booking Settings', description: 'How guests book' },
-    { path: '/become-a-host/step5', name: 'Photos & Title', description: 'Showcase your place' },
-    { path: '/become-a-host/step6', name: 'Pricing', description: 'Set your rates' },
+    { path: '/become-a-host/step4', name: 'Photos & Title', description: 'Showcase your place' },
+    { path: '/become-a-host/step5', name: 'Pricing', description: 'Set your rates' },
+    { path: '/become-a-host/step6', name: 'Booking Settings', description: 'How guests book' },
     { path: '/become-a-host/step7', name: 'Review', description: 'Finalize and post' }
   ];
 

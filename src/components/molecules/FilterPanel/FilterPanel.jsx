@@ -3,7 +3,7 @@ import './FilterPanel.css';
 import { X, Sliders } from 'lucide-react';
 import { useSearch } from '../../../context/SearchContext';
 
-const FilterPanel = ({ isOpen, onClose, onApply }) => {
+const FilterPanel = ({ isOpen, onClose, onApply, availablePropertyTypes }) => {
   const { filters, updateFilters, resetFilters } = useSearch();
   const [localFilters, setLocalFilters] = useState(filters);
 
@@ -20,16 +20,14 @@ const FilterPanel = ({ isOpen, onClose, onApply }) => {
     'Hot Tub',
   ];
 
-  const propertyTypes = [
-    'Apartment',
-    'House',
-    'Villa',
-    'Cabin',
-    'Cottage',
-    'Loft',
-    'Treehouse',
-    'Boat',
-  ];
+  const propertyTypes = availablePropertyTypes && availablePropertyTypes.length > 0
+    ? availablePropertyTypes
+    : [
+      'Apartment/Flat',
+      'Studio',
+      'Villa (Luxury)',
+      'House (Standard)',
+    ];
 
   const handlePriceChange = (index, value) => {
     const newRange = [...localFilters.priceRange];

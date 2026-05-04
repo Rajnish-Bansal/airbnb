@@ -25,7 +25,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
  */
 
 router.put('/profile', authenticateToken, async (req, res) => {
-  const { name, email, phone, bio, avatar } = req.body;
+  const { name, email, phone, bio, avatar, password } = req.body;
   
   try {
     const user = await User.findById(req.user.id);
@@ -37,6 +37,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
     if (phone) user.phone = phone;
     if (bio !== undefined) user.bio = bio;
     if (avatar) user.avatar = avatar;
+    if (password) user.password = password;
 
     await user.save();
     

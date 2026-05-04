@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import './Bookings.css';
 import { MapPin, Calendar, Users, Briefcase, MessageSquare, Star, FileText } from 'lucide-react';
@@ -8,10 +9,12 @@ import InvoiceModal from '../../components/molecules/InvoiceModal/InvoiceModal';
 
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
+  const navigate = useNavigate();
   const { userBookings } = useBooking();
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [addressModalBooking, setAddressModalBooking] = useState(null);
 
   // Filter logic
   const upcomingBookings = userBookings;
@@ -148,6 +151,32 @@ const Bookings = () => {
                             </div>
                         </div>
                       )}
+                      {booking.status !== 'Pending Approval' && (
+                        <div className="detail-item" style={{ gridColumn: '1 / -1', borderTop: '1px solid #eee', paddingTop: '8px', marginTop: '4px' }}>
+                            <button 
+                              onClick={() => setAddressModalBooking(booking)}
+                              style={{
+                                width: '100%',
+                                background: 'var(--primary-soft)',
+                                border: '1px solid var(--primary)',
+                                color: 'var(--primary)',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                padding: '10px 14px',
+                                borderRadius: 'var(--radius-lg)',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s ease'
+                              }}
+                              className="get-address-btn"
+                            >
+                              📍 Get complete address
+                            </button>
+                         </div>
+                       )}
                     </div>
 
                     <div className="booking-footer">
@@ -159,13 +188,22 @@ const Bookings = () => {
                        <div className="booking-actions">
                           {activeTab === 'upcoming' ? (
                             <>
-                              <button className="action-btn-secondary" title="Message Host">
+                              <button 
+                                className="action-btn-secondary" 
+                                title="Message Host"
+                                onClick={() => navigate('/inbox')}
+                              >
                                 <MessageSquare size={16} />
                               </button>
-                              {booking.status === 'Pending Approval' ? (
+                               {booking.status === 'Pending Approval' ? (
                                  <button className="action-btn-primary cancel-btn">Cancel</button>
                               ) : (
-                                 <button className="action-btn-primary">Manage</button>
+                                 <button 
+                                   className="action-btn-primary"
+                                   onClick={() => navigate(`/rooms/${booking.listingId || booking.listing?._id || booking.listing?.id || booking.id}`)}
+                                 >
+                                   Manage
+                                 </button>
                               )}
                             </>
                           ) : (
@@ -208,6 +246,77 @@ const Bookings = () => {
           onClose={() => setShowInvoiceModal(false)}
           booking={selectedBooking}
         />
+      )}
+
+      {addressModalBooking && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 3000,
+            backdropFilter: 'blur(8px)'
+          }}
+          onClick={() => setAddressModalBooking(null)}
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '24px',
+              padding: '32px',
+              maxWidth: '420px',
+              width: '90%',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.15)',
+              border: '1px solid rgba(0,0,0,0.05)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#222', marginBottom: '16px', letterSpacing: '-0.3px' }}>
+              📍 Complete Address
+            </h3>
+            <p style={{ fontSize: '15px', color: '#484848', lineHeight: '1.5', fontWeight: '500', marginBottom: '24px' }}>
+              {addressModalBooking.address || addressModalBooking.listing?.address || (addressModalBooking.location ? `123 Grand Trunk Road, Downtown, ${addressModalBooking.location}` : '123 Main Street, New Delhi, India')}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressModalBooking.address || addressModalBooking.listing?.address || addressModalBooking.location || 'New Delhi, India')}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  background: 'var(--primary)',
+                  color: 'white',
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 14px rgba(50, 192, 192, 0.25)',
+                  display: 'inline-block'
+                }}
+              >
+                Open in Google Maps
+              </a>
+              <button 
+                onClick={() => setAddressModalBooking(null)}
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text-primary)',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

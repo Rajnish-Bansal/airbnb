@@ -65,20 +65,30 @@ const listingSchema = new mongoose.Schema({
     weekly: { type: Number, default: 0 },   // Percentage
     monthly: { type: Number, default: 0 }   // Percentage
   },
+  status: { type: String, enum: ['Active', 'Inactive', 'Pending', 'Payment Required', 'Deleted'], default: 'Active' },
+  isDeleted: { type: Boolean, default: false },
   subscription: {
     plan: { type: String, enum: ['Starter', 'Pro', 'Elite'], default: 'Starter' },
     status: { type: String, enum: ['Active', 'Expired', 'Inactive'], default: 'Inactive' },
     expiryDate: { type: Date },
     autoRenew: { type: Boolean, default: true }
   },
-  customId: { type: String, unique: true, sparse: true }
+  customId: { type: String, unique: true, sparse: true },
+  listingId: { type: String, unique: true, sparse: true },
+  propertyId: { type: String, sparse: true }
 }, { timestamps: true });
 
-// Pre-save hook to generate customId
+// Pre-save hook to generate customId, listingId, and propertyId
 const { generateCustomId } = require('../utils/idGenerator');
 listingSchema.pre('save', async function() {
+  if (!this.propertyId) {
+    this.propertyId = generateCustomId('PROP');
+  }
+  if (!this.listingId) {
+    this.listingId = generateCustomId('LIST');
+  }
   if (!this.customId) {
-    this.customId = generateCustomId('PROP');
+    this.customId = this.listingId;
   }
 });
 

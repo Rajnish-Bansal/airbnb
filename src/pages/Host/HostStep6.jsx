@@ -1,84 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHost } from '../../context/HostContext';
 import { Info, Plus, Pencil, Trash2, IndianRupee, ChevronDown } from 'lucide-react';
+import './HostStep1.css';
 import './HostStep6.css'; 
 
 const HostStep6 = () => {
   const navigate = useNavigate();
   const { listingData, updateListingData, saveDraft } = useHost();
-  
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [newPrice, setNewPrice] = useState(''); // Weekday Price
-  const [newWeekendPrice, setNewWeekendPrice] = useState('');
-  const [newQuantity, setNewQuantity] = useState('1');
-  const [editingIndex, setEditingIndex] = useState(null);
 
-  const handleAddCategory = () => {
-    if (newCategory && newPrice) {
-      const newRoom = {
-        category: newCategory,
-        price: newPrice,
-        weekendPrice: newWeekendPrice,
-        quantity: parseInt(newQuantity) || 1
-      };
-      
-      let updatedRooms;
-      if (editingIndex !== null) {
-        updatedRooms = [...(listingData.rooms || [])];
-        updatedRooms[editingIndex] = newRoom;
-        setEditingIndex(null);
-      } else {
-        updatedRooms = [...(listingData.rooms || []), newRoom];
-      }
-      
-      updateListingData({ rooms: updatedRooms });
-      setNewCategory('');
-      setNewPrice('');
-      setNewWeekendPrice('');
-      setNewQuantity('1');
-      setShowCategoryForm(false);
-    }
-  };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  const handleEditRoom = (index) => {
-    const room = (listingData.rooms || [])[index];
-    if (!room) return;
-    setNewCategory(room.category);
-    setNewPrice(room.price);
-    setNewWeekendPrice(room.weekendPrice || '');
-    setNewQuantity(room.quantity?.toString() || '1');
-    setEditingIndex(index);
-    setShowCategoryForm(true);
+  const getGstRate = (price) => {
+    const p = Number(price) || 0;
+    if (p <= 1000) return 0;
+    if (p <= 7500) return 5;
+    return 18;
   };
-
-  const handleRemoveRoom = (index) => {
-    const updatedRooms = (listingData.rooms || []).filter((_, i) => i !== index);
-    updateListingData({ rooms: updatedRooms });
-    if (editingIndex === index) {
-       setEditingIndex(null);
-       setShowCategoryForm(false);
-    }
-  };
-
-  const cancelEdit = () => {
-    setNewCategory('');
-    setNewPrice('');
-    setNewWeekendPrice('');
-    setNewQuantity('1');
-    setEditingIndex(null);
-    setShowCategoryForm(false);
-  };
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const handleSaveAndExit = () => {
-    saveDraft(6);
+    setShowExitModal(true);
+  };
+
+  const confirmSaveAndExit = () => {
+    saveDraft(5);
     navigate('/become-a-host/dashboard');
   };
 
   const handleNext = () => {
-    saveDraft(7);
-    navigate('/become-a-host/step7');
+    saveDraft(5);
+    navigate('/become-a-host/step6');
   };
 
   return (
@@ -105,7 +59,15 @@ const HostStep6 = () => {
                    type="number"
                    placeholder="0"
                    value={listingData.price}
-                   onChange={(e) => updateListingData({ price: e.target.value })}
+                   onChange={(e) => {
+                     const newPrice = e.target.value;
+                     const currentWeekendPrice = listingData.weekendPrice;
+                     if (!currentWeekendPrice || currentWeekendPrice === listingData.price) {
+                       updateListingData({ price: newPrice, weekendPrice: newPrice });
+                     } else {
+                       updateListingData({ price: newPrice });
+                     }
+                   }}
                  />
                  <span className="per-night">per night</span>
               </div>
@@ -140,15 +102,15 @@ const HostStep6 = () => {
                   </div>
                   <div className="breakdown-row">
                     <div className="info-wrap">
-                      <span>Host service fee (3%)</span>
+                      <span>Payment gateway charges (2%)</span>
                       <Info size={14} className="info-icon" />
                     </div>
-                    <span>-₹{(listingData.price * 0.03).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span>-₹{(listingData.price * 0.02).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="breakdown-divider light"></div>
                   <div className="breakdown-row final">
                     <span>Your payout</span>
-                    <span className="payout-amount">₹{(listingData.price * 0.97).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span className="payout-amount">₹{(listingData.price * 0.98).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
                 </div>
 
@@ -159,20 +121,13 @@ const HostStep6 = () => {
                     <span>₹{Number(listingData.price).toLocaleString()}</span>
                   </div>
                   <div className="breakdown-row">
-                    <div className="info-wrap">
-                      <span>Guest service fee (14%)</span>
-                      <Info size={14} className="info-icon" />
-                    </div>
-                    <span>₹{(listingData.price * 0.14).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                  <div className="breakdown-row">
-                    <span>Taxes (12% GST)</span>
-                    <span>₹{(listingData.price * 0.12).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span>GST ({getGstRate(listingData.price)}%)</span>
+                    <span>₹{(listingData.price * (getGstRate(listingData.price) / 100)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="breakdown-divider light"></div>
                   <div className="breakdown-row final">
                     <span>Total guest price</span>
-                    <span className="guest-total">₹{(listingData.price * 1.26).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span className="guest-total">₹{(Number(listingData.price || 0) + (listingData.price * (getGstRate(listingData.price) / 100))).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
                 </div>
               </div>
@@ -180,135 +135,6 @@ const HostStep6 = () => {
           )}
         </div>
 
-        {/* Room Categories Section */}
-        <section className="room-categories-section">
-          <div className="card-header">
-            <h2 className="section-title">Room Categories</h2>
-            {listingData.rooms?.length > 0 && !showCategoryForm && (
-              <button className="add-category-inline-btn" onClick={() => setShowCategoryForm(true)}>
-                <Plus size={16} /> Add Category
-              </button>
-            )}
-          </div>
-          <p className="section-desc">Add different room types or specific rates for certain categories.</p>
-
-          <div className="room-list">
-            {(listingData.rooms || []).map((room, index) => (
-              <div key={index} className={`room-item-card glass-card premium-border ${editingIndex === index ? 'editing' : ''}`}>
-                <div className="room-info">
-                  <div className="room-header">
-                    <span className="room-name">{room.category}</span>
-                    <span className="room-count">{room.quantity} rooms</span>
-                  </div>
-                  <div className="room-price-details">
-                    <span className="main-price">₹{Number(room.price).toLocaleString()} <small>weekday</small></span>
-                    {room.weekendPrice && (
-                      <span className="weekend-price">₹{Number(room.weekendPrice).toLocaleString()} <small>weekend</small></span>
-                    )}
-                  </div>
-                  
-                  {/* Per-room breakdown preview */}
-                  <div className="room-payout-preview">
-                    <span>Est. payout: ₹{(room.price * 0.97).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                </div>
-                <div className="room-actions">
-                  <button className="icon-btn edit-btn" onClick={() => handleEditRoom(index)}>
-                    <Pencil size={18} />
-                  </button>
-                  <button className="icon-btn delete-btn" onClick={() => handleRemoveRoom(index)}>
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {!showCategoryForm ? (
-            listingData.rooms?.length === 0 && (
-              <button className="add-category-action focus-glow" onClick={() => setShowCategoryForm(true)}>
-                <div className="tip-icon"><Plus size={24} /></div>
-                <span>Add a room category or specific rate</span>
-              </button>
-            )
-          ) : (
-            <div className="add-category-form-card glass-card premium-border">
-              <h3 className="form-title">{editingIndex !== null ? 'Edit Category' : 'Add New Category'}</h3>
-              
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>Category Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Deluxe Room, Sea View Suite"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Weekday Price</label>
-                  <div className="price-input-small">
-                    <span>₹</span>
-                    <input 
-                      type="number"
-                      placeholder="0"
-                      value={newPrice}
-                      onChange={(e) => setNewPrice(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Weekend Price</label>
-                  <div className="price-input-small">
-                    <span>₹</span>
-                    <input 
-                      type="number"
-                      placeholder="0"
-                      value={newWeekendPrice}
-                      onChange={(e) => setNewWeekendPrice(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Quantity</label>
-                  <input 
-                    type="number"
-                    min="1"
-                    value={newQuantity}
-                    onChange={(e) => setNewQuantity(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {newPrice > 0 && (
-                <div className="mini-breakdown">
-                  <div className="mini-row">
-                    <span>Est. host payout:</span>
-                    <span className="text-green">₹{(newPrice * 0.97).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                  <div className="mini-row">
-                    <span>Est. guest total:</span>
-                    <span className="text-pink">₹{(newPrice * 1.26).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="form-actions">
-                <button className="btn-ghost" onClick={cancelEdit}>Cancel</button>
-                <button 
-                  className="btn-solid" 
-                  onClick={handleAddCategory}
-                  disabled={!newCategory || !newPrice}
-                >
-                  {editingIndex !== null ? 'Update Category' : 'Add Category'}
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
 
         {/* Stay Requirements Section */}
         <section className="step-section" style={{ marginTop: '48px' }}>
@@ -364,48 +190,58 @@ const HostStep6 = () => {
           </div>
         </section>
 
-        {/* Cancellation Policy Section */}
-        <section className="step-section">
-          <h2 className="step-heading">Cancellation Policy <span style={{ color: 'var(--primary)' }}>*</span></h2>
-          <div className="glass-card premium-border" style={{ padding: '24px', borderRadius: '24px' }}>
-            <p style={{ fontSize: '14px', color: '#717171', marginBottom: '24px' }}>
-              Choose a standard cancellation policy for your listing:
-            </p>
-            
-            <div className="guest-dropdown-wrapper glass-card premium-border" style={{ padding: '8px', borderRadius: '16px', maxWidth: '100%', marginBottom: '24px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <select 
-                className="guest-select cancel-select-no-arrow"
-                value={listingData.cancellationPolicyType || 'Flexible'}
-                onChange={(e) => updateListingData({ cancellationPolicyType: e.target.value })}
-                style={{ border: 'none', background: 'transparent', width: '100%', padding: '8px', fontSize: '16px', fontWeight: '400', color: '#717171', appearance: 'none', outline: 'none', cursor: 'pointer', zIndex: 1 }}
-              >
-                <option value="Flexible">Flexible - Full refund 1 day prior to arrival</option>
-                <option value="Moderate">Moderate - Full refund 5 days prior to arrival</option>
-                <option value="Strict">Strict - 50% refund up to 1 week before arrival</option>
-                <option value="Non-Refundable">Non-Refundable - No refunds after booking</option>
-              </select>
-              <div style={{ position: 'absolute', right: '16px', pointerEvents: 'none', color: '#717171', zIndex: 0 }}>
-                <ChevronDown size={20} />
-              </div>
-            </div>
-
-            <div style={{ padding: '16px', background: '#f7f7f7', borderRadius: '12px', border: '1px solid #e2e2e2' }}>
-              <p style={{ fontSize: '13px', color: '#717171', margin: 0, lineHeight: '1.6' }}>
-                Hint: A flexible policy attracts more bookings (recommended for new hosts), while a stricter policy gives you more certainty if guests cancel.
-              </p>
-            </div>
-          </div>
-        </section>
 
       </div>
 
       <div className="host-footer">
-        <button className="back-btn" onClick={() => navigate('/become-a-host/step5')}>Back</button>
+        <button className="back-btn" onClick={() => navigate('/become-a-host/step4')}>Back</button>
         <div className="footer-right">
            <button className="save-exit-btn" onClick={handleSaveAndExit}>Save & Exit</button>
            <button className="next-btn" onClick={handleNext}>Save & Next</button>
         </div>
       </div>
+
+      {showExitModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div className="glass-card premium-border" style={{
+            background: 'white', padding: '32px', borderRadius: '24px',
+            maxWidth: '400px', width: '90%', textAlign: 'center',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.12)'
+          }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '12px', color: '#222' }}>
+              Save and Exit?
+            </h3>
+            <p style={{ fontSize: '14px', color: '#717171', marginBottom: '24px', lineHeight: '1.5' }}>
+              Are you sure you want to save your progress and exit the onboarding? You can always continue where you left off.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setShowExitModal(false)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #ddd',
+                  background: 'white', fontWeight: '600', cursor: 'pointer', color: '#222'
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmSaveAndExit}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
+                  background: 'var(--primary, #FF385C)', color: 'white', fontWeight: '600', cursor: 'pointer'
+                }}
+              >
+                Yes, Save & Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

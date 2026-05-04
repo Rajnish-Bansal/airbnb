@@ -8,6 +8,7 @@ export const BookingProvider = ({ children }) => {
       id: 1,
       title: "Modern Loft in Downtown",
       location: "San Francisco",
+      address: "789 Mission Street, San Francisco, CA 94103, USA",
       dates: "Dec 12 - Dec 18",
       guests: "1 guest",
       price: "₹18,500",
@@ -23,6 +24,7 @@ export const BookingProvider = ({ children }) => {
        id: 3,
        title: "Secluded Treehouse",
        location: "Kerala",
+       address: "123 Rainforest Lane, Wayanad, Kerala 673121, India",
        dates: "Jan 15 - Jan 20",
        guests: "1 guest",
        price: "₹45,000",
@@ -46,8 +48,12 @@ export const BookingProvider = ({ children }) => {
     setUserBookings(prev => [newBooking, ...prev]);
   };
 
+  const cancelBooking = (id) => {
+    setUserBookings(prev => prev.filter(b => b.id !== id));
+  };
+
   return (
-    <BookingContext.Provider value={{ userBookings, addBooking }}>
+    <BookingContext.Provider value={{ userBookings, addBooking, cancelBooking }}>
       {children}
     </BookingContext.Provider>
   );

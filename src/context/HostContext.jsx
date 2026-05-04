@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { fetchMyListings } from '../services/api';
+import { fetchMyListings, deleteListing as apiDeleteListing } from '../services/api';
+
 
 const HostContext = createContext();
 
@@ -262,8 +263,8 @@ export const HostProvider = ({ children }) => {
           id: l._id,
           hostId: String(l.hostId),
           title: l.title || l.description?.split(' - ')[0] || `Stay in ${l.location}`,
-          // Map explicitly from the nested MongoDB subscription object. Fallback to Payment Required.
-          status: l.subscription?.status === 'Active' ? 'Active' : (l.status || 'Payment Required'),
+          // Use database status. If deleted, it's Deleted. If missing, use subscription status. Fallback to Payment Required.
+          status: (l.isDeleted || String(l.status || '').toLowerCase() === 'deleted') ? 'Deleted' : (l.status ? l.status : (l.subscription?.status === 'Active' ? 'Active' : 'Payment Required')),
           rating: l.rating || 0,
           reviewsCount: l.reviewsCount || 0,
           createdAt: l.createdAt || new Date().toISOString(),
@@ -271,6 +272,15 @@ export const HostProvider = ({ children }) => {
                   || (l.image ? [l.image] : [])
         }));
         setApiListings(normalized);
+        setListings(prev => {
+          const draftListings = prev.filter(l => l.status === 'In Progress');
+          const next = [
+            ...draftListings,
+            ...normalized
+          ];
+          localStorage.setItem('host_listings', JSON.stringify(next));
+          return next;
+        });
       }
     } catch (err) {
       console.warn('Could not load listings from API:', err.message);
@@ -376,11 +386,41 @@ export const HostProvider = ({ children }) => {
     setListings(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
   };
 
-  const deleteListing = (id) => {
-    // Confirmation handled by UI modal
-    console.log("Deleting listing with ID:", id);
-    setListings(prev => prev.filter(l => l.id != id));
+  const deleteListing = async (id) => {
+    try {
+      console.log("Deleting listing with ID:", id);
+      await apiDeleteListing(id);
+      setListings(prev => {
+        const exists = prev.some(l => String(l._id || l.id) === String(id));
+        let next;
+        if (exists) {
+          next = prev.map(l => String(l._id || l.id) === String(id) ? { ...l, status: 'Deleted', isDeleted: true } : l);
+        } else {
+          const dbListing = apiListings.find(l => String(l._id || l.id) === String(id));
+          next = [...prev, { ...(dbListing || {}), id, _id: id, status: 'Deleted', isDeleted: true }];
+        }
+        localStorage.setItem('host_listings', JSON.stringify(next));
+        return next;
+      });
+      setApiListings(prev => prev.map(l => String(l._id || l.id) === String(id) ? { ...l, status: 'Deleted', isDeleted: true } : l));
+    } catch (err) {
+      console.warn("Failed to delete listing from API, falling back to local deletion:", err.message);
+      setListings(prev => {
+        const exists = prev.some(l => String(l._id || l.id) === String(id));
+        let next;
+        if (exists) {
+          next = prev.map(l => String(l._id || l.id) === String(id) ? { ...l, status: 'Deleted', isDeleted: true } : l);
+        } else {
+          const dbListing = apiListings.find(l => String(l._id || l.id) === String(id));
+          next = [...prev, { ...(dbListing || {}), id, _id: id, status: 'Deleted', isDeleted: true }];
+        }
+        localStorage.setItem('host_listings', JSON.stringify(next));
+        return next;
+      });
+      setApiListings(prev => prev.map(l => String(l._id || l.id) === String(id) ? { ...l, status: 'Deleted', isDeleted: true } : l));
+    }
   };
+
 
   const importExternalListing = async (url) => {
     try {
@@ -467,6 +507,7 @@ export const HostProvider = ({ children }) => {
       rejectListing,
       activateUnits,
       importExternalListing,
+      importhostifyListing: importExternalListing,
       refreshListings
     }}>
       {children}

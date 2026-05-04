@@ -165,16 +165,16 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
+  background: #222222;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #222;
+  color: #ffffff;
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .photo-card:hover .delete-photo-btn {
@@ -182,8 +182,8 @@
 }
 
 .delete-photo-btn:hover {
-  background: white;
-  color: var(--primary);
+  background: #000000;
+  color: #ffffff;
   transform: scale(1.1);
 }
 
