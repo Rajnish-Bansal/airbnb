@@ -1263,6 +1263,9 @@ const HostDashboard = () => {
             <button onClick={() => setActiveTab('financials')} className={`nav-item ${activeTab === 'financials' ? 'active' : ''}`}>
              Financials & Payouts
             </button>
+           <button onClick={() => setActiveTab('transactions')} className={`nav-item ${activeTab === 'transactions' ? 'active' : ''}`}>
+             Transactions
+           </button>
            <button onClick={() => setActiveTab('messages')} className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`}>
              Messages <span className="badge-count">1</span>
            </button>
