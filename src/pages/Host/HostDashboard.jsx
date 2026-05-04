@@ -2275,7 +2275,11 @@ const HostDashboard = () => {
                       </div>
                    </div>
                 </div>
+             </div>
+          )}
 
+          {activeTab === 'transactions' && (
+             <div className="financials-layout-premium">
                 <div className="financials-grid-content" style={{ display: 'grid', gridTemplateColumns: '1fr', width: '100%' }}>
                    {/* Transaction History Sub-Tab */}
                    <div className="txn-history-section">
