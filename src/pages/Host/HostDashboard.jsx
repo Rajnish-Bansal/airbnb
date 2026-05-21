@@ -50,6 +50,8 @@ const HostDashboard = () => {
   // Read from URL, fallback to defaults
   const activeTab = searchParams.get('tab') || 'overview';
   const listingFilter = searchParams.get('filter') || 'All';
+  const [financialSubTab, setFinancialSubTab] = useState('transactions');
+  const [editSection, setEditSection] = useState(null); // null, 'bank', or 'tax'
 
   // Helper functions to update URL
   const setActiveTab = (tab) => {
@@ -1260,12 +1262,9 @@ const HostDashboard = () => {
            <button onClick={() => setActiveTab('calendar')} className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`}>
              Calendar
            </button>
-            <button onClick={() => setActiveTab('financials')} className={`nav-item ${activeTab === 'financials' ? 'active' : ''}`}>
+            <button onClick={() => { setActiveTab('financials'); setFinancialSubTab('transactions'); }} className={`nav-item ${activeTab === 'financials' ? 'active' : ''}`}>
              Financials & Payouts
             </button>
-           <button onClick={() => setActiveTab('transactions')} className={`nav-item ${activeTab === 'transactions' ? 'active' : ''}`}>
-             Transactions
-           </button>
            <button onClick={() => setActiveTab('messages')} className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`}>
              Messages <span className="badge-count">1</span>
            </button>
@@ -2206,83 +2205,42 @@ const HostDashboard = () => {
 
 
          {activeTab === 'financials' && (
-            <div className="financials-layout-premium">
-                {/* Financial Summary Cards */}
-                <div className="financials-hero-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                   <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #10b981', padding: '24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', minHeight: '160px' }}>
-                      <div className="balance-label" style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Earnings</div>
-                      <div className="balance-amount-large" style={{ fontSize: '34px', fontWeight: '800', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                         <span style={{ fontSize: '24px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.availableBalance?.toLocaleString('en-IN') || '0'}
-                      </div>
-                      <p className="balance-subtext" style={{ color: '#059669', background: '#ecfdf5', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
-                         ✓ Transferred automatically after check-in
-                      </p>
-                   </div>
-                   
-                   <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #3b82f6', padding: '24px', borderRadius: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', minHeight: '160px' }}>
-                      <div className="balance-label" style={{ fontSize: '12px', fontWeight: '700', color: '#3b82f6', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming Earnings</div>
-                      <div className="balance-amount-large" style={{ fontSize: '34px', fontWeight: '800', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                         <span style={{ fontSize: '24px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.pendingBalance?.toLocaleString('en-IN') || '0'}
-                      </div>
-                      <p className="balance-subtext" style={{ color: '#1e40af', background: '#eff6ff', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
-                         ℹ Held in escrow until guest check-in
-                      </p>
-                   </div>
-                </div>
-
-                {/* Bank & Tax Details Section - Prominent Row */}
-                <div className="prominent-bank-tax-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', margin: '32px 0' }}>
-                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                         <div>
-                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Bank Account</h3>
-                            <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Where you receive your money.</p>
-                         </div>
-                         <button className="btn-edit-small" onClick={() => setActiveTab('payout-details')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
-                      </div>
-                      
-                      {bankDetails.accountNumber ? (
-                         <div className="saved-bank-box" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                            <div className="bank-logo-placeholder" style={{ fontSize: '24px' }}>🏦</div>
-                            <div className="bank-names">
-                               <div className="bank-primary-name" style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>{bankDetails.bankName}</div>
-                               <div className="bank-acc-hidden" style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>•••• {bankDetails.accountNumber.slice(-4)}</div>
-                            </div>
-                         </div>
-                      ) : (
-                         <div className="empty-bank-box" onClick={() => setActiveTab('payout-details')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px dashed #cbd5e1', cursor: 'pointer' }}>
-                            <span className="plus-icon" style={{ fontSize: '18px', fontWeight: 'bold' }}>+</span>
-                            <span style={{ fontSize: '14px', color: '#475569', fontWeight: '600' }}>Add bank account</span>
-                         </div>
-                      )}
-                   </div>
-
-                   <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                         <div>
-                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Tax Information</h3>
-                            <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Entity type & identification details.</p>
-                         </div>
-                         <button onClick={() => setActiveTab('payout-details')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
-                      </div>
-
-                      <div className="tax-summary-mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                         <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '13px', color: '#64748b' }}>Entity Type</span>
-                            <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? 'Individual' : 'Business'}</strong>
-                         </div>
-                         <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '13px', color: '#64748b' }}>PAN Number</span>
-                            <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? taxInfo.pan || 'Not Provided' : companyDetails.pan || 'Not Provided'}</strong>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-             </div>
-          )}
-
-          {activeTab === 'transactions' && (
              <div className="financials-layout-premium">
+                 <div className="financials-sub-tab-nav" style={{ display: 'flex', gap: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '16px' }}>
+                    <button onClick={() => setFinancialSubTab('transactions')} style={{ background: 'transparent', border: 'none', borderBottom: financialSubTab === 'transactions' ? '3px solid #0f172a' : '3px solid transparent', color: financialSubTab === 'transactions' ? '#0f172a' : '#64748b', fontWeight: '700', fontSize: '15px', padding: '6px 4px', cursor: 'pointer', transition: 'all 0.2s' }}>Transactions Ledger</button>
+                    <button onClick={() => setFinancialSubTab('payout')} style={{ background: 'transparent', border: 'none', borderBottom: financialSubTab === 'payout' ? '3px solid #0f172a' : '3px solid transparent', color: financialSubTab === 'payout' ? '#0f172a' : '#64748b', fontWeight: '700', fontSize: '15px', padding: '6px 4px', cursor: 'pointer', transition: 'all 0.2s' }}>Bank Account & Tax Setup</button>
+                 </div>
+
+            {financialSubTab === 'transactions' && (
+              <>
+                 <div style={{ marginBottom: '32px' }}>
+                    <div className="financials-hero-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                       <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #10b981', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.04)', minHeight: '85px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                             <div className="balance-label" style={{ fontSize: '11px', fontWeight: '700', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Earnings</div>
+                             <div className="balance-amount-large" style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                <span style={{ fontSize: '16px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.availableBalance?.toLocaleString('en-IN') || '0'}
+                             </div>
+                          </div>
+                          <p className="balance-subtext" style={{ color: '#059669', background: '#ecfdf5', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
+                             ✓ Transferred automatically after check-in
+                          </p>
+                       </div>
+                       
+                       <div className="balance-card-main" style={{ background: 'white', border: '1px solid #f1f5f9', borderLeft: '4px solid #3b82f6', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.04)', minHeight: '85px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                             <div className="balance-label" style={{ fontSize: '11px', fontWeight: '700', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upcoming Earnings</div>
+                             <div className="balance-amount-large" style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                <span style={{ fontSize: '16px', color: '#64748b', fontWeight: '500' }}>₹</span>{payoutData?.summary?.pendingBalance?.toLocaleString('en-IN') || '0'}
+                             </div>
+                          </div>
+                          <p className="balance-subtext" style={{ color: '#1e40af', background: '#eff6ff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', margin: 0 }}>
+                             ℹ Held in escrow until guest check-in
+                          </p>
+                       </div>
+                    </div>
+                 </div>
+
                 <div className="financials-grid-content" style={{ display: 'grid', gridTemplateColumns: '1fr', width: '100%' }}>
                    {/* Transaction History Sub-Tab */}
                    <div className="txn-history-section">
@@ -2403,132 +2361,195 @@ const HostDashboard = () => {
                       </div>
                   </div>
                </div>
-            </div>
+              </>
          )}
 
-         {activeTab === 'payout-details' && (
-            <div className="financials-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-               <button onClick={() => setActiveTab('financials')} className="btn-back-overview" style={{ background: 'none', border: 'none', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
-                  ← Back to Overview
-               </button>
-               <div className="financials-card">
-                  <div className="financials-header">
-                     <div className="header-icon-wrapper">
-                        <span className="secure-lock">🔒</span>
-                     </div>
-                     <div className="header-text">
-                        <h3>Payout & Tax Setup</h3>
-                        <p>Securely manage your payout and tax details. These are never shared with guests.</p>
-                     </div>
-                  </div>
+         {financialSubTab === 'payout' && (
+            <div className="financials-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', maxWidth: '1100px', margin: '0 auto' }}>
+                 {!editSection ? (
+                    <div className="prominent-bank-tax-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', margin: '24px 0' }}>
+                       {/* Card 1: Bank Account */}
+                       <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                             <div>
+                                <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Bank Account</h3>
+                                <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Where you receive your money.</p>
+                             </div>
+                             <button onClick={() => setEditSection('bank')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
+                          </div>
+                          
+                          {bankDetails.accountNumber ? (
+                             <div className="saved-bank-box" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                <div className="bank-logo-placeholder" style={{ fontSize: '24px' }}>🏦</div>
+                                <div className="bank-names">
+                                   <div className="bank-primary-name" style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>{bankDetails.bankName}</div>
+                                   <div className="bank-acc-hidden" style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>•••• {bankDetails.accountNumber.slice(-4)}</div>
+                                </div>
+                             </div>
+                          ) : (
+                             <div className="empty-bank-box" onClick={() => setEditSection('bank')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px dashed #cbd5e1', cursor: 'pointer' }}>
+                                <span className="plus-icon" style={{ fontSize: '18px', fontWeight: 'bold' }}>+</span>
+                                <span style={{ fontSize: '14px', color: '#475569', fontWeight: '600' }}>Add bank account</span>
+                             </div>
+                          )}
+                       </div>
 
-                  <div className="financials-section">
-                     <h4>Tax Information</h4>
-                     
-                     <div className="host-type-selector">
-                        <label className={`type-option ${hostType === 'individual' ? 'active' : ''}`}>
-                           <input type="radio" name="hostType" value="individual" checked={hostType === 'individual'} onChange={() => setHostType('individual')} />
-                           Individual
-                        </label>
-                        <label className={`type-option ${hostType === 'company' ? 'active' : ''}`}>
-                           <input type="radio" name="hostType" value="company" checked={hostType === 'company'} onChange={() => setHostType('company')} />
-                           Company / Business
-                        </label>
-                     </div>
+                       {/* Card 2: Tax Information */}
+                       <div className="prominent-card-premium" style={{ background: 'white', border: '1px solid #f1f5f9', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '190px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                             <div>
+                                <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Tax Information</h3>
+                                <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '14px' }}>Entity type & identification details.</p>
+                             </div>
+                             <button onClick={() => setEditSection('tax')} style={{ padding: '6px 14px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
+                          </div>
 
-                     <div className="financials-form-grid">
-                        {hostType === 'individual' ? (
-                           <>
-                              <div className="form-group">
-                                 <label>PAN Number</label>
-                                 <input type="text" name="pan" value={taxInfo.pan} onChange={handleTaxUpdate} placeholder="e.g. ABCDE1234F" />
+                          <div className="tax-summary-mini" style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                             <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: '13px', color: '#64748b' }}>Entity Type</span>
+                                <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? 'Individual' : 'Business'}</strong>
+                             </div>
+                             <div className="tax-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: '13px', color: '#64748b' }}>PAN Number</span>
+                                <strong style={{ fontSize: '14px', color: '#0f172a' }}>{hostType === 'individual' ? taxInfo.pan || 'Not Provided' : companyDetails.pan || 'Not Provided'}</strong>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+                       <div className="financials-card" style={{ background: 'white', padding: '32px', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                          <div className="financials-header" style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid #f1f5f9', paddingBottom: '24px' }}>
+                             <div className="header-icon-wrapper" style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                                <span className="secure-lock">🔒</span>
+                             </div>
+                             <div className="header-text">
+                                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>{editSection === 'bank' ? 'Bank Account Setup' : 'Tax Information Setup'}</h3>
+                                <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>Securely manage your {editSection === 'bank' ? 'payout' : 'tax'} details. These are never shared with guests.</p>
+                             </div>
+                          </div>
+
+                          {editSection === 'tax' && (
+                          <div className="financials-section">
+                             <h4 style={{ margin: '0 0 20px 0', fontSize: '16px', fontWeight: '700', color: '#334155' }}>Tax Information</h4>
+                             
+                             <div className="host-type-selector" style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                                <label className={`type-option ${hostType === 'individual' ? 'active' : ''}`} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: hostType === 'individual' ? '2px solid #0f172a' : '2px solid #e2e8f0', background: hostType === 'individual' ? '#f8fafc' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600', fontSize: '14px' }}>
+                                   <input type="radio" name="hostType" value="individual" checked={hostType === 'individual'} onChange={() => setHostType('individual')} />
+                                   Individual
+                                </label>
+                                <label className={`type-option ${hostType === 'company' ? 'active' : ''}`} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: hostType === 'company' ? '2px solid #0f172a' : '2px solid #e2e8f0', background: hostType === 'company' ? '#f8fafc' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600', fontSize: '14px' }}>
+                                   <input type="radio" name="hostType" value="company" checked={hostType === 'company'} onChange={() => setHostType('company')} />
+                                   Company / Business
+                                </label>
+                             </div>
+
+                             <div className="financials-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                {hostType === 'individual' ? (
+                                   <>
+                                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>PAN Number</label>
+                                         <input type="text" name="pan" value={taxInfo.pan} onChange={handleTaxUpdate} placeholder="e.g. ABCDE1234F" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                      </div>
+                                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>GSTIN (Optional)</label>
+                                         <input type="text" name="gstin" value={taxInfo.gstin} onChange={handleTaxUpdate} placeholder="GST Number" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                      </div>
+                                   </>
+                                ) : (
+                                   <>
+                                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: 'span 2' }}>
+                                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Company Name</label>
+                                         <input type="text" name="name" value={companyDetails.name} onChange={handleCompanyUpdate} placeholder="Registered Company Name" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                      </div>
+                                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Company PAN</label>
+                                         <input type="text" name="pan" value={companyDetails.pan} onChange={handleCompanyUpdate} placeholder="Company PAN" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                      </div>
+                                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>GSTIN (Mandatory)</label>
+                                         <input type="text" name="gstin" value={companyDetails.gstin} onChange={handleCompanyUpdate} placeholder="GST Number" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                      </div>
+                                   </>
+                                )}
+                             </div>
+                          </div>
+                          )}
+
+                          {editSection === 'bank' && (
+                           <div className="financials-section">
+                              <h4 style={{ margin: '0 0 20px 0', fontSize: '16px', fontWeight: '700', color: '#334155' }}>Bank Account Details</h4>
+                              <div className="financials-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: 'span 2' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Account Holder Name</label>
+                                    <input type="text" name="holderName" value={bankDetails.holderName} onChange={handleBankUpdate} placeholder="Name as per bank records" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                 </div>
+                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: 'span 2' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Bank Name</label>
+                                    <select 
+                                      name="bankName" 
+                                      value={bankDetails.bankName} 
+                                      onChange={handleBankUpdate}
+                                      style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: 'white' }}
+                                    >
+                                       <option value="">Select your bank</option>
+                                       {POPULAR_BANKS.map(bank => (
+                                          <option key={bank} value={bank}>{bank}</option>
+                                       ))}
+                                    </select>
+                                 </div>
+                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Account Number</label>
+                                    <input type="text" name="accountNumber" value={bankDetails.accountNumber} onChange={handleBankUpdate} placeholder="Enter account number" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                 </div>
+                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>IFSC Code</label>
+                                    <input type="text" name="ifsc" value={bankDetails.ifsc} onChange={handleBankUpdate} placeholder="e.g. HDFC0001234" style={{ padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} />
+                                 </div>
                               </div>
-                              <div className="form-group">
-                                 <label>GSTIN (Optional)</label>
-                                 <input type="text" name="gstin" value={taxInfo.gstin} onChange={handleTaxUpdate} placeholder="GST Number" />
-                              </div>
-                           </>
-                        ) : (
-                           <>
-                              <div className="form-group full-width">
-                                 <label>Company Name</label>
-                                 <input type="text" name="name" value={companyDetails.name} onChange={handleCompanyUpdate} placeholder="Registered Company Name" />
-                              </div>
-                              <div className="form-group">
-                                 <label>Company PAN</label>
-                                 <input type="text" name="pan" value={companyDetails.pan} onChange={handleCompanyUpdate} placeholder="Company PAN" />
-                              </div>
-                              <div className="form-group">
-                                 <label>GSTIN (Mandatory)</label>
-                                 <input type="text" name="gstin" value={companyDetails.gstin} onChange={handleCompanyUpdate} placeholder="GST Number" />
-                              </div>
-                           </>
-                        )}
-                     </div>
-                  </div>
+                           </div>
+                          )}
 
-                  <div className="separator-line"></div>
+                          <div className="financials-actions" style={{ marginTop: '40px', display: 'flex', gap: '16px' }}>
+                             <button 
+                                style={{ background: '#0f172a', color: 'white', padding: '14px 32px', borderRadius: '12px', border: 'none', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                                onClick={() => {
+                                   localStorage.setItem('hostify_bank_details', JSON.stringify(bankDetails));
+                                   localStorage.setItem('hostify_tax_info', JSON.stringify(taxInfo));
+                                   localStorage.setItem('hostify_company_details', JSON.stringify(companyDetails));
+                                   localStorage.setItem('hostify_host_type', hostType);
+                                   alert(`${editSection === 'bank' ? 'Bank account' : 'Tax information'} has been securely updated!`);
+                                   setEditSection(null);
+                                }}
+                             >
+                                Save Details
+                             </button>
+                             <button 
+                                type="button"
+                                style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a', padding: '14px 32px', borderRadius: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                                onClick={() => setEditSection(null)}
+                             >
+                                Cancel
+                             </button>
+                          </div>
+                       </div>
 
-                   <div className="financials-section">
-                      <h4>Bank Account Details</h4>
-                      <div className="financials-form-grid">
-                         <div className="form-group full-width">
-                            <label>Account Holder Name</label>
-                            <input type="text" name="holderName" value={bankDetails.holderName} onChange={handleBankUpdate} placeholder="Name as per bank records" />
-                         </div>
-                         <div className="form-group full-width">
-                            <label>Bank Name</label>
-                            <select 
-                              name="bankName" 
-                              value={bankDetails.bankName} 
-                              onChange={handleBankUpdate}
-                            >
-                               <option value="">Select your bank</option>
-                               {POPULAR_BANKS.map(bank => (
-                                  <option key={bank} value={bank}>{bank}</option>
-                               ))}
-                            </select>
-                         </div>
-                         <div className="form-group">
-                            <label>Account Number</label>
-                            <input type="text" name="accountNumber" value={bankDetails.accountNumber} onChange={handleBankUpdate} placeholder="Enter account number" />
-                         </div>
-                         <div className="form-group">
-                            <label>IFSC Code</label>
-                            <input type="text" name="ifsc" value={bankDetails.ifsc} onChange={handleBankUpdate} placeholder="e.g. HDFC0001234" />
-                         </div>
-                      </div>
-                   </div>
-
-                  <div className="financials-actions">
-                     <button 
-                        className="btn-primary"
-                        onClick={() => {
-                           localStorage.setItem('hostify_bank_details', JSON.stringify(bankDetails));
-                           localStorage.setItem('hostify_tax_info', JSON.stringify(taxInfo));
-                           localStorage.setItem('hostify_company_details', JSON.stringify(companyDetails));
-                           localStorage.setItem('hostify_host_type', hostType);
-                           alert('Your bank account and tax information has been securely updated!');
-                           setActiveTab('financials');
-                        }}
-                     >
-                        Save Financial Details
-                     </button>
-                  </div>
-               </div>
-
-               <div className="financials-sidebar">
-                  <div className="secure-note-card">
-                     <h4>Why is this needed?</h4>
-                     <p>We need your bank details to send you payouts for your bookings. Tax info is required for regulatory compliance.</p>
-                     <div className="secure-badge">
-                        <span>🔒 256-bit SSL Encrypted</span>
-                     </div>
-                  </div>
-               </div>
+                       <div className="financials-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                          <div className="secure-note-card" style={{ background: '#f8fafc', padding: '24px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
+                             <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>Why is this needed?</h4>
+                             <p style={{ margin: 0, fontSize: '14px', color: '#64748b', lineHeight: '1.6' }}>{editSection === 'bank' ? 'We need your bank details to send you payouts for your bookings.' : 'Tax info is required for regulatory compliance and invoice generation.'}</p>
+                             <div className="secure-badge" style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#059669' }}>
+                                <span>🔒 256-bit SSL Encrypted</span>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 )}
             </div>
          )}
-         
+      </div>
+   )}
+
          {activeTab === 'messages' && (
             <div className="messages-content">
                <div className="messages-sidebar-layout">

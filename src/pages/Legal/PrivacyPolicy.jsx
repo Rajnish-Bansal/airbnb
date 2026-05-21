@@ -85,7 +85,7 @@ const PrivacyPolicy = () => (
         <h2><span>7</span> Contact</h2>
         <p>If you have questions about this Privacy Policy, contact our Data Protection team at:</p>
         <p><strong>Email:</strong> privacy@hostify.in<br />
-        <strong>Address:</strong> Hostify Technologies Pvt. Ltd., Bangalore, Karnataka, India — 560001</p>
+        <strong>Address:</strong> Aarbee Technologies, Bangalore, Karnataka, India — 560001</p>
       </div>
 
       <p className="legal-updated">Last updated: April 2026 &nbsp;·&nbsp; <Link to="/terms" style={{ color: '#db2777' }}>View Terms of Service</Link></p>

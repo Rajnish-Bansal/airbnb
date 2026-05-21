@@ -51,7 +51,7 @@ const Contact = () => {
           <div className="contact-card">
             <div className="contact-card-icon">📍</div>
             <h3>Registered Address</h3>
-            <p>Hostify Technologies Pvt. Ltd.<br />Bangalore, Karnataka — 560001<br />India</p>
+            <p>Aarbee Technologies<br />Bangalore, Karnataka — 560001<br />India</p>
           </div>
         </div>
 

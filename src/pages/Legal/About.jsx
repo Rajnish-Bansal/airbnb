@@ -24,7 +24,7 @@ const About = () => (
 
       <div className="legal-section">
         <h2><span>1</span> Who We Are</h2>
-        <p><strong>Hostify Technologies Pvt. Ltd.</strong> is an Indian technology company operating an online marketplace for short-term and boutique property rentals. We connect property owners ("Hosts") with domestic and international travellers ("Guests") looking for unique, high-quality accommodation experiences.</p>
+        <p><strong>Aarbee Technologies</strong> is an Indian technology company operating an online marketplace for short-term and boutique property rentals. We connect property owners ("Hosts") with domestic and international travellers ("Guests") looking for unique, high-quality accommodation experiences.</p>
         <p>Incorporated under the Companies Act 2013, Hostify is registered in Bangalore, Karnataka, India.</p>
       </div>
 
@@ -54,7 +54,7 @@ const About = () => (
 
       <div className="legal-section">
         <h2><span>5</span> Legal & Compliance</h2>
-        <p><strong>Company Name:</strong> Hostify Technologies Pvt. Ltd.<br />
+        <p><strong>Company Name:</strong> Aarbee Technologies<br />
         <strong>Registered Address:</strong> Bangalore, Karnataka, India — 560001<br />
         <strong>CIN:</strong> U74999KA2024PTC000001<br />
         <strong>GST Number:</strong> 29AABCH1234A1Z5<br />
@@ -70,7 +70,7 @@ const About = () => (
         <p style={{ marginTop: '16px' }}><Link to="/contact" style={{ color: '#db2777', fontWeight: 600 }}>→ Go to Support Contact Form</Link></p>
       </div>
 
-      <p className="legal-updated">Hostify Technologies Pvt. Ltd. &nbsp;·&nbsp; Bangalore, India &nbsp;·&nbsp; 2024–2026</p>
+      <p className="legal-updated">Aarbee Technologies &nbsp;·&nbsp; Bangalore, India &nbsp;·&nbsp; 2024–2026</p>
     </div>
   </div>
 );

@@ -12,7 +12,7 @@ const Footer = () => (
           <Link to="/" className="footer-logo">🏠 Hostify</Link>
           <p className="footer-tagline">Premium boutique stays, curated for every traveller across India.</p>
           <p className="footer-company">
-            Hostify Technologies Pvt. Ltd.<br />
+            Aarbee Technologies<br />
             Bangalore, Karnataka — 560001<br />
             CIN: U74999KA2024PTC000001
           </p>
@@ -45,7 +45,7 @@ const Footer = () => (
       </div>
 
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} <span>Hostify</span> Technologies Pvt. Ltd. · All rights reserved.</p>
+        <p>© {new Date().getFullYear()} <span>Aarbee</span> Technologies · All rights reserved.</p>
         <div className="footer-bottom-links">
           <Link to="/terms">Terms</Link>
           <Link to="/privacy-policy">Privacy</Link>
