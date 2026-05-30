@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, Star, CreditCard, Wallet, Smartphone, ShieldCheck, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Star, CreditCard, Wallet, Smartphone, ShieldCheck, CheckCircle, Calendar, Users, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { fetchListingById, createBooking } from '../../services/api';
+import { fetchListingById, createBooking, fetchBookedDates } from '../../services/api';
 import { useHost } from '../../context/HostContext';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/molecules/AuthModal/AuthModal';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import GuestSelector from '../../components/molecules/GuestSelector/GuestSelector';
+import { calculateDetailedPrice } from '../../utils/pricing';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -53,21 +57,74 @@ const Checkout = () => {
 
   const stateData = location.state || {};
   
-  // Get dynamic data from state or use fallbacks
-  const bookingData = {
-    startDate: stateData.startDate || new Date().toISOString(),
-    endDate: stateData.endDate || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    guests: stateData.guests || { adults: 1, children: 0 },
-    nights: stateData.nights || 5,
-    totalPrice: stateData.totalPrice || (listing?.price || 0) * 5 + 2500
-  };
-
-  const { startDate, endDate, guests, nights, totalPrice } = bookingData;
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const [startDate, setStartDate] = useState(stateData.startDate ? new Date(stateData.startDate) : new Date());
+  const [endDate, setEndDate] = useState(stateData.endDate ? new Date(stateData.endDate) : new Date(Date.now() + 5 * 24 * 60 * 60 * 1000));
+  const [guests, setGuests] = useState(stateData.guests || { adults: 1, children: 0 });
+  const [blockedDates, setBlockedDates] = useState([]);
   
-  const formattedDates = `${format(start, 'MMM d')} – ${format(end, 'MMM d')}`;
-  const totalGuestsCount = guests.adults + guests.children;
+  const [isEditingDates, setIsEditingDates] = useState(false);
+  const [isEditingGuests, setIsEditingGuests] = useState(false);
+  const [expandedSection, setExpandedSection] = useState((user?.name && user?.phone) ? 'payment' : 'guest');
+  
+  const [guestName, setGuestName] = useState(user?.name || '');
+  const [guestPhone, setGuestPhone] = useState(user?.phone || '+91 ');
+  
+  React.useEffect(() => {
+    if (user) {
+      let isFirstTimePreFill = false;
+      if (!guestName && user.name) { setGuestName(user.name); isFirstTimePreFill = true; }
+      if ((!guestPhone || guestPhone === '+91 ') && user.phone) { setGuestPhone(user.phone); isFirstTimePreFill = true; }
+      
+      if (isFirstTimePreFill && user.name && user.phone) {
+        setExpandedSection('payment');
+      }
+    }
+  }, [user]);
+  
+  const dateEditorRef = React.useRef(null);
+  const guestEditorRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isEditingDates && dateEditorRef.current && !dateEditorRef.current.contains(event.target)) {
+        setIsEditingDates(false);
+      }
+      if (isEditingGuests && guestEditorRef.current && !guestEditorRef.current.contains(event.target)) {
+        setIsEditingGuests(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isEditingDates, isEditingGuests]);
+  
+  React.useEffect(() => {
+    if (listing && (listing._id || listing.id)) {
+       fetchBookedDates(listing._id || listing.id)
+         .then(datesStr => setBlockedDates(datesStr.map(d => new Date(d))))
+         .catch(console.error);
+    }
+  }, [listing]);
+
+  const maxCheckoutDate = React.useMemo(() => {
+    if (!startDate || !blockedDates.length) return null;
+    const nextBlockedDate = [...blockedDates]
+      .sort((a, b) => a - b)
+      .find(d => d > startDate);
+    
+    if (nextBlockedDate) {
+      const maxDate = new Date(nextBlockedDate);
+      maxDate.setDate(maxDate.getDate() - 1);
+      return maxDate;
+    }
+    return null;
+  }, [startDate, blockedDates]);
+
+  const priceStats = calculateDetailedPrice(listing, startDate, endDate) || {};
+  const nights = priceStats.nights || 5;
+  const totalPrice = priceStats.totalPrice || ((listing?.price || 0) * nights);
+  
+  const formattedDates = `${format(startDate, 'MMM d, yyyy')} – ${format(endDate || startDate, 'MMM d, yyyy')}`;
+  const totalGuestsCount = (guests.adults || 0) + (guests.children || 0);
   const guestsLabel = `${totalGuestsCount} guest${totalGuestsCount > 1 ? 's' : ''}`;
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -147,38 +204,100 @@ const Checkout = () => {
   // If booking confirmed, show a success screen
   if (confirmedBooking) {
     return (
-      <div className="checkout-container" style={{ maxWidth: 600, margin: '120px auto', textAlign: 'center', padding: '48px 32px' }}>
-        <CheckCircle size={72} color="var(--primary)" style={{ marginBottom: 24 }} />
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 12 }}>Booking Confirmed! 🎉</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 16, marginBottom: 8 }}>
-          Your stay at <strong>{confirmedBooking.listing?.location || listing.location}</strong> is booked.
-        </p>
-        <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '20px 32px', margin: '24px 0', display: 'inline-block' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>Booking Reference</div>
-          <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 2, color: 'var(--primary)' }}>{confirmedBooking.code}</div>
-        </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>
-          {confirmedBooking.dates} &nbsp;·&nbsp; {finalPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
-        </p>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-          <button
-            className="confirm-btn"
-            style={{ maxWidth: 200 }}
-            onClick={() => navigate('/bookings')}
-          >
-            View My Trips
-          </button>
-          <button
-            style={{ padding: '16px 32px', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer' }}
-            onClick={() => navigate('/')}
-          >
-            Back to Home
-          </button>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', padding: '40px' }}>
+        <div style={{ background: 'white', maxWidth: 860, width: '100%', borderRadius: '24px', padding: '40px', boxShadow: '0 24px 64px rgba(0,0,0,0.06)', textAlign: 'center', animation: 'fadeIn 0.6s ease-out' }}>
+          
+          <div style={{ width: 72, height: 72, background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+             <CheckCircle size={36} color="#10b981" />
+          </div>
+
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--secondary)', marginBottom: 8, letterSpacing: '-0.02em' }}>Booking Confirmed! 🎉</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 15, marginBottom: 12, lineHeight: 1.5 }}>
+            Pack your bags! Your stay at <strong style={{ color: 'var(--secondary)' }}>{confirmedBooking.listing?.location || listing.location}</strong> is officially secured.
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 32 }}>
+            We've sent your booking details to <strong style={{ color: 'var(--secondary)' }}>{user?.email || 'your email'}</strong>.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', textAlign: 'left', marginBottom: 32 }}>
+            {/* Receipt Card */}
+            <div style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+               <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 8 }}>Booking Reference</div>
+               <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 800, color: 'var(--secondary)', letterSpacing: '2px', marginBottom: 20 }}>{confirmedBooking.code}</div>
+               
+               <div style={{ height: 1, background: 'var(--border-light)', margin: '0 -24px 20px' }}></div>
+               
+               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                 <span style={{ color: 'var(--text-secondary)' }}>Dates</span>
+                 <span style={{ fontWeight: 600, color: 'var(--secondary)', textAlign: 'right', flex: 1, paddingLeft: 16 }}>{formattedDates}</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginTop: 12 }}>
+                 <span style={{ color: 'var(--text-secondary)' }}>Guests</span>
+                 <span style={{ fontWeight: 600, color: 'var(--secondary)' }}>{guestsLabel}</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginTop: 12 }}>
+                 <span style={{ color: 'var(--text-secondary)' }}>Total Paid</span>
+                 <span style={{ fontWeight: 600, color: 'var(--secondary)' }}>{finalPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
+               </div>
+            </div>
+
+            {/* Trip Details Card */}
+            <div style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+               <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--secondary)', marginBottom: 16 }}>Trip Details</h3>
+               
+               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--bg-secondary)', backgroundImage: `url(${listing.host?.image || 'https://ui-avatars.com/api/?name=' + (listing.host?.name || 'Host')})`, backgroundSize: 'cover' }}></div>
+                  <div style={{ flex: 1 }}>
+                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--secondary)' }}>Hosted by {listing.host?.name || 'your host'}</div>
+                     <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>They will be your primary contact.</div>
+                     <div style={{ fontSize: 13, color: 'var(--secondary)', marginTop: 2, fontWeight: 500 }}>+91 98765 43210</div>
+                  </div>
+                  <button style={{ padding: '8px 16px', background: 'white', color: 'var(--secondary)', borderRadius: '8px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--border-light)' }}>
+                     Message
+                  </button>
+               </div>
+
+               <div style={{ height: 1, background: 'var(--border-light)', margin: '0 -24px 20px' }}></div>
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                  <div>
+                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--secondary)', marginBottom: 4 }}>Check-in</div>
+                     <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>After 2:00 PM</div>
+                  </div>
+                  <div>
+                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--secondary)', marginBottom: 4 }}>Check-out</div>
+                     <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Before 11:00 AM</div>
+                  </div>
+               </div>
+
+               <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--secondary)', marginBottom: 4 }}>Location</div>
+                  <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{listing.location}<br/><span style={{ fontSize: 13, color: 'var(--primary)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}>Get Directions</span></div>
+               </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+            <button
+              style={{ padding: '14px 32px', background: 'var(--secondary)', color: 'white', borderRadius: '12px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: 'none', minWidth: 200 }}
+              onClick={() => navigate('/bookings')}
+            >
+              View My Bookings
+            </button>
+            <button
+              style={{ padding: '14px 32px', background: 'white', color: 'var(--secondary)', borderRadius: '12px', fontSize: 15, fontWeight: 700, cursor: 'pointer', border: '1px solid var(--border-light)', minWidth: 200 }}
+              onClick={() => navigate('/')}
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+
+  const isFormValid = guestName.trim() !== '' && guestPhone.length === 14 && expandedSection === 'payment';
 
   return (
     <>
@@ -197,108 +316,133 @@ const Checkout = () => {
          <div className="checkout-grid">
             {/* Left Column: Form */}
             <div className="checkout-left">
-               <div className="checkout-section">
-                  <h2>Your trip</h2>
-                  <div className="trip-details">
-                     <div className="trip-row">
-                        <div>
-                           <div className="trip-label">Dates</div>
-                           <div className="trip-value">{formattedDates}</div>
-                        </div>
-                        <div className="edit-link">Edit</div>
-                     </div>
-                     <div className="trip-row">
-                        <div>
-                           <div className="trip-label">Guests</div>
-                           <div className="trip-value">{guestsLabel}</div>
-                        </div>
-                        <div className="edit-link">Edit</div>
-                     </div>
+
+               <div className="checkout-section" style={{ padding: '24px' }}>
+                  <div className="section-header" onClick={() => setExpandedSection(expandedSection === 'guest' ? '' : 'guest')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                     <h2 style={{ marginBottom: 0 }}>1. Guest details</h2>
+                     <ChevronDown size={24} style={{ color: 'var(--secondary)', transform: expandedSection === 'guest' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
                   </div>
+                  {expandedSection === 'guest' && (
+                     <div className="section-content" style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease-out' }}>
+                        <div className="airbnb-input-container" style={{ marginTop: 0 }}>
+                           <div className="airbnb-input-group top-input">
+                              <label>Full name <span style={{ color: '#dc2626' }}>*</span></label>
+                              <input type="text" placeholder="Your name" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                           </div>
+                           <div className="airbnb-input-group">
+                              <label>Mobile number <span style={{ color: '#dc2626' }}>*</span></label>
+                              <input type="tel" placeholder="+91 0000000000" maxLength={14} value={guestPhone} onChange={(e) => {
+                                 let val = e.target.value;
+                                 if (!val.startsWith('+91 ')) val = '+91 ';
+                                 const digits = val.substring(4).replace(/\D/g, '');
+                                 setGuestPhone('+91 ' + digits);
+                              }} />
+                           </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '12px', padding: '0 4px' }}>
+                           <AlertCircle size={14} color="var(--text-secondary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                           <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                              Please ensure your mobile number is correct. The host will use this number to communicate your check-in details.
+                           </span>
+                        </div>
+                        <button 
+                           disabled={!(guestName.trim() !== '' && guestPhone.length === 14)}
+                           onClick={() => setExpandedSection('payment')}
+                           style={{ 
+                             marginTop: '24px', 
+                             padding: '12px 24px', 
+                             background: 'var(--secondary)', 
+                             color: 'white', 
+                             border: 'none', 
+                             borderRadius: 'var(--radius-md)', 
+                             fontWeight: 700, 
+                             cursor: (guestName.trim() !== '' && guestPhone.length === 14) ? 'pointer' : 'not-allowed',
+                             opacity: (guestName.trim() !== '' && guestPhone.length === 14) ? 1 : 0.5
+                           }}
+                        >
+                           Continue to payment
+                        </button>
+                     </div>
+                  )}
                </div>
 
-               <div className="checkout-divider" style={{ height: '1px', background: 'var(--border-light)', margin: '48px 0' }}></div>
-
-               <div className="checkout-section">
-                  <h2>Pay with</h2>
-                   <div className="payment-method-selector">
-                      <div className="pm-option selected">
-                         <div className="pm-info">
-                            <CreditCard size={22} strokeWidth={1.5} />
-                            <span>Credit or debit card</span>
-                         </div>
-                         <div className="pm-radio-outer">
-                            <div className="pm-radio-inner"></div>
-                         </div>
-                      </div>
-                      <div className="pm-option">
-                         <div className="pm-info">
-                            <Smartphone size={22} strokeWidth={1.5} />
-                            <span>UPI (PhonePe, Google Pay)</span>
-                         </div>
-                         <div className="pm-radio-outer">
-                            <div className="pm-radio-inner"></div>
-                         </div>
-                      </div>
-                      <div className="pm-option">
-                         <div className="pm-info">
-                            <Wallet size={22} strokeWidth={1.5} />
-                            <span>Digital Wallets</span>
-                         </div>
-                         <div className="pm-radio-outer">
-                            <div className="pm-radio-inner"></div>
-                         </div>
-                      </div>
-                   </div>
-
-                  <div className="card-form">
-                     <div className="input-group">
-                        <input type="text" placeholder="Card number" className="card-input" />
-                     </div>
-                     <div className="card-row">
-                        <input type="text" placeholder="Exp date" className="card-input" />
-                        <input type="text" placeholder="CVV" className="card-input" />
-                     </div>
-                     <div className="input-group">
-                        <input type="text" placeholder="Cardholder name" className="card-input" />
-                     </div>
+               <div className="checkout-section" style={{ padding: '24px' }}>
+                  <div className="section-header" onClick={() => setExpandedSection(expandedSection === 'payment' ? '' : 'payment')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                     <h2 style={{ marginBottom: 0 }}>2. Choose payment method</h2>
+                     <ChevronDown size={24} style={{ color: 'var(--secondary)', transform: expandedSection === 'payment' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
                   </div>
-               </div>
+                  {expandedSection === 'payment' && (
+                     <div className="section-content" style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease-out' }}>
+                         <div className="payment-method-selector">
+                            <div className="pm-option selected">
+                               <div className="pm-info">
+                                  <CreditCard size={22} strokeWidth={1.5} />
+                                  <span>Credit or debit card</span>
+                               </div>
+                               <div className="pm-radio-outer">
+                                  <div className="pm-radio-inner"></div>
+                               </div>
+                            </div>
+                            <div className="pm-option">
+                               <div className="pm-info">
+                                  <Smartphone size={22} strokeWidth={1.5} />
+                                  <span>UPI (PhonePe, Google Pay)</span>
+                               </div>
+                               <div className="pm-radio-outer">
+                                  <div className="pm-radio-inner"></div>
+                               </div>
+                            </div>
+                            <div className="pm-option">
+                               <div className="pm-info">
+                                  <Wallet size={22} strokeWidth={1.5} />
+                                  <span>Digital Wallets</span>
+                               </div>
+                               <div className="pm-radio-outer">
+                                  <div className="pm-radio-inner"></div>
+                               </div>
+                            </div>
+                         </div>
 
-               <div className="checkout-divider" style={{ height: '1px', background: 'var(--border-light)', margin: '48px 0' }}></div>
-
-               <div className="checkout-section">
-                  <h2>Trust & Safety</h2>
-                  <div className="trust-badges">
-                     <div className="trust-item">
-                        <ShieldCheck size={28} strokeWidth={1.5} />
-                        <div className="trust-text">
-                           <h4>Secure Booking</h4>
-                           <p>Your data is encrypted and transactions are processed through enterprise-grade security layers.</p>
+                        <div className="airbnb-input-container">
+                           <div className="airbnb-input-group top-input">
+                              <label>Card number</label>
+                              <input type="text" placeholder="0000 0000 0000 0000" />
+                           </div>
+                           <div className="airbnb-input-row">
+                              <div className="airbnb-input-group">
+                                 <label>Expiration</label>
+                                 <input type="text" placeholder="MM/YY" />
+                              </div>
+                              <div className="airbnb-input-group">
+                                 <label>CVV</label>
+                                 <input type="text" placeholder="123" />
+                              </div>
+                           </div>
+                           <div className="airbnb-input-group">
+                              <label>Cardholder name</label>
+                              <input type="text" placeholder="Name on card" />
+                           </div>
                         </div>
                      </div>
-                     <div className="trust-item">
-                        <Star size={28} strokeWidth={1.5} />
-                        <div className="trust-text">
-                           <h4>Price Guarantee</h4>
-                           <p>Found a better price? We'll match it and give you an extra 5% discount on your next stay.</p>
-                        </div>
-                     </div>
-                  </div>
+                  )}
                </div>
+
+
                 
-               <button className="confirm-btn" onClick={handleConfirmPay} disabled={isProcessing}>
-                  {isProcessing ? 'Processing...' : user ? 'Confirm and Pay Now' : 'Log in to Confirm'}
-               </button>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+                  <button className="confirm-btn" style={{ margin: 0 }} onClick={handleConfirmPay} disabled={isProcessing || !isFormValid}>
+                     {isProcessing ? 'Processing...' : user ? 'Confirm and Pay Now' : 'Log in to Confirm'}
+                  </button>
 
-               {bookingError && (
-                 <div style={{ color: '#dc2626', fontSize: 14, marginTop: 12, padding: '12px 16px', background: '#fef2f2', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
-                   ⚠️ {bookingError}
-                 </div>
-               )}
+                  {bookingError && (
+                    <div style={{ color: '#dc2626', fontSize: 14, padding: '12px 16px', background: '#fef2f2', borderRadius: 'var(--radius-md)', border: '1px solid #fecaca' }}>
+                      ⚠️ {bookingError}
+                    </div>
+                  )}
 
-               <div className="secure-checkout">
-                  <span style={{ opacity: 0.6 }}>Guaranteed safe & secure checkout</span>
+                  <div className="secure-checkout">
+                     <span style={{ opacity: 0.6 }}>Guaranteed safe & secure checkout</span>
+                  </div>
                </div>
             </div>
 
@@ -320,15 +464,77 @@ const Checkout = () => {
 
                   <div className="summary-divider"></div>
 
+                  <div className="price-details-title" style={{ marginBottom: '16px' }}>Trip details</div>
+                  <div className="summary-row" style={{ marginBottom: '16px', alignItems: 'center', position: 'relative' }} ref={dateEditorRef}>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Dates</span>
+                        <span style={{ fontWeight: '500' }}>{formattedDates} ({nights} night{nights !== 1 ? 's' : ''})</span>
+                     </div>
+                     <button className="edit-link" onClick={() => setIsEditingDates(true)}>Edit</button>
+                     {isEditingDates && (
+                        <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, marginTop: '8px', background: 'white', borderRadius: '16px', boxShadow: '0 6px 16px rgba(0,0,0,0.12)', padding: '16px', border: '1px solid #ddd' }}>
+                            <DatePicker
+                                selectsRange={true}
+                                startDate={startDate}
+                                endDate={endDate}
+                                onChange={(update) => {
+                                  const start = update[0];
+                                  let end = update[1];
+                                  if (start && end) {
+                                    const isSameDate = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth() && start.getDate() === end.getDate();
+                                    if (isSameDate) end = null;
+                                  }
+                                  setStartDate(start);
+                                  setEndDate(end);
+                                  if (start && end) setIsEditingDates(false);
+                                }}
+                                dayClassName={(date) => {
+                                  if (startDate && !endDate) {
+                                    const nextDay = new Date(startDate);
+                                    nextDay.setDate(nextDay.getDate() + 1);
+                                    const isStart = date.getFullYear() === startDate.getFullYear() && date.getMonth() === startDate.getMonth() && date.getDate() === startDate.getDate();
+                                    const isNext = date.getFullYear() === nextDay.getFullYear() && date.getMonth() === nextDay.getMonth() && date.getDate() === nextDay.getDate();
+                                    if (isStart || isNext) return "react-datepicker__day--selected react-datepicker__day--in-range custom-auto-highlight";
+                                  }
+                                  return null;
+                                }}
+                                minDate={new Date()}
+                                maxDate={startDate && !endDate ? (maxCheckoutDate || undefined) : undefined}
+                                excludeDates={blockedDates}
+                                monthsShown={1}
+                                inline
+                            />
+                        </div>
+                     )}
+                  </div>
+                  <div className="summary-row" style={{ marginBottom: '24px', alignItems: 'center', position: 'relative' }} ref={guestEditorRef}>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Guests</span>
+                        <span style={{ fontWeight: '500' }}>{guestsLabel}</span>
+                     </div>
+                     <button className="edit-link" onClick={() => setIsEditingGuests(true)}>Edit</button>
+                     {isEditingGuests && (
+                        <GuestSelector guests={guests} onChange={setGuests} />
+                     )}
+                  </div>
+
                   <div className="price-details-title">Price details</div>
                   
                   <div className="summary-row">
                      <span>₹{listing.price.toLocaleString('en-IN')} x {nights} nights</span>
-                     <span>₹{(listing.price * nights).toLocaleString('en-IN')}</span>
+                     <span>₹{(priceStats.subtotal || listing.price * nights).toLocaleString('en-IN')}</span>
                   </div>
+                  
+                  {priceStats.discountAmount > 0 && (
+                     <div className="summary-row discount-row" style={{ color: '#16a34a', fontWeight: '600' }}>
+                        <span>{priceStats.discountBadge}</span>
+                        <span>-₹{priceStats.discountAmount.toLocaleString('en-IN')}</span>
+                     </div>
+                  )}
+
                   <div className="summary-row">
-                     <span>Service & cleaning fee</span>
-                     <span>₹2,500</span>
+                     <span>Taxes</span>
+                     <span>₹{(priceStats.gstAmount || 0).toLocaleString('en-IN')}</span>
                   </div>
                   
                   {isCouponApplied && (

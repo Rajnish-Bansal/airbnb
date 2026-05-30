@@ -1,18 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { Share, Heart, Star, MapPin, Wifi, Car, Utensils, Monitor, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { Share, Heart, Star, MapPin, Wifi, Car, Utensils, Monitor, ChevronDown, ChevronUp, ArrowLeft, Wind, Briefcase, Coffee, Waves, Dumbbell, Flame, Bath } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import Navbar from '../../components/organisms/Navbar/Navbar';
+import Footer from '../../components/organisms/Footer/Footer';
 import GuestSelector from '../../components/molecules/GuestSelector/GuestSelector';
 import { useAuth } from '../../context/AuthContext';
 import { useHost } from '../../context/HostContext';
 import { useSearch } from '../../context/SearchContext';
-import { fetchListingById } from '../../services/api';
+import { fetchListingById, fetchBookedDates } from '../../services/api';
 import { differenceInDays, format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import MapView from '../../components/molecules/MapView/MapView';
 import { DUMMY_LISTINGS } from '../../constants/mockData';
+import { calculateDetailedPrice } from '../../utils/pricing';
 import './RoomDetails.css';
 
 const normalizeListing = (data) => {
@@ -47,6 +49,19 @@ const normalizeListing = (data) => {
   };
 };
 
+const RangeInput = React.forwardRef(({ value, onClick, startDate, endDate }, ref) => (
+  <div className="date-inputs" onClick={onClick} ref={ref}>
+     <div className="date-input border-right">
+        <label>CHECK-IN</label>
+        <div className="clickable-date">{startDate ? format(startDate, 'MMM d') : 'Add date'}</div>
+     </div>
+     <div className="date-input">
+        <label>CHECKOUT</label>
+        <div className="clickable-date">{endDate ? format(endDate, 'MMM d') : 'Add date'}</div>
+     </div>
+  </div>
+));
+
 const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -72,31 +87,34 @@ const RoomDetails = () => {
   useEffect(() => {
     const getListing = async () => {
       try {
+        let initialized = false;
+
         if (routeListing && (routeListing.id || routeListing._id) == id) {
           setListing(normalizeListing(routeListing));
-          setLoading(false);
-          return;
+          initialized = true;
         }
 
-        // 1. Try to find in host listings first (local state)
-        const localListing = hostListings.find(l => (l._id || l.id) == id);
-        if (localListing) {
-          setListing(normalizeListing(localListing));
-          setLoading(false);
-          return;
+        if (!initialized) {
+          const localListing = hostListings.find(l => (l._id || l.id) == id);
+          if (localListing) {
+            setListing(normalizeListing(localListing));
+            initialized = true;
+          }
         }
 
-        // 2. Try to find in DUMMY_LISTINGS (mock data fallback)
-        const mockListing = DUMMY_LISTINGS.find(l => (l._id || l.id) == id);
-        if (mockListing) {
-          setListing(normalizeListing(mockListing));
-          setLoading(false);
-          return;
+        if (!initialized) {
+          const mockListing = DUMMY_LISTINGS.find(l => (l._id || l.id) == id);
+          if (mockListing) {
+            setListing(normalizeListing(mockListing));
+            initialized = true;
+          }
         }
 
-        // 3. Otherwise fetch from API
+        // Always fetch the absolute latest data from the API in the background/foreground to guarantee fresh sync
         const data = await fetchListingById(id);
-        setListing(normalizeListing(data));
+        if (data) {
+          setListing(normalizeListing(data));
+        }
       } catch (err) {
         console.error("Failed to fetch listing details:", err);
       } finally {
@@ -121,6 +139,38 @@ const RoomDetails = () => {
     tomorrow.setDate(tomorrow.getDate() + 5);
     return tomorrow;
   });
+  const [blockedDates, setBlockedDates] = useState([]);
+
+  // Fetch blocked dates
+  useEffect(() => {
+    const loadBlockedDates = async () => {
+      try {
+        const datesStr = await fetchBookedDates(id);
+        const dates = datesStr.map(d => new Date(d));
+        setBlockedDates(dates);
+      } catch (err) {
+        console.error("Failed to load blocked dates", err);
+      }
+    };
+    if (id) {
+      loadBlockedDates();
+    }
+  }, [id]);
+
+  // Prevent selecting date ranges that span across blocked dates
+  const maxCheckoutDate = React.useMemo(() => {
+    if (!startDate || !blockedDates.length) return null;
+    const nextBlockedDate = [...blockedDates]
+      .sort((a, b) => a - b)
+      .find(d => d > startDate);
+    
+    if (nextBlockedDate) {
+      const maxDate = new Date(nextBlockedDate);
+      maxDate.setDate(maxDate.getDate() - 1);
+      return maxDate;
+    }
+    return null;
+  }, [startDate, blockedDates]);
 
   // Guest State
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
@@ -165,6 +215,7 @@ const RoomDetails = () => {
 
   // Reviews State
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   
   // Inject mock reviews for demo purposes if listing has reviewsCount but empty list
   const getAugmentedReviews = () => {
@@ -202,6 +253,18 @@ const RoomDetails = () => {
     return [];
   };
 
+  const getReviewRating = (review) => {
+    if (review.rating) return Number(review.rating).toFixed(1);
+    if (review.ratings) {
+      const vals = Object.values(review.ratings);
+      if (vals.length > 0) {
+        const avg = vals.reduce((sum, val) => sum + val, 0) / vals.length;
+        return avg.toFixed(1);
+      }
+    }
+    return '5.0';
+  };
+
   const reviewsToDisplay = getAugmentedReviews();
   const displayedReviews = showAllReviews ? reviewsToDisplay : reviewsToDisplay.slice(0, 6);
   const hostName = listing?.host?.name || 'Host';
@@ -213,59 +276,7 @@ const RoomDetails = () => {
   const nights = Math.max(differenceInDays(endDate, startDate), 1);
   const totalGuests = (guests.adults || 0) + (guests.children || 0);
 
-  const calculateDetailedPrice = () => {
-    let subtotal = 0;
-    let weekendNights = 0;
-    let weekdayNights = 0;
-
-    for (let i = 0; i < nights; i++) {
-        const currentDay = new Date(startDate);
-        currentDay.setDate(currentDay.getDate() + i);
-        const dayOfWeek = currentDay.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
-
-        if ((dayOfWeek === 5 || dayOfWeek === 6) && listing.weekendPrice) {
-            subtotal += listing.weekendPrice;
-            weekendNights++;
-        } else {
-            subtotal += listing.price;
-            weekdayNights++;
-        }
-    }
-
-    // Apply Weekly/Monthly Discounts
-    let discountAmount = 0;
-    let discountBadge = null;
-
-    if (nights >= 28 && listing.discounts?.monthly > 0) {
-        discountAmount = Math.round(subtotal * (listing.discounts.monthly / 100));
-        discountBadge = `Monthly discount (${listing.discounts.monthly}%)`;
-    } else if (nights >= 7 && listing.discounts?.weekly > 0) {
-        discountAmount = Math.round(subtotal * (listing.discounts.weekly / 100));
-        discountBadge = `Weekly discount (${listing.discounts.weekly}%)`;
-    }
-
-    const totalBasePrice = subtotal - discountAmount;
-    
-    // GST Logic: 5% if below 7500, 18% otherwise
-    const gstRate = listing.price < 7500 ? 0.05 : 0.18;
-    const gstAmount = Math.round(totalBasePrice * gstRate);
-    
-    const totalPrice = totalBasePrice + gstAmount;
-
-    return { 
-        subtotal, 
-        discountAmount, 
-        discountBadge, 
-        totalBasePrice, 
-        gstAmount, 
-        gstPercentage: Math.round(gstRate * 100),
-        totalPrice,
-        weekendNights,
-        weekdayNights
-    };
-  };
-
-  const priceStats = calculateDetailedPrice();
+  const priceStats = calculateDetailedPrice(listing, startDate, endDate);
 
   const guestLabel = `${totalGuests} guest${totalGuests > 1 ? 's' : ''}`;
 
@@ -335,6 +346,15 @@ const RoomDetails = () => {
     }
   };
 
+  const handleMessageHost = () => {
+    if (!user) {
+      showNotification('Please login to message the host', 'warning');
+      openAuthModal();
+      return;
+    }
+    navigate('/inbox', { state: { hostName, hostImage } });
+  };
+
   return (
     <div className="room-details">
       <Helmet>
@@ -347,23 +367,23 @@ const RoomDetails = () => {
       </Helmet>
       <Navbar />
       <div className="room-content">
-        {location.state?.fromHost ? (
-          <Link 
-            to="/become-a-host/dashboard?tab=listings" 
-            className="back-button"
-            style={{ textDecoration: 'none' }}
-          >
-            <ArrowLeft size={20} />
-            <span>Back</span>
-          </Link>
-        ) : (
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <ArrowLeft size={20} />
-            <span>Back</span>
-          </button>
-        )}
-        {/* Title Header */}
-        <h1 className="room-title">{listing.title || `Stunning stay in ${listing.location}`}</h1>
+        <div className="room-title-header-row">
+          {location.state?.fromHost ? (
+            <Link 
+              to="/become-a-host/dashboard?tab=listings" 
+              className="back-circle-btn"
+              style={{ textDecoration: 'none' }}
+              title="Back"
+            >
+              <ArrowLeft size={20} />
+            </Link>
+          ) : (
+            <button className="back-circle-btn" onClick={() => navigate(-1)} title="Back">
+              <ArrowLeft size={20} />
+            </button>
+          )}
+          <h1 className="room-title">{listing.title || `Stunning stay in ${listing.location}`}</h1>
+        </div>
         <div className="room-header-meta">
           <div className="left-meta">
             <Star size={14} fill="black" /> 
@@ -390,12 +410,12 @@ const RoomDetails = () => {
             <button 
               className={`action-btn ${isFavorite ? 'active' : ''}`} 
               onClick={handleSave}
-              style={{ color: isFavorite ? 'var(--primary)' : 'inherit', position: 'relative' }}
+              style={{ color: isFavorite ? '#e11d48' : 'inherit', position: 'relative' }}
             >
               <Heart 
                 size={16} 
-                fill={isFavorite ? 'var(--primary)' : 'none'} 
-                stroke={isFavorite ? 'var(--primary)' : 'currentColor'} 
+                fill={isFavorite ? '#e11d48' : 'none'} 
+                stroke={isFavorite ? '#e11d48' : 'currentColor'} 
               /> 
               {isFavorite ? 'Saved' : 'Save'}
               
@@ -415,10 +435,12 @@ const RoomDetails = () => {
              <div className="side-img" style={{backgroundImage: `url(${listing.image || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb'})`}}></div>
              <div className="side-img" style={{backgroundImage: `url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80')`}}></div>
              <div className="side-img" style={{backgroundImage: `url('https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=800&q=80')`}}></div>
-             <div className="side-img" style={{backgroundImage: `url(${listing.image})`, opacity: 0.8}}>
-               <button className="show-photos-btn">Show all photos</button>
-             </div>
+             <div className="side-img" style={{backgroundImage: `url(${listing.image})`}}></div>
           </div>
+          <button className="show-photos-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Show all photos
+          </button>
         </div>
 
         <div className="room-content-grid">
@@ -428,34 +450,17 @@ const RoomDetails = () => {
                  <div className="host-info">
                     <h2>Hosted by {hostName}</h2>
                     <p>4 guests · 2 bedrooms · 2 beds · 2 baths</p>
+                    <div className="host-actions-row">
+                       <button className="host-action-btn primary" onClick={handleMessageHost}>Message Host</button>
+                    </div>
                  </div>
                  <div className="host-avatar" style={{backgroundImage: `url(${hostImage})`}}></div>
               </div>
 
-              {/* Highlights */}
-              <div className="highlights-section">
-                 <div className="highlight-item">
-                    <div className="h-icon"><MapPin size={24} /></div>
-                    <div className="h-text">
-                       <h3>Great location</h3>
-                       <p>95% of recent guests gave the location a 5-star rating.</p>
-                    </div>
-                 </div>
-                 <div className="highlight-item">
-                    <div className="h-icon"><Wifi size={24} /></div>
-                    <div className="h-text">
-                       <h3>Fast Wifi</h3>
-                       <p>At 246 Mbps, you can take video calls and stream videos for your whole group.</p>
-                    </div>
-                 </div>
-              </div>
-
-              <div className="divider"></div>
-
               <div className="description-section">
-                 <p>{listing.description}</p>
-                 <br />
-                 <p>Relax in this calm, stylish space. Enjoy morning coffee on the private terrace overlooking the ocean, just steps away from the finest beaches.</p>
+                 <p>
+                    {listing.description} Relax in this calm, stylish space. Enjoy morning coffee on the private terrace overlooking the ocean, just steps away from the finest beaches.
+                 </p>
               </div>
 
               <div className="divider"></div>
@@ -464,26 +469,131 @@ const RoomDetails = () => {
               <div className="amenities-section">
                  <h2>What this place offers</h2>
                  <div className="amenities-grid">
-                    <div className="amenity-item"><Wifi size={20} /> Wifi</div>
-                    <div className="amenity-item"><Car size={20} /> Free parking</div>
-                    <div className="amenity-item"><Utensils size={20} /> Kitchen</div>
-                    <div className="amenity-item"><Monitor size={20} /> TV</div>
+                    {listing.amenities && listing.amenities.length > 0 ? (
+                       (showAllAmenities ? listing.amenities : listing.amenities.slice(0, 6)).map((amenity, idx) => {
+                          const lower = amenity.toLowerCase();
+                          let icon = <Wifi size={20} />; // default fallback
+                          if (lower.includes('wifi')) icon = <Wifi size={20} />;
+                          else if (lower.includes('park') || lower.includes('car')) icon = <Car size={20} />;
+                          else if (lower.includes('kitchen') || lower.includes('cook') || lower.includes('utensils')) icon = <Utensils size={20} />;
+                          else if (lower.includes('tv') || lower.includes('screen') || lower.includes('monitor')) icon = <Monitor size={20} />;
+                          else if (lower.includes('air cond') || lower.includes('ac') || lower.includes('cool') || lower.includes('wind') || lower.includes('dryer') || lower.includes('iron')) icon = <Wind size={20} />;
+                          else if (lower.includes('desk') || lower.includes('workspace') || lower.includes('work') || lower.includes('briefcase')) icon = <Briefcase size={20} />;
+                          else if (lower.includes('coffee')) icon = <Coffee size={20} />;
+                          else if (lower.includes('pool') || lower.includes('beach') || lower.includes('waves')) icon = <Waves size={20} />;
+                          else if (lower.includes('gym') || lower.includes('fitness') || lower.includes('dumbbell')) icon = <Dumbbell size={20} />;
+                          else if (lower.includes('fireplace') || lower.includes('flame') || lower.includes('fire')) icon = <Flame size={20} />;
+                          else if (lower.includes('tub') || lower.includes('bath') || lower.includes('jacuzzi') || lower.includes('hot')) icon = <Bath size={20} />;
+                          
+                          return (
+                             <div key={idx} className="amenity-item">
+                                {icon}
+                                <span>{amenity}</span>
+                             </div>
+                          );
+                       })
+                    ) : (
+                       (showAllAmenities ? [
+                          { name: 'Wifi', icon: <Wifi size={20} /> },
+                          { name: 'Free parking', icon: <Car size={20} /> },
+                          { name: 'Kitchen', icon: <Utensils size={20} /> },
+                          { name: 'TV', icon: <Monitor size={20} /> },
+                          { name: 'Air conditioning', icon: <Wind size={20} /> },
+                          { name: 'Dedicated workspace', icon: <Briefcase size={20} /> },
+                          { name: 'Coffee maker', icon: <Coffee size={20} /> }
+                       ] : [
+                          { name: 'Wifi', icon: <Wifi size={20} /> },
+                          { name: 'Free parking', icon: <Car size={20} /> },
+                          { name: 'Kitchen', icon: <Utensils size={20} /> },
+                          { name: 'TV', icon: <Monitor size={20} /> },
+                          { name: 'Air conditioning', icon: <Wind size={20} /> },
+                          { name: 'Dedicated workspace', icon: <Briefcase size={20} /> }
+                       ]).map((amenity, idx) => (
+                          <div key={idx} className="amenity-item">
+                             {amenity.icon}
+                             <span>{amenity.name}</span>
+                          </div>
+                       ))
+                    )}
+                 </div>
+                 {((listing.amenities && listing.amenities.length > 6) || (!listing.amenities || listing.amenities.length === 0)) && (
+                    <button 
+                       className="show-more-reviews" 
+                       onClick={() => setShowAllAmenities(!showAllAmenities)}
+                       style={{ marginTop: '24px' }}
+                    >
+                       {showAllAmenities ? (
+                          <>
+                             <ChevronUp size={18} />
+                             Show less
+                          </>
+                       ) : (
+                          <>
+                             <ChevronDown size={18} />
+                             Show all {listing.amenities ? listing.amenities.length : 7} amenities
+                          </>
+                       )}
+                    </button>
+                 )}
+              </div>
+
+              <div className="divider"></div>
+
+              {/* House Rules */}
+              <div className="house-rules-section amenities-section">
+                 <h2>House rules</h2>
+                 <div className="amenities-grid">
+                    <div className="amenity-item">
+                       <span className="rule-icon">🕙</span>
+                       <span className="rule-text">Check-in after 3:00 PM<br />Checkout before 11:00 AM</span>
+                    </div>
+                    <div className="amenity-item">
+                       <span className="rule-icon">🚭</span>
+                       <span className="rule-text">No smoking</span>
+                    </div>
+                    <div className="amenity-item">
+                       <span className="rule-icon">🎉</span>
+                       <span className="rule-text">No parties or events</span>
+                    </div>
+                    <div className="amenity-item">
+                       <span className="rule-icon">🍺</span>
+                       <span className="rule-text">No drinking</span>
+                    </div>
+                    <div className="amenity-item">
+                       <span className="rule-icon">🐾</span>
+                       <span className="rule-text">No pets</span>
+                    </div>
+                    <div className="amenity-item">
+                       <span className="rule-icon">🔕</span>
+                       <span className="rule-text">Quiet hours 10:00 PM – 8:00 AM</span>
+                    </div>
                  </div>
               </div>
+
+              <div className="divider"></div>
+
+              {/* Cancellation Policy */}
+              <div className="cancellation-section amenities-section">
+                 <h2>Cancellation policy</h2>
+                 <p style={{ color: 'var(--secondary)', lineHeight: 1.6, marginTop: '16px' }}>
+                   Free cancellation for 48 hours. After that, cancel before check-in and get a 50% refund, minus the service fee.
+                 </p>
+                 <button className="show-all-btn" style={{ marginTop: '16px' }}>Show details</button>
+              </div>
+
            </div>
 
-           {/* Right Column: Reservation Sidebar */}
            <div className="room-sidebar-wrapper">
               <div className="reservation-card">
                  <div className="card-header hide-on-mobile">
                     <div className="price-tag">
-                       <span className="price-large">₹{listing.price.toLocaleString('en-IN')}</span> <span className="night-text">night</span>
+                       <span className="price-large">₹{listing.price.toLocaleString('en-IN')}</span><span className="night-text">/night</span>
                     </div>
                  </div>
 
                  <div className="mobile-price-display show-only-mobile">
                     <div className="price-tag">
-                       <span className="price-large">₹{listing.price.toLocaleString('en-IN')}</span> <span className="night-text">night</span>
+                       <span className="price-large">₹{listing.price.toLocaleString('en-IN')}</span><span className="night-text">/night</span>
                     </div>
                     <div className="mobile-dates-summary">
                        {format(startDate, 'MMM d')} – {format(endDate, 'MMM d')}
@@ -491,33 +601,45 @@ const RoomDetails = () => {
                  </div>
 
                  <div className="date-picker-box hide-on-mobile">
-                    <div className="date-inputs">
-                       <div className="date-input border-right">
-                          <label>CHECK-IN</label>
-                          <DatePicker
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date)}
-                            selectsStart
-                            startDate={startDate}
-                            endDate={endDate}
-                            dateFormat="MMM d"
-                            customInput={<div className="clickable-date">{format(startDate, 'MMM d')}</div>}
-                          />
-                       </div>
-                       <div className="date-input">
-                          <label>CHECKOUT</label>
-                          <DatePicker
-                            selected={endDate}
-                            onChange={(date) => setEndDate(date)}
-                            selectsEnd
-                            startDate={startDate}
-                            endDate={endDate}
-                            minDate={startDate}
-                            dateFormat="MMM d"
-                            customInput={<div className="clickable-date">{format(endDate, 'MMM d')}</div>}
-                          />
-                       </div>
-                    </div>
+                    <DatePicker
+                      selectsRange={true}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onChange={(update) => {
+                        const start = update[0];
+                        let end = update[1];
+                        
+                        if (start && end) {
+                          const isSameDate = start.getFullYear() === end.getFullYear() &&
+                                             start.getMonth() === end.getMonth() &&
+                                             start.getDate() === end.getDate();
+                          if (isSameDate) {
+                            end = null; // Revert to awaiting checkout
+                          }
+                        }
+                        
+                        setStartDate(start);
+                        setEndDate(end);
+                      }}
+                      dayClassName={(date) => {
+                        if (startDate && !endDate) {
+                          const nextDay = new Date(startDate);
+                          nextDay.setDate(nextDay.getDate() + 1);
+                          const isStart = date.getFullYear() === startDate.getFullYear() && date.getMonth() === startDate.getMonth() && date.getDate() === startDate.getDate();
+                          const isNext = date.getFullYear() === nextDay.getFullYear() && date.getMonth() === nextDay.getMonth() && date.getDate() === nextDay.getDate();
+                          
+                          if (isStart || isNext) {
+                            return "react-datepicker__day--selected react-datepicker__day--in-range custom-auto-highlight";
+                          }
+                        }
+                        return null;
+                      }}
+                      minDate={new Date()}
+                      maxDate={startDate && !endDate ? (maxCheckoutDate || undefined) : undefined}
+                      excludeDates={blockedDates}
+                      monthsShown={2}
+                      customInput={<RangeInput startDate={startDate} endDate={endDate} />}
+                    />
                     <div className="guest-input-wrapper" ref={guestSelectorRef}>
                       <div className="guest-input" onClick={() => setShowGuestSelector(!showGuestSelector)}>
                          <label>GUESTS</label>
@@ -536,16 +658,14 @@ const RoomDetails = () => {
 
                  <button className="reserve-btn" onClick={handleReserve}>Reserve</button>
 
-                 <div className="no-charge-text">You won't be charged yet</div>
-
                  <div className="price-breakdown hide-on-mobile">
                      <div className="pb-row">
                         <span>
-                          {priceStats.weekendNights > 0 ? (
-                            `₹${listing.price.toLocaleString('en-IN')} x ${priceStats.weekdayNights} weekdays + ₹${listing.weekendPrice.toLocaleString('en-IN')} x ${priceStats.weekendNights} weekends`
-                          ) : (
-                            `₹${listing.price.toLocaleString('en-IN')} x ${nights} nights`
-                          )}
+                           {priceStats.weekendNights > 0 && listing.price !== listing.weekendPrice ? (
+                             `₹${listing.price.toLocaleString('en-IN')} x ${priceStats.weekdayNights} weekdays + ₹${listing.weekendPrice.toLocaleString('en-IN')} x ${priceStats.weekendNights} weekends`
+                           ) : (
+                             `₹${listing.price.toLocaleString('en-IN')} x ${nights} nights`
+                           )}
                         </span>
                         <span>₹{priceStats.subtotal.toLocaleString('en-IN')}</span>
                      </div>
@@ -556,7 +676,7 @@ const RoomDetails = () => {
                         </div>
                      )}
                      <div className="pb-row">
-                        <span>GST ({priceStats.gstPercentage}%)</span>
+                        <span>Taxes</span>
                         <span>₹{priceStats.gstAmount.toLocaleString('en-IN')}</span>
                      </div>
                   </div>
@@ -566,12 +686,49 @@ const RoomDetails = () => {
                      <span>₹{priceStats.totalPrice.toLocaleString('en-IN')}</span>
                   </div>
               </div>
+
+
            </div>
         </div>
 
+          <div className="divider"></div>
+
+         {/* Meet Your Host Section */}
+         <div className="meet-host-section-compact">
+            <h2 className="host-compact-title">Meet your host</h2>
+            <div className="compact-host-card">
+               <div className="compact-host-identity">
+                  <div className="compact-avatar" style={{backgroundImage: `url(${hostImage})`}} />
+                  <span className="compact-host-name">{hostName}</span>
+               </div>
+               <div className="compact-metrics-row">
+                  <div className="compact-metric">
+                     <span className="cmetric-val">{listing.rating || '4.76'}</span>
+                     <span className="cmetric-lbl">Rating</span>
+                  </div>
+                  <div className="compact-metric">
+                     <span className="cmetric-val">{listing.reviewsCount || 87}</span>
+                     <span className="cmetric-lbl">Reviews</span>
+                  </div>
+                  <div className="compact-metric">
+                     <span className="cmetric-val">8 yrs</span>
+                     <span className="cmetric-lbl">Experience</span>
+                  </div>
+                  <div className="compact-metric">
+                     <span className="cmetric-val">100%</span>
+                     <span className="cmetric-lbl">Response</span>
+                  </div>
+                  <div className="compact-metric">
+                     <span className="cmetric-val">&le;1 hr</span>
+                     <span className="cmetric-lbl">Replies in</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+
          <div className="divider"></div>
 
-        {/* Reviews Section */}
+         {/* Reviews Section */}
         <div className="reviews-section">
            {reviewStats && (
               <div className="review-categories-grid">
@@ -600,7 +757,14 @@ const RoomDetails = () => {
                         <div className="user-avatar" style={{backgroundImage: `url(${review.avatar})`}}></div>
                         <div>
                            <div className="user-name">{review.user}</div>
-                           <div className="review-date">{review.date}</div>
+                           <div className="review-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span className="review-date">{review.date}</span>
+                              <span className="review-dot" style={{ color: 'var(--text-secondary)' }}>·</span>
+                              <span className="review-rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                 <Star size={12} fill="black" stroke="black" />
+                                 {getReviewRating(review)}
+                              </span>
+                           </div>
                         </div>
                      </div>
                      <div className="review-comment">
@@ -648,16 +812,11 @@ const RoomDetails = () => {
             
             <MapView listings={[listing]} isSingle={true} />
             
-            <div className="location-security-notice">
-               <div className="security-icon">🛡️</div>
-               <div className="security-text">
-                  <h4>Getting here</h4>
-                  <p>Detailed check-in instructions and exact address are shared 48 hours before arrival for safety.</p>
-               </div>
-            </div>
+
          </div>
       </div>
         <div className="divider"></div>
+        <Footer />
     </div>
   );
 };

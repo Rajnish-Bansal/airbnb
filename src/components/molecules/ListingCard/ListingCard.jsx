@@ -9,6 +9,12 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
   const { user, openAuthModal, showNotification } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
+
+  // Dynamic details calculation
+  const bedroomsCount = listing.bedrooms || Math.max(1, Math.floor((listing.maxGuests || 2) / 2));
+  const bedsCount = listing.beds || Math.max(1, Math.floor((listing.maxGuests || 2) / 2)) * 2;
+  const bathroomsCount = listing.bathrooms || Math.max(1, Math.floor((listing.maxGuests || 2) / 3));
+  const detailText = `${bedroomsCount} bedroom${bedroomsCount > 1 ? 's' : ''} · ${bedsCount} queen bed${bedsCount > 1 ? 's' : ''} · ${bathroomsCount} bathroom${bathroomsCount > 1 ? 's' : ''}`;
   
   useEffect(() => {
     if (showNudge) {
@@ -19,27 +25,6 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
 
   const handleCardClick = () => {
     navigate(`/rooms/${id}`, {
-      state: {
-        listing: {
-          id,
-          image,
-          location,
-          distance,
-          price,
-          rating,
-          ...listing,
-        }
-      }
-    });
-  };
-
-  const handleBookNow = (e) => {
-    e.stopPropagation();
-    if (!user) {
-      openAuthModal();
-      return;
-    }
-    navigate(`/book/stays/${id}`, {
       state: {
         listing: {
           id,
@@ -77,7 +62,7 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
             size={20} 
             className="heart-icon" 
             fill={isFavorite ? 'var(--primary)' : 'none'}
-            stroke={isFavorite ? 'var(--primary)' : 'white'}
+            stroke={isFavorite ? 'var(--primary)' : '#222'}
           />
         </button>
         {showNudge && (
@@ -96,15 +81,17 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
         <div className="listing-header">
           <h3 className="listing-location">{location}</h3>
           <div className="listing-rating">
-            <span className="rating-dot"></span>
-            <span>{rating}</span>
+            <Star size={14} fill="var(--primary)" stroke="var(--primary)" style={{ position: 'relative', top: '-1px' }} />
+            <span>{rating} ({listing.reviewsCount || 0})</span>
           </div>
         </div>
-        <p className="listing-info">{distance}</p>
-        <p className="listing-price">
-          <span className="price-bold">₹{price.toLocaleString('en-IN')}</span> / night
-        </p>
-        <button className="btn-book-now" onClick={handleBookNow}>Book Now</button>
+        <p className="listing-info">{detailText}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, flexWrap: 'wrap', gap: '8px' }}>
+           <p className="listing-price" style={{ margin: 0 }}>
+             <span className="price-bold">₹{price.toLocaleString('en-IN')}</span> / night
+           </p>
+           <button style={{ padding: '4px 10px', background: 'var(--primary)', color: 'white', borderRadius: '6px', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer' }}>View Details</button>
+        </div>
       </div>
     </div>
   );

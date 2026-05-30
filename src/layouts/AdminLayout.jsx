@@ -2,16 +2,17 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, List, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ConfirmationModal from '../components/molecules/ConfirmationModal/ConfirmationModal';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    setIsLogoutModalOpen(true);
   };
 
   const navItems = [
@@ -72,6 +73,21 @@ const AdminLayout = () => {
 
         <Outlet />
       </main>
+
+      <ConfirmationModal 
+        isOpen={isLogoutModalOpen}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of Hostify Admin?"
+        confirmText="Log out"
+        cancelText="Cancel"
+        isDestructive={true}
+        onConfirm={() => {
+          logout();
+          setIsLogoutModalOpen(false);
+          navigate('/');
+        }}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
     </div>
   );
 };

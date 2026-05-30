@@ -60,8 +60,8 @@
   }
   
   .navbar-made-in-india span {
-    padding: 2px 4px;
-    font-size: 8px;
+    padding: 3px 6px;
+    font-size: 14px;
   }
 }
 
@@ -73,18 +73,22 @@
   }
   
   .navbar-made-in-india span {
-    padding: 1px 3px;
-    font-size: 7px;
+    padding: 2px 5px;
+    font-size: 12px;
   }
 }
 
 .navbar-made-in-india span {
   background: var(--primary-soft);
   color: var(--primary);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
-  font-size: 9px;
+  font-size: 18px;
   border: 1px solid rgba(50, 192, 192, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .logo-wrapper {
@@ -465,4 +469,33 @@
   font-weight: 400 !important;
   word-break: break-all !important;
   text-align: left !important;
+}
+
+.host-switch-btn {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary) !important; /* Secondary CTA Brand Color text */
+  background-color: white; /* Outlined/secondary style */
+  border: 1.5px solid var(--primary); /* Brand color border */
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.host-switch-btn:hover {
+  background-color: var(--primary-soft) !important; /* Soft brand color background on hover */
+  border-color: var(--primary) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(50, 192, 192, 0.15);
+}
+
+.host-switch-btn:active {
+  transform: translateY(0);
 }

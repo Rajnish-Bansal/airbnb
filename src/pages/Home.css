@@ -155,39 +155,14 @@
 /* Listings Grid */
 .listings-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--spacing-lg);
   margin-top: var(--spacing-lg);
 }
 
 @media (min-width: 550px) {
   .listings-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xl);
-  }
-}
-
-@media (min-width: 950px) {
-  .listings-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1200px) {
-  .listings-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1600px) {
-  .listings-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (min-width: 2000px) {
-  .listings-grid {
-    grid-template-columns: repeat(6, 1fr);
   }
 }
 

@@ -25,7 +25,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'End date must be after start date' });
     }
 
-    // 2. Overlap Check
+    // 2. Overlap Check with other bookings
     const existingBooking = await Booking.findOne({
       listing: listingId,
       status: 'Confirmed',
@@ -36,6 +36,24 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ 
         message: 'These dates are already booked. Please choose different dates.' 
       });
+    }
+
+    // 2.5 Overlap Check with host's manually blocked calendar dates
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    
+    if (listing.blockedDates && listing.blockedDates.length > 0) {
+      const hasBlockedOverlap = listing.blockedDates.some(blockedDate => {
+        const bDate = new Date(blockedDate);
+        // Check if the blocked date falls within the requested stay (start <= blockedDate < end)
+        return bDate >= start && bDate < end;
+      });
+
+      if (hasBlockedOverlap) {
+        return res.status(400).json({ 
+          message: 'Some of these dates are unavailable. Please adjust your dates.' 
+        });
+      }
     }
 
     // 3. Create Booking
@@ -171,6 +189,49 @@ router.patch('/:id/status', authenticateToken, async (req, res) => {
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Error updating booking', error: err.message });
+  }
+});
+
+/**
+ * @route GET /api/bookings/booked-dates/:listingId
+ * @desc  Get all unavailable date ranges for a listing (booked + manually blocked)
+ * @access Public
+ */
+router.get('/booked-dates/:listingId', async (req, res) => {
+  try {
+    // 1. Get confirmed/pending bookings
+    const bookings = await Booking.find({
+      listing: req.params.listingId,
+      status: { $in: ['Confirmed', 'Pending Approval'] },
+      endDate: { $gte: new Date() }
+    }).select('startDate endDate');
+
+    const blockedDatesSet = new Set();
+
+    // 2. Add booking dates to the set
+    bookings.forEach(({ startDate, endDate }) => {
+      const current = new Date(startDate);
+      const end = new Date(endDate);
+      while (current <= end) {
+        blockedDatesSet.add(new Date(current).toISOString().split('T')[0]);
+        current.setDate(current.getDate() + 1);
+      }
+    });
+
+    // 3. Get manually blocked dates from the host's listing calendar
+    const listing = await Listing.findById(req.params.listingId).select('blockedDates');
+    if (listing && listing.blockedDates) {
+      listing.blockedDates.forEach(date => {
+        blockedDatesSet.add(new Date(date).toISOString().split('T')[0]);
+      });
+    }
+
+    // Convert Set back to Date objects array
+    const allBlockedDates = Array.from(blockedDatesSet).map(dateStr => new Date(dateStr));
+
+    res.json(allBlockedDates);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching booked dates', error: err.message });
   }
 });
 

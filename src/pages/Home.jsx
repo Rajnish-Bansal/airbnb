@@ -263,7 +263,7 @@ const Home = () => {
         ) : (
           <>
             <Map size={18} />
-            <span>Show map</span>
+            <span>See properties on map</span>
           </>
         )}
       </button>

@@ -234,6 +234,12 @@ export const updateBookingStatus = async (bookingId, status) => {
   return data;
 };
 
+export const fetchBookedDates = async (listingId) => {
+  const response = await fetch(`${API_URL}/bookings/booked-dates/${listingId}`);
+  if (!response.ok) throw new Error('Failed to fetch booked dates');
+  return response.json();
+};
+
 // --- Transactions ---
 export const fetchTransactions = async () => {
     const response = await fetch(`${API_URL}/transactions`, {

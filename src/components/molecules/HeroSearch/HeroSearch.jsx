@@ -90,7 +90,10 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
   };
 
   return (
-    <div className={`hero-search-container ${isMobileExpanded ? 'is-expanded' : ''}`} ref={containerRef}>
+    <div className={`hero-search-container ${isMobileExpanded ? 'is-expanded' : ''} ${activeField ? 'has-active-field' : ''}`} ref={containerRef}>
+      {activeField && (
+        <div className="mobile-search-overlay" onClick={() => setActiveField(null)}></div>
+      )}
       {/* Mobile Collapsed Pill */}
       {!isMobileExpanded && (
         <div className="hero-search-mobile-pill show-only-mobile" onClick={() => setIsMobileExpanded(true)}>
@@ -140,28 +143,25 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
             }}
           />
           {showSuggestions && suggestions.length > 0 && activeField === 'destination' && (
-              <>
-                <div className="mobile-search-overlay" onClick={() => setActiveField(null)}></div>
-                <div className="search-suggestions">
-                    {suggestions.map((loc, index) => (
-                        <div 
-                          key={index} 
-                          className="suggestion-item"
-                          onClick={(e) => {
-                              e.stopPropagation();
-                              setDestination(loc);
-                              setShowSuggestions(false);
-                              setActiveField(null);
-                          }}
-                        >
-                            <div className="suggestion-icon">
-                                <MapPin size={18} />
-                            </div>
-                            <span>{loc}</span>
-                        </div>
-                    ))}
-                </div>
-              </>
+              <div className="search-suggestions">
+                  {suggestions.map((loc, index) => (
+                      <div 
+                        key={index} 
+                        className="suggestion-item"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDestination(loc);
+                            setShowSuggestions(false);
+                            setActiveField(null);
+                        }}
+                      >
+                          <div className="suggestion-icon">
+                              <MapPin size={18} />
+                          </div>
+                          <span>{loc}</span>
+                      </div>
+                  ))}
+              </div>
           )}
         </div>
         
@@ -210,91 +210,88 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
             }}
         >
           <label>Guests</label>
-          <div style={{ fontSize: '14px', fontWeight: 500, color: totalGuests > 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+          <div style={{ fontSize: '14px', fontWeight: 500, color: '#94A3B8' }}>
               {totalGuests > 0 ? `${totalGuests} Guest${totalGuests > 1 ? 's' : ''}` : '1 Guest'}
           </div>
 
           {/* Guest Bottom Sheet / Popover */}
           {activeField === 'guests' && (
-              <>
-                <div className="mobile-search-overlay" onClick={() => setActiveField(null)}></div>
-                <div 
-                  className="guest-popover bottom-sheet" 
-                  ref={guestPopoverRef}
-                  onClick={(e) => e.stopPropagation()} 
-                >
-                    {/* Native Drag Handle */}
-                    <div className="sheet-handle show-only-mobile"></div>
-                    
-                    {/* Header */}
-                    <div className="sheet-header show-only-mobile">
-                      <h3>Who's coming?</h3>
-                      <button className="sheet-close" onClick={() => setActiveField(null)}>✕</button>
-                    </div>
+              <div 
+                className="guest-popover bottom-sheet" 
+                ref={guestPopoverRef}
+                onClick={(e) => e.stopPropagation()} 
+              >
+                  {/* Native Drag Handle */}
+                  <div className="sheet-handle show-only-mobile"></div>
+                  
+                  {/* Header */}
+                  <div className="sheet-header show-only-mobile">
+                    <h3>Who's coming?</h3>
+                    <button className="sheet-close" onClick={() => setActiveField(null)}>✕</button>
+                  </div>
 
-                    <div className="sheet-content">
-                        {/* Adults */}
-                        <div className="guest-row">
-                            <div className="guest-info">
-                                <h4>Adults</h4>
-                                <p>Ages 13 or above</p>
-                            </div>
-                            <div className="guest-controls">
-                                <button 
-                                  className="guest-btn" 
-                                  disabled={guestCounts.adults <= 1}
-                                  onClick={() => updateGuests('adults', 'decrease')}
-                                >
-                                    <Minus size={18} />
-                                </button>
-                                <span className="guest-count">{guestCounts.adults}</span>
-                                <button 
-                                  className="guest-btn" 
-                                  disabled={totalGuests >= 16}
-                                  onClick={() => updateGuests('adults', 'increase')}
-                                >
-                                    <Plus size={18} />
-                                </button>
-                            </div>
-                        </div>
+                  <div className="sheet-content">
+                      {/* Adults */}
+                      <div className="guest-row">
+                          <div className="guest-info">
+                              <h4>Adults</h4>
+                              <p>Ages 13 or above</p>
+                          </div>
+                          <div className="guest-controls">
+                              <button 
+                                className="guest-btn" 
+                                disabled={guestCounts.adults <= 1}
+                                onClick={() => updateGuests('adults', 'decrease')}
+                              >
+                                  <Minus size={18} />
+                              </button>
+                              <span className="guest-count">{guestCounts.adults}</span>
+                              <button 
+                                className="guest-btn" 
+                                disabled={totalGuests >= 16}
+                                onClick={() => updateGuests('adults', 'increase')}
+                              >
+                                  <Plus size={18} />
+                              </button>
+                          </div>
+                      </div>
 
-                        {/* Children */}
-                        <div className="guest-row">
-                            <div className="guest-info">
-                                <h4>Children</h4>
-                                <p>Ages 2-12</p>
-                            </div>
-                            <div className="guest-controls">
-                                <button 
-                                  className="guest-btn" 
-                                  disabled={guestCounts.children <= 0}
-                                  onClick={() => updateGuests('children', 'decrease')}
-                                >
-                                    <Minus size={18} />
-                                </button>
-                                <span className="guest-count">{guestCounts.children}</span>
-                                <button 
-                                  className="guest-btn" 
-                                  disabled={totalGuests >= 16}
-                                  onClick={() => updateGuests('children', 'increase')}
-                                >
-                                    <Plus size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Sticky Footer */}
-                    <div className="sheet-footer">
-                        <button 
-                          className="btn btn-primary apply-btn" 
-                          onClick={() => setActiveField(null)}
-                        >
-                          Show properties
-                        </button>
-                    </div>
-                </div>
-              </>
+                      {/* Children */}
+                      <div className="guest-row">
+                          <div className="guest-info">
+                              <h4>Children</h4>
+                              <p>Ages 2-12</p>
+                          </div>
+                          <div className="guest-controls">
+                              <button 
+                                className="guest-btn" 
+                                disabled={guestCounts.children <= 0}
+                                onClick={() => updateGuests('children', 'decrease')}
+                              >
+                                  <Minus size={18} />
+                              </button>
+                              <span className="guest-count">{guestCounts.children}</span>
+                              <button 
+                                className="guest-btn" 
+                                disabled={totalGuests >= 16}
+                                onClick={() => updateGuests('children', 'increase')}
+                              >
+                                  <Plus size={18} />
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  {/* Sticky Footer */}
+                  <div className="sheet-footer">
+                      <button 
+                        className="btn btn-primary apply-btn" 
+                        onClick={() => setActiveField(null)}
+                      >
+                        Show properties
+                      </button>
+                  </div>
+              </div>
           )}
         </div>
 

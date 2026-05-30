@@ -4,6 +4,7 @@ import { HostProvider, useHost } from '../context/HostContext';
 import { useAuth } from '../context/AuthContext';
 import { Menu, User, Bell, Check } from 'lucide-react';
 import Toast from '../components/atoms/Toast/Toast';
+import ConfirmationModal from '../components/molecules/ConfirmationModal/ConfirmationModal';
 import './HostLayout.css';
 
 const HostLayoutContent = () => {
@@ -12,6 +13,7 @@ const HostLayoutContent = () => {
   const { listingData, updateListingData } = useHost();
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -38,8 +40,8 @@ const HostLayoutContent = () => {
   const isDashboardOrLanding = location.pathname === '/become-a-host/dashboard' || location.pathname === '/become-a-host';
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    setIsLogoutModalOpen(true);
+    setIsUserMenuOpen(false);
   };
 
   const steps = [
@@ -153,6 +155,21 @@ const HostLayoutContent = () => {
         <Toast 
           notification={listingData.notification} 
           onClear={() => updateListingData({ notification: null })} 
+        />
+
+        <ConfirmationModal 
+          isOpen={isLogoutModalOpen}
+          title="Confirm Logout"
+          message="Are you sure you want to log out of Hostify?"
+          confirmText="Log out"
+          cancelText="Cancel"
+          isDestructive={true}
+          onConfirm={() => {
+            logout();
+            setIsLogoutModalOpen(false);
+            navigate('/');
+          }}
+          onCancel={() => setIsLogoutModalOpen(false)}
         />
       </div>
   );
