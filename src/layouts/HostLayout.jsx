@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import { HostProvider, useHost } from '../context/HostContext';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,28 @@ const HostLayoutContent = () => {
   const { listingData, updateListingData } = useHost();
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
   
   const isDashboardOrLanding = location.pathname === '/become-a-host/dashboard' || location.pathname === '/become-a-host';
 
@@ -53,7 +75,7 @@ const HostLayoutContent = () => {
              </div>
 
              {/* User Menu */}
-             <div className="user-menu-container" style={{ position: 'relative', marginLeft: '8px' }}>
+             <div className="user-menu-container" style={{ position: 'relative', marginLeft: '8px' }} ref={userMenuRef}>
                 <div 
                   className="user-menu-button" 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -71,12 +93,12 @@ const HostLayoutContent = () => {
 
                 {isUserMenuOpen && (
                   <div className="user-dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', padding: '8px 0', width: '240px', zIndex: 100 }}>
-                      <div className="menu-item" style={{ fontWeight: '600', cursor: 'default', paddingBottom: '4px' }}>{user?.name || 'User'}</div>
-                      <div className="menu-item" style={{ cursor: 'default', paddingTop: '0', fontSize: '12px', color: '#717171' }}>{user?.email}</div>
-                      <div style={{ height: '1px', background: '#ebebeb', margin: '8px 0' }}></div>
+                      <div className="menu-item" style={{ fontWeight: '600', cursor: 'default', padding: '12px 16px 4px 16px', fontSize: '15px' }}>{user?.name || 'User'}</div>
+                      <div className="menu-item" style={{ cursor: 'default', padding: '0 16px 12px 16px', fontSize: '13px', color: '#717171', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
+                      <div style={{ height: '1px', background: '#ebebeb', margin: '4px 0' }}></div>
                       <div 
                         className="menu-item" 
-                        style={{ padding: '10px 16px', cursor: 'pointer' }}
+                        style={{ padding: '12px 16px', cursor: 'pointer', fontSize: '15px', color: '#222' }}
                         onClick={() => {
                           navigate('/become-a-host/dashboard?tab=profile');
                           setIsUserMenuOpen(false);
@@ -84,7 +106,7 @@ const HostLayoutContent = () => {
                       >
                         Profile
                       </div>
-                      <div className="menu-item" onClick={handleLogout} style={{ padding: '10px 16px', cursor: 'pointer' }}>Log out</div>
+                      <div className="menu-item" onClick={handleLogout} style={{ padding: '12px 16px', cursor: 'pointer', fontSize: '15px', color: '#222' }}>Log out</div>
                   </div>
                 )}
              </div>

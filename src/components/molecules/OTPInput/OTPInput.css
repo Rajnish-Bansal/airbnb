@@ -1,0 +1,31 @@
+.otp-input-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.otp-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background-color: #fff;
+  color: #0f172a;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.02);
+}
+
+.otp-box:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.otp-box.filled {
+  border-color: #64748b;
+  background-color: #f8fafc;
+}

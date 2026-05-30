@@ -78,6 +78,10 @@
   letter-spacing: -0.5px;
 }
 
+.auth-input-group {
+  margin-bottom: 16px;
+}
+
 .auth-input {
   width: 100%;
   padding: 18px;

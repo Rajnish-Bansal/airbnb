@@ -102,6 +102,7 @@
   color: #1a1a1a;
   word-break: break-word;
   letter-spacing: -0.5px;
+  text-transform: capitalize;
 }
 
 .profile-badge-row {

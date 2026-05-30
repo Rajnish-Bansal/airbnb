@@ -71,7 +71,7 @@ const AuthModal = ({ isOpen, onClose }) => {
               <>
                 <h2 className="auth-welcome">Welcome to Hostify</h2>
                 <form onSubmit={handlePhoneSubmit}>
-                   <div className="input-group">
+                   <div className="auth-input-group">
                       <div className="phone-input-wrapper">
                         <div className="phone-prefix">
                            <span className="country-code">India (+91)</span>
@@ -114,7 +114,7 @@ const AuthModal = ({ isOpen, onClose }) => {
               <>
                 <p className="otp-instruction">Enter the 6-digit code we sent to {phoneNumber}</p>
                 <form onSubmit={handleOtpSubmit}>
-                   <div className="input-group">
+                   <div className="auth-input-group">
                       <input 
                         type="text" 
                         maxLength="6"

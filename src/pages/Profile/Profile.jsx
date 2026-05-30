@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useHost } from '../../context/HostContext';
 import { ShieldCheck, Check, Star, User, Phone, Mail, Briefcase, Camera, Sparkles } from 'lucide-react';
 import { fetchUserProfile, updateUserProfile, uploadImage, sendOtp, verifyOtp } from '../../services/api';
+import OTPInput from '../../components/molecules/OTPInput/OTPInput';
 import './Profile.css';
 
 const Profile = () => {
@@ -40,7 +41,8 @@ const Profile = () => {
   const loadProfile = async () => {
     try {
       const data = await fetchUserProfile();
-      const parts = (data.name || '').trim().split(/\s+/);
+      const fullName = data.name || user?.name || '';
+      const parts = fullName.trim().split(/\s+/);
       const first = parts[0] || '';
       const last = parts.slice(1).join(' ') || '';
       setFirstName(first);
@@ -90,11 +92,12 @@ const Profile = () => {
     }
   };
 
-  const handleConfirmOtp = async () => {
-    if (!otpCode) return;
+  const handleConfirmOtp = async (code) => {
+    const finalCode = typeof code === 'string' ? code : otpCode;
+    if (!finalCode) return;
     try {
       setOtpError('');
-      await verifyOtp(formData.phone, otpCode);
+      await verifyOtp(formData.phone, finalCode);
       const updatedUser = await updateUserProfile({ phone: formData.phone, isPhoneVerified: true });
       setFormData(prev => ({ ...prev, isPhoneVerified: true }));
       updateUser(updatedUser);
@@ -167,19 +170,60 @@ const Profile = () => {
                 <div 
                   className="profile-avatar-large"
                   style={{ 
-                    backgroundImage: formData.avatar ? `url(${formData.avatar})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundColor: '#1f1f1f'
+                    position: 'relative',
+                    backgroundColor: '#222',
+                    backgroundImage: 'linear-gradient(135deg, #22252a, #434853)',
+                    overflow: 'hidden'
                   }}
                 >
-                  {!formData.avatar && (formData.name?.charAt(0) || user.name?.charAt(0))}
+                  <span style={{ position: 'relative', zIndex: 1, textTransform: 'uppercase' }}>
+                    {(formData.name || '').trim().charAt(0) || (user?.name || '').trim().charAt(0)}
+                  </span>
+                  {formData.avatar && formData.avatar !== 'null' && formData.avatar !== 'undefined' && formData.avatar.trim() !== '' && (
+                     <img 
+                       src={formData.avatar} 
+                       alt="Profile" 
+                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                       onError={(e) => { e.target.style.display = 'none'; }}
+                     />
+                  )}
                 </div>
-                <label className="avatar-floating-btn">
-                  <Camera size={16} />
-                  <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
-                </label>
-              </div>
+                
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+                  <label style={{ 
+                     background: '#f8fafc',
+                     color: '#0f172a',
+                     border: '1px solid #e2e8f0',
+                     padding: '6px 16px',
+                     borderRadius: '20px',
+                     fontSize: '13px',
+                     fontWeight: 600,
+                     cursor: 'pointer',
+                     transition: 'all 0.2s',
+                     boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                  }}>
+                     Upload Photo
+                     <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
+                  </label>
+                  {formData.avatar && formData.avatar !== 'null' && formData.avatar !== 'undefined' && formData.avatar.trim() !== '' && (
+                     <button 
+                       onClick={() => setFormData(prev => ({ ...prev, avatar: null }))} 
+                       style={{ 
+                         background: '#fff1f2',
+                         color: '#e11d48',
+                         border: '1px solid #ffe4e6',
+                         padding: '6px 16px',
+                         borderRadius: '20px',
+                         fontSize: '13px',
+                         fontWeight: 600,
+                         cursor: 'pointer',
+                         transition: 'all 0.2s'
+                       }}
+                     >
+                        Remove
+                     </button>
+                  )}
+                </div>
               
               <h1 className="profile-name">{user.name}</h1>
               
@@ -249,15 +293,25 @@ const Profile = () => {
 
                 <div className="form-group-premium full-width-group">
                   <label>Email Address</label>
-                  <input 
-                    type="email" 
-                    value={formData.email} 
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    disabled={!!user.email}
-                    title={user.email ? "Email cannot be changed currently" : "Add your email address"}
-                    className={user.email ? "disabled-input" : ""}
-                    placeholder="Enter your email address"
-                  />
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <input 
+                      type="email" 
+                      value={formData.email} 
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      disabled={!!user.email}
+                      title={user.email ? "Email cannot be changed currently" : "Add your email address"}
+                      className={user.email ? "disabled-input" : ""}
+                      placeholder="Enter your email address"
+                      style={{ width: '100%', paddingRight: !!user.email ? '70px' : '' }}
+                    />
+                    {!!user.email && (
+                       <span 
+                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#16a34a', fontSize: '13px', fontWeight: '600' }}
+                       >
+                         Verified
+                       </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="form-group-premium full-width-group">
@@ -267,21 +321,31 @@ const Profile = () => {
                       {formData.isPhoneVerified ? 'Verified' : 'Not Verified'}
                     </span>
                   </div>
-                  <div className="phone-input-wrapper custom-limited-width">
+                  <div className="phone-input-wrapper custom-limited-width" style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: '600', color: '#1e293b', borderRight: '1px solid #d1d5db', paddingRight: '12px' }}>+91</div>
                     <input 
                     type="tel" 
-                    value={formData.phone} 
+                    value={(formData.phone || '').replace(/^\+91\s*/, '')} 
                     onChange={(e) => {
-                      const val = e.target.value;
+                      const val = e.target.value.replace(/\D/g, '').substring(0, 10);
+                      const fullPhone = val ? '+91 ' + val : '';
                       setFormData(prev => ({ 
                         ...prev, 
-                        phone: val, 
-                        isPhoneVerified: val === user.phone && user.isPhoneVerified
+                        phone: fullPhone, 
+                        isPhoneVerified: fullPhone === user.phone && user.isPhoneVerified
                       }));
                       setIsOtpSent(false);
                     }}
-                    placeholder="Enter your phone number"
+                    placeholder="98765 43210"
+                    style={{ paddingLeft: '64px', paddingRight: formData.isPhoneVerified ? '70px' : '' }}
                     />
+                    {formData.isPhoneVerified && (
+                       <span 
+                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#16a34a', fontSize: '13px', fontWeight: '600' }}
+                       >
+                         Verified
+                       </span>
+                    )}
                     {!formData.isPhoneVerified && (
                       <button 
                         type="button" 
@@ -371,13 +435,11 @@ const Profile = () => {
             <h3 className="modal-title-premium">Phone Verification</h3>
             <p className="modal-desc-premium">Please enter the 6-digit verification code sent to <strong>{formData.phone}</strong>.</p>
             <div className="modal-form-premium">
-              <input 
-                type="text" 
-                maxLength="6" 
-                placeholder="6-digit OTP" 
-                value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value)}
-                className="modal-input-premium"
+              <OTPInput 
+                length={6} 
+                value={otpCode} 
+                onChange={(code) => setOtpCode(code)} 
+                onComplete={handleConfirmOtp}
               />
               {otpError && <span className="otp-error-msg">{otpError}</span>}
               <div className="modal-actions-premium">

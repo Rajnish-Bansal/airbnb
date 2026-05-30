@@ -402,6 +402,7 @@
   color: #222;
   margin-left: 4px;
   margin-right: 8px;
+  text-transform: capitalize;
 }
 
 .user-profile-link {
@@ -455,6 +456,7 @@
   color: #111 !important;
   margin-bottom: 2px !important;
   text-align: left !important;
+  text-transform: capitalize !important;
 }
 
 .user-email-display {

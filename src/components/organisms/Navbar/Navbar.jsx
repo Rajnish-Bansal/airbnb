@@ -109,9 +109,13 @@ const Navbar = ({ onLogoClick, scrolled }) => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 >
                    {user ? (
-                      <span className="user-name-text">
-                        {user.name?.split(' ')[0]}
-                      </span>
+                      user.avatar ? (
+                         <img src={user.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} alt="User" />
+                      ) : (
+                         <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#222', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold' }}>
+                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                         </div>
+                      )
                    ) : (
                       <User size={18} className="user-icon" />
                    )}

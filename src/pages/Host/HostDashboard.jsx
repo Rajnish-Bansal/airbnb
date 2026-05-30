@@ -11,8 +11,9 @@ import ConfirmationModal from '../../components/molecules/ConfirmationModal/Conf
 import SubscriptionModal from '../../components/molecules/SubscriptionModal/SubscriptionModal';
 import LimitManagementModal from '../../components/molecules/LimitManagementModal/LimitManagementModal';
 import PricingModal from '../../components/molecules/PricingModal/PricingModal';
+import OTPInput from '../../components/molecules/OTPInput/OTPInput';
 import Pricing from './Pricing';
-import { fetchPayoutStats, fetchHostAnalytics, updateListingPricing, fetchHostBookings, fetchConversations, fetchMessages, startConversation, sendMessage, fetchUserProfile, updateUserProfile, uploadImage, fetchTransactions } from '../../services/api';
+import { fetchPayoutStats, fetchHostAnalytics, updateListingPricing, fetchHostBookings, fetchConversations, fetchMessages, startConversation, sendMessage, fetchUserProfile, updateUserProfile, uploadImage, fetchTransactions, sendOtp, verifyOtp } from '../../services/api';
 
 const socket = io(window.location.origin); // Use the current host for Socket.io in production
 
@@ -534,15 +535,16 @@ const HostDashboard = () => {
       try {
         setLoadingProfile(true);
         const data = await fetchUserProfile();
-        const parts = (data.name || '').trim().split(/\s+/);
+        const fullName = data.name || user?.name || '';
+        const parts = fullName.trim().split(/\s+/);
         const first = parts[0] || '';
         const last = parts.slice(1).join(' ') || '';
         setFirstName(first);
         setLastName(last);
 
         setProfile({
-           name: data.name || '',
-           email: data.email || '',
+           name: fullName,
+           email: data.email || user?.email || '',
            phone: data.phone || '',
            bio: data.bio || '',
            avatar: data.avatar || null,
@@ -625,11 +627,12 @@ const HostDashboard = () => {
     }
   };
 
-  const handleConfirmOtp = async () => {
-    if (!otpCode) return;
+  const handleConfirmOtp = async (code) => {
+    const finalCode = typeof code === 'string' ? code : otpCode;
+    if (!finalCode) return;
     try {
       setOtpError('');
-      await verifyOtp(profile.phone, otpCode);
+      await verifyOtp(profile.phone, finalCode);
       const updatedUser = await updateUserProfile({ phone: profile.phone, isPhoneVerified: true });
       setProfile(prev => ({ ...prev, ...updatedUser, isPhoneVerified: true }));
       setIsOtpSent(false);
@@ -1653,17 +1656,17 @@ const HostDashboard = () => {
 
                         // Calculate pending requests
                         return (
-                            <div key={listing.id} className={`listing-card-premium ${isDeleted ? 'is-deleted disabled-card' : !isCardActive ? (isExpired ? 'is-expired' : 'is-pending') : 'is-active'}`} style={isDeleted ? { opacity: 0.6, pointerEvents: 'none', filter: 'grayscale(1)' } : {}}>
+                            <div key={listing.id} className={`listing-card-premium ${isDeleted ? 'is-deleted disabled-card' : !isCardActive ? (isPending ? 'is-pending' : isExpired ? 'is-expired' : 'is-pending') : 'is-active'}`} style={isDeleted ? { opacity: 0.6, pointerEvents: 'none', filter: 'grayscale(1)' } : {}}>
                               {/* Top Status Header */}
                               <div className="card-top-header">
                                  <div className="status-indicator">
-                                    <span className="status-icon">{isDeleted ? '🗑️' : !isCardActive ? (isExpired ? '✕' : isPending ? '⏳' : '!') : '✓'}</span>
+                                    <span className="status-icon">{isDeleted ? '🗑️' : !isCardActive ? (isPending ? '⏳' : isExpired ? '✕' : '!') : '✓'}</span>
                                     <div className="status-text-group">
-                                       <span className="status-text">{isDeleted ? 'DELETED' : !isCardActive ? (isExpired ? 'EXPIRED LISTING' : isPaymentRequired ? 'PAYMENT REQUIRED' : isPending ? 'PENDING APPROVAL' : 'INACTIVE LISTING') : 'ACTIVE LISTING'}</span>
+                                       <span className="status-text">{isDeleted ? 'DELETED' : !isCardActive ? (isPending ? 'PENDING APPROVAL' : isExpired ? 'EXPIRED LISTING' : isPaymentRequired ? 'PAYMENT REQUIRED' : 'INACTIVE LISTING') : 'ACTIVE LISTING'}</span>
                                     </div>
                                  </div>
                                  <div className="status-date">
-                                    {isDeleted ? 'Deleted from listings' : isExpired ? `Expired on ${expiryDate.toLocaleDateString()}` : isPending ? `Submitted on ${createdAt.toLocaleDateString()}` : `Valid until ${expiryDate.toLocaleDateString()}`}
+                                    {isDeleted ? 'Deleted from listings' : isPending ? `Submitted on ${createdAt.toLocaleDateString()}` : isExpired ? `Expired on ${expiryDate.toLocaleDateString()}` : `Valid until ${expiryDate.toLocaleDateString()}`}
                                  </div>
                                  <button 
                                     className="btn-delete-card" 
@@ -1701,7 +1704,11 @@ const HostDashboard = () => {
                                         <div className="img-listing-id-badge" style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', backdropFilter: 'blur(4px)', zIndex: 10, letterSpacing: '0.5px' }}>
                                            {listing.listingId || listing.customId || listing._id || listing.id}
                                         </div>
-                                        {isExpired && (
+                                        {isPending ? (
+                                          <div className="pending-banner">
+                                            <span>IN REVIEW</span>
+                                          </div>
+                                        ) : isExpired ? (
                                           <div className="expired-banner">
                                             <span>NO ACTIVE PLAN</span>
                                             <div className="status-tooltip-container">
@@ -1716,12 +1723,7 @@ const HostDashboard = () => {
                                               </div>
                                             </div>
                                           </div>
-                                        )}
-                                        {isPending && (
-                                          <div className="pending-banner">
-                                            <span>IN REVIEW</span>
-                                          </div>
-                                        )}
+                                        ) : null}
                                       </>
                                     );
                                   })()}
@@ -1775,7 +1777,7 @@ const HostDashboard = () => {
                                           <button className="btn-premium-secondary disabled" disabled style={{ background: '#f8fafc', color: '#94a3b8', borderColor: '#e2e8f0', cursor: 'not-allowed' }}>Awaiting Approval</button>
                                           <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit Listing</button>
                                        </div>
-                                    ) : (!isCardActive) ? (
+                                    ) : isExpired ? (
                                        <div className="expired-actions-stack">
                                           <button 
                                              className="btn-renew-primary"
@@ -1783,6 +1785,13 @@ const HostDashboard = () => {
                                           >
                                              <span className="renew-icon">⚡️</span> Renew & Go Live <span className="arrow">→</span>
                                           </button>
+                                          <div className="secondary-actions-row">
+                                             <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit</button>
+                                             <button className="btn-premium-secondary" onClick={() => navigate(`/rooms/${listing._id || listing.id}`, { state: { fromHost: true } })}>Preview</button>
+                                          </div>
+                                       </div>
+                                    ) : (!isCardActive) ? (
+                                       <div className="expired-actions-stack">
                                           <div className="secondary-actions-row">
                                              <button className="btn-premium-secondary" onClick={() => handleEdit(listing)}>Edit</button>
                                              <button className="btn-premium-secondary" onClick={() => navigate(`/rooms/${listing._id || listing.id}`, { state: { fromHost: true } })}>Preview</button>
@@ -2651,17 +2660,15 @@ const HostDashboard = () => {
                          position: 'relative', 
                          width: '140px', 
                          height: '140px', 
-                         margin: '0 auto 24px'
+                         margin: '0 auto 16px'
                       }}>
                          <div 
                            className="profile-avatar-large-premium"
                            style={{ 
+                             position: 'relative',
                              width: '140px',
                              height: '140px',
                              borderRadius: '50%',
-                             backgroundImage: profile.avatar ? `url(${profile.avatar})` : 'none',
-                             backgroundSize: 'cover',
-                             backgroundPosition: 'center',
                              display: 'flex',
                              alignItems: 'center',
                              justifyContent: 'center',
@@ -2670,35 +2677,63 @@ const HostDashboard = () => {
                              color: 'white',
                              border: '4px solid #ffffff',
                              boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-                             background: !profile.avatar ? 'linear-gradient(135deg, #2563eb, #38bdf8)' : 'none'
+                             backgroundColor: '#2563eb',
+                             backgroundImage: 'linear-gradient(135deg, #2563eb, #38bdf8)',
+                             overflow: 'hidden'
                            }}
                          >
-                            {!profile.avatar && (profile.name?.charAt(0) || user?.name?.charAt(0) || 'H')}
+                            <span style={{ position: 'relative', zIndex: 1, textTransform: 'uppercase' }}>
+                               {(profile.name || '').trim().charAt(0) || (user?.name || '').trim().charAt(0) || 'H'}
+                            </span>
+                            {profile.avatar && profile.avatar !== 'null' && profile.avatar !== 'undefined' && profile.avatar.trim() !== '' && (
+                               <img 
+                                 src={profile.avatar} 
+                                 alt="Profile" 
+                                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                                 onError={(e) => { e.target.style.display = 'none'; }}
+                               />
+                            )}
                          </div>
-                         <label className="avatar-upload-btn-premium" style={{ 
-                            position: 'absolute',
-                            bottom: '0px',
-                            right: '0px',
-                            background: '#ffffff',
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-                            border: '1px solid rgba(0,0,0,0.06)',
-                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                            fontSize: '0' 
-                         }}>
-                            <Camera size={18} style={{ color: '#1e293b' }} />
-                            <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
-                         </label>
-                      </div>
+                       </div>
+
+                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '24px' }}>
+                          <label style={{ 
+                             background: '#f8fafc',
+                             color: '#0f172a',
+                             border: '1px solid #e2e8f0',
+                             padding: '6px 16px',
+                             borderRadius: '20px',
+                             fontSize: '13px',
+                             fontWeight: 600,
+                             cursor: 'pointer',
+                             transition: 'all 0.2s',
+                             boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                          }}>
+                             Upload Photo
+                             <input type="file" onChange={handleAvatarChange} hidden accept="image/*" />
+                          </label>
+                          {profile.avatar && profile.avatar !== 'null' && profile.avatar !== 'undefined' && profile.avatar.trim() !== '' && (
+                             <button 
+                               onClick={() => setProfile(prev => ({ ...prev, avatar: null }))} 
+                               style={{ 
+                                 background: '#fff1f2',
+                                 color: '#e11d48',
+                                 border: '1px solid #ffe4e6',
+                                 padding: '6px 16px',
+                                 borderRadius: '20px',
+                                 fontSize: '13px',
+                                 fontWeight: 600,
+                                 cursor: 'pointer',
+                                 transition: 'all 0.2s'
+                               }}
+                             >
+                                Remove
+                             </button>
+                          )}
+                       </div>
                       
                       <div className="profile-summary-premium">
-                         <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.5px' }}>{profile.name}</h3>
+                         <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.5px', textTransform: 'capitalize' }}>{profile.name}</h3>
                          <p className="p-role-badge" style={{
                             display: 'inline-block',
                             background: 'rgba(59, 130, 246, 0.12)',
@@ -2734,50 +2769,7 @@ const HostDashboard = () => {
                          </div>
                       </div>
 
-                      <div className="profile-verification-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                         <div className="v-item verified" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#15803d',
-                            background: '#f0fdf4',
-                            border: '1px solid rgba(34, 197, 94, 0.2)',
-                            padding: '12px 16px',
-                            borderRadius: '16px'
-                         }}>
-                            <ShieldCheck size={18} style={{ color: '#16a34a' }} /> Email Verified
-                         </div>
-                         <div className="v-item verified" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#15803d',
-                            background: '#f0fdf4',
-                            border: '1px solid rgba(34, 197, 94, 0.2)',
-                            padding: '12px 16px',
-                            borderRadius: '16px'
-                         }}>
-                            <ShieldCheck size={18} style={{ color: '#16a34a' }} /> Identity Verified
-                         </div>
-                         <div className={`v-item ${profile.isPhoneVerified ? 'verified' : 'pending'}`} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: profile.isPhoneVerified ? '#15803d' : '#64748b',
-                            background: profile.isPhoneVerified ? '#f0fdf4' : '#f8fafc',
-                            border: `1px solid ${profile.isPhoneVerified ? 'rgba(34, 197, 94, 0.2)' : '#e2e8f0'}`,
-                            padding: '12px 16px',
-                            borderRadius: '16px'
-                         }}>
-                            <ShieldCheck size={18} style={{ color: profile.isPhoneVerified ? '#16a34a' : '#94a3b8' }} /> {profile.isPhoneVerified ? 'Phone Verified' : 'Phone Unverified'}
-                         </div>
-                      </div>
+
                    </div>
 
                    {/* Right Column: Edit Form */}
@@ -2837,31 +2829,40 @@ const HostDashboard = () => {
                              </div>
 
                              <div className="form-row-premium">
-                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                               <div className="form-group-premium" style={{ gridColumn: 'span 2', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Email Address</label>
-                                  <input 
-                                    type="email" 
-                                    value={profile.email} 
-                                    disabled 
-                                    className="input-disabled-premium"
-                                    title="Email cannot be changed"
-                                    style={{ 
-                                       width: '100%',
-                                       padding: '12px 16px',
-                                       borderRadius: '14px',
-                                       border: '1px solid #e2e8f0',
-                                       fontSize: '15px',
-                                       color: '#64748b',
-                                       background: '#f8fafc',
-                                       cursor: 'not-allowed'
-                                    }}
-                                  />
-                                  <span className="input-hint-premium" style={{ fontSize: '13px', color: '#64748b' }}>Used for platform notifications</span>
+                                  <div style={{ position: 'relative', width: '100%' }}>
+                                    <input 
+                                      type="email" 
+                                      value={profile.email} 
+                                      disabled 
+                                      className="input-disabled-premium"
+                                      title="Email cannot be changed"
+                                      style={{ 
+                                         width: '100%',
+                                         padding: '12px 16px',
+                                         paddingRight: !!user.email ? '70px' : '16px',
+                                         borderRadius: '14px',
+                                         border: '1px solid #e2e8f0',
+                                         fontSize: '15px',
+                                         color: '#64748b',
+                                         background: '#f8fafc',
+                                         cursor: 'not-allowed'
+                                      }}
+                                    />
+                                    {!!user.email && (
+                                       <span 
+                                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#16a34a', fontSize: '13px', fontWeight: '600' }}
+                                       >
+                                         Verified
+                                       </span>
+                                    )}
+                                  </div>
                                </div>
                              </div>
 
                              <div className="form-row-premium">
-                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                               <div className="form-group-premium" style={{ gridColumn: 'span 2', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <div className="label-with-badge" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Phone Number</label>
                                     <span className={`status-badge ${profile.isPhoneVerified ? 'badge-verified' : 'badge-pending'}`} style={{
@@ -2877,16 +2878,28 @@ const HostDashboard = () => {
                                       {profile.isPhoneVerified ? 'Verified' : 'Not Verified'}
                                     </span>
                                   </div>
-                                  <div className="phone-input-wrapper" style={{ display: 'flex', gap: '12px', marginTop: '2px' }}>
+                                  <div className="phone-input-wrapper" style={{ display: 'flex', gap: '12px', marginTop: '2px', position: 'relative' }}>
+                                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: '600', color: '#1e293b', borderRight: '1px solid #cbd5e1', paddingRight: '12px', zIndex: 2 }}>+91</div>
                                     <input 
                                       type="tel" 
                                       name="phone" 
-                                      value={profile.phone} 
-                                      onChange={handleProfileUpdate} 
-                                      placeholder="e.g. +91 98765 43210"
+                                      value={(profile.phone || '').replace(/^\+91\s*/, '')} 
+                                      onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '').substring(0, 10);
+                                        const fullPhone = val ? '+91 ' + val : '';
+                                        setProfile(prev => ({
+                                          ...prev,
+                                          phone: fullPhone,
+                                          isPhoneVerified: fullPhone === user?.phone && user?.isPhoneVerified
+                                        }));
+                                        setIsOtpSent(false);
+                                      }}
+                                      placeholder="98765 43210"
                                       style={{ 
                                          flex: 1,
                                          padding: '12px 16px',
+                                         paddingLeft: '64px',
+                                         paddingRight: profile.isPhoneVerified ? '70px' : '16px',
                                          borderRadius: '14px',
                                          border: '1px solid #cbd5e1',
                                          fontSize: '15px',
@@ -2895,6 +2908,13 @@ const HostDashboard = () => {
                                          boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
                                       }}
                                     />
+                                    {profile.isPhoneVerified && (
+                                       <span 
+                                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#16a34a', fontSize: '13px', fontWeight: '600' }}
+                                       >
+                                         Verified
+                                       </span>
+                                    )}
                                     {!profile.isPhoneVerified && (
                                       <button 
                                         type="button" 
@@ -2919,22 +2939,12 @@ const HostDashboard = () => {
                                     )}
                                   </div>
                                   {isOtpSent && !profile.isPhoneVerified && (
-                                    <div className="otp-confirm-wrapper" style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                                      <input 
-                                        type="text" 
+                                    <div className="otp-confirm-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                                      <OTPInput 
+                                        length={6} 
                                         value={otpCode} 
-                                        onChange={(e) => setOtpCode(e.target.value)} 
-                                        placeholder="6-digit OTP"
-                                        style={{ 
-                                           flex: 1,
-                                           padding: '12px 16px',
-                                           borderRadius: '14px',
-                                           border: '1px solid #cbd5e1',
-                                           fontSize: '15px',
-                                           color: '#1e293b',
-                                           background: '#fff',
-                                           boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
-                                        }}
+                                        onChange={(code) => setOtpCode(code)} 
+                                        onComplete={handleConfirmOtp}
                                       />
                                       <button 
                                         type="button" 
@@ -2962,29 +2972,7 @@ const HostDashboard = () => {
                                </div>
                              </div>
 
-                             <div className="form-row-premium" style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: '24px' }}>
-                               <div className="form-group-premium" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>About Me (Bio)</label>
-                                  <textarea
-                                    name="bio"
-                                    value={profile.bio}
-                                    onChange={handleProfileUpdate}
-                                    placeholder="Tell guests about yourself..."
-                                    style={{ 
-                                      width: '100%', 
-                                      padding: '12px 16px', 
-                                      borderRadius: '14px', 
-                                      border: '1px solid #cbd5e1', 
-                                      height: '92px',
-                                      resize: 'vertical',
-                                      fontFamily: 'inherit',
-                                      fontSize: '15px',
-                                      color: '#1e293b',
-                                      background: '#fff',
-                                      boxShadow: '0 1px 2px 0 rgba(0,0,0,0.02)'
-                                    }}
-                                  />
-                               </div>
+                             <div className="form-row-premium" style={{ display: 'flex', gap: '24px' }}>
                                <div className="form-group-premium" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <label style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Host Since</label>
                                   <input 

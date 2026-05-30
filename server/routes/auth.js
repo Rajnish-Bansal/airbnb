@@ -63,8 +63,33 @@ router.post('/send-otp', async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // Mock sending SMS
-    console.log(`\n--------------------------------\n[SMS MOCK] To: ${phone}\nMessage: Your Hostify verification code is ${code}\n--------------------------------\n`);
+    const API_KEY = process.env.FAST2SMS_API_KEY;
+
+    if (API_KEY && !ENABLE_DUMMY_OTP) {
+      // Fast2SMS integration using POST request
+      try {
+        const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "authorization": API_KEY
+          },
+          body: JSON.stringify({
+            route: "otp",
+            variables_values: code,
+            numbers: phone
+          })
+        });
+        
+        const data = await response.json();
+        console.log(`[Fast2SMS Live API] Sent to ${phone}. Response:`, data);
+      } catch (apiErr) {
+        console.error('[Fast2SMS Live API] Failed to call Fast2SMS API:', apiErr.message);
+      }
+    } else {
+      // Mock fallback if no API key is provided or dummy mode is active
+      console.log(`\n--------------------------------\n[SMS MOCK] To: ${phone}\nOTP Code: ${code}\n(Add FAST2SMS_API_KEY to server/.env to send real SMS)\n--------------------------------\n`);
+    }
 
     res.json({ message: 'OTP sent successfully' });
   } catch (err) {
