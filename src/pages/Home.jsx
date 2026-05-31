@@ -93,7 +93,7 @@ const Home = () => {
     // Filter by Dates
     if (startDate && endDate) {
       filtered = filtered.filter(listing => {
-        if (!listing.availableFrom || !listing.availableTo) return false;
+        if (!listing.availableFrom || !listing.availableTo) return true; // Assume available if no explicit date bounds are set
         const availFrom = new Date(listing.availableFrom);
         const availTo = new Date(listing.availableTo);
         const start = new Date(startDate);

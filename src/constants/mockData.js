@@ -112,5 +112,81 @@ export const DUMMY_LISTINGS = [
       image: "https://i.pravatar.cc/150?u=tenzing"
     },
     coordinates: { lat: 32.2432, lng: 77.1892 }
+  },
+  {
+    _id: "1700007",
+    location: "Jaipur, Rajasthan",
+    distance: "260 km away",
+    price: 7500,
+    rating: 4.85,
+    reviewsCount: 198,
+    photos: ["https://images.unsplash.com/photo-1599661559875-52ac6aa0b4bd?w=400&auto=format&fit=crop"],
+    title: "Pink City Heritage Haveli",
+    propertyType: "Villa (Luxury)",
+    maxGuests: 5,
+    description: "Experience authentic Rajasthani culture in our beautifully restored heritage Haveli.",
+    amenities: ["Wifi", "Courtyard", "Heritage Decor", "Kitchen", "Air conditioning", "Free parking"],
+    host: {
+      name: "Rajput Royals",
+      image: "https://i.pravatar.cc/150?u=rajput"
+    },
+    coordinates: { lat: 26.9124, lng: 75.7873 }
+  },
+  {
+    _id: "1700008",
+    location: "Wayanad, Kerala",
+    distance: "280 km away",
+    price: 12000,
+    rating: 4.96,
+    reviewsCount: 84,
+    photos: ["https://images.unsplash.com/photo-1542640244-7e672d6cb466?w=400&auto=format&fit=crop"],
+    title: "Treehouse in the Jungle",
+    propertyType: "House (Standard)",
+    maxGuests: 2,
+    description: "An unforgettable treehouse experience deep in the lush forests of Wayanad.",
+    amenities: ["Breakfast", "Forest View", "Balcony", "Coffee Maker", "Nature Trails"],
+    host: {
+      name: "Nithin Kumar",
+      image: "https://i.pravatar.cc/150?u=nithin"
+    },
+    coordinates: { lat: 11.6854, lng: 76.1320 }
+  },
+  {
+    _id: "1700009",
+    location: "Varanasi, Uttar Pradesh",
+    distance: "320 km away",
+    price: 3500,
+    rating: 4.72,
+    reviewsCount: 312,
+    photos: ["https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=400&auto=format&fit=crop"],
+    title: "Ghat View Boutique Stay",
+    propertyType: "Apartment/Flat",
+    maxGuests: 3,
+    description: "Located right on the ghats, offering stunning sunrise views over the holy river Ganges.",
+    amenities: ["Wifi", "River View", "Rooftop Access", "Air conditioning", "Library"],
+    host: {
+      name: "Pandit Ji",
+      image: "https://i.pravatar.cc/150?u=pandit"
+    },
+    coordinates: { lat: 25.3176, lng: 83.0062 }
+  },
+  {
+    _id: "1700010",
+    location: "Darjeeling, West Bengal",
+    distance: "620 km away",
+    price: 5400,
+    rating: 4.89,
+    reviewsCount: 145,
+    photos: ["https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=400&auto=format&fit=crop"],
+    title: "Tea Garden Bungalow",
+    propertyType: "House (Standard)",
+    maxGuests: 4,
+    description: "A colonial-era bungalow surrounded by rolling tea gardens and views of Kanchenjunga.",
+    amenities: ["Wifi", "Fireplace", "Mountain View", "Tea Tasting", "Kitchen", "Free parking"],
+    host: {
+      name: "Aisha Gurung",
+      image: "https://i.pravatar.cc/150?u=aisha"
+    },
+    coordinates: { lat: 27.0360, lng: 88.2627 }
   }
 ];

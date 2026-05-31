@@ -148,7 +148,7 @@ const Navbar = ({ onLogoClick, scrolled }) => {
                         
                         <Link to="/profile" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Profile</Link>
                         <Link to="/bookings" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>My Bookings</Link>
-                        <Link to="/wallet" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Wallet</Link>
+                        <Link to="/wallet" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Payments & Transactions</Link>
                         <div className="menu-divider"></div>
                         <div className="menu-item" onClick={() => {
                            setIsLogoutModalOpen(true);

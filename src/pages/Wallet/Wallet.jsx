@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import './Wallet.css';
-import { CreditCard, Plus, ArrowUpRight, ArrowDownLeft, Wallet as WalletIcon, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CreditCard, Plus, ArrowUpRight, ArrowDownLeft, Wallet as WalletIcon, Loader2, ChevronLeft } from 'lucide-react';
 import { fetchTransactions } from '../../services/api';
 
 const Wallet = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadTransactions = async () => {
@@ -22,55 +24,27 @@ const Wallet = () => {
     loadTransactions();
   }, []);
 
-  const calculateBalance = () => {
-    return transactions.reduce((acc, t) => {
-      const amount = t.amount || 0;
-      return t.type === 'Credit' ? acc + amount : acc - amount;
-    }, 0);
-  };
 
-  const balance = calculateBalance();
 
   return (
     <>
       <Navbar />
       <div className="wallet-container">
-        <h1 className="page-title">Wallet</h1>
-        
-        {/* Balance Structure */}
-        <div className="balance-card">
-           <div className="balance-header">
-              <span className="balance-label">Available Balance</span>
-              <WalletIcon size={24} color="white" />
-           </div>
-            <div className="balance-amount">₹{balance.toLocaleString('en-IN')}</div>
-            <div className="balance-expiry">Secure transactions with 256-bit encryption</div>
-        </div>
-
-        {/* Payment Methods */}
-        <div className="section-header">
-           <h2>Payment Methods</h2>
-           <button className="add-btn"><Plus size={16} /> Add New</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+          <button 
+            onClick={() => navigate(-1)} 
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#f7f7f7'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <h1 className="page-title" style={{ margin: 0 }}>Payments & Transactions</h1>
         </div>
         
-        <div className="cards-grid">
-           <div className="payment-method-card">
-              <div className="card-logo">VISA</div>
-              <div className="card-number">•••• 4242</div>
-              <div className="card-expiry">Expires 12/28</div>
-           </div>
-           
-           <div className="payment-method-card mastercard">
-              <div className="card-logo">Mastercard</div>
-              <div className="card-number">•••• 8899</div>
-              <div className="card-expiry">Expires 09/25</div>
-           </div>
-        </div>
 
-        {/* Transactions */}
-        <div className="section-header" style={{marginTop: '40px'}}>
-           <h2>Transaction History</h2>
-        </div>
+
+
 
         <div className="transactions-list">
             {loading ? (
@@ -85,7 +59,17 @@ const Wallet = () => {
                    </div>
                    <div className="transaction-info">
                       <div className="t-title">{t.description || t.category}</div>
-                      <div className="t-date">{new Date(t.createdAt).toLocaleDateString()}</div>
+                      <div className="t-date" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                        <span>{new Date(t.createdAt).toLocaleDateString()}</span>
+                        <span style={{ opacity: 0.5 }}>•</span>
+                        <span>Ref: {t._id.substring(t._id.length - 8).toUpperCase()}</span>
+                        {t.metadata?.bookingCode && (
+                          <>
+                            <span style={{ opacity: 0.5 }}>•</span>
+                            <span>Booking ID: {t.metadata.bookingCode}</span>
+                          </>
+                        )}
+                      </div>
                    </div>
                    <div className={`t-amount ${t.type.toLowerCase()}`}>
                      {t.type === 'Credit' ? '+' : '-'}₹{t.amount.toLocaleString('en-IN')}

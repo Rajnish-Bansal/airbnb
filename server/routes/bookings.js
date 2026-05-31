@@ -130,7 +130,11 @@ router.post('/', authenticateToken, async (req, res) => {
 router.get('/my-trips', authenticateToken, async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user.id })
-      .populate('listing', 'location title image photos price customId')
+      .populate({
+        path: 'listing',
+        select: 'location title image photos price customId host hostId',
+        populate: { path: 'hostId', select: 'name email phone avatar' }
+      })
       .sort({ startDate: -1 });
     res.json(bookings);
   } catch (err) {

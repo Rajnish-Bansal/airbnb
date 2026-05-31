@@ -164,8 +164,7 @@ const Profile = () => {
         <div className="profile-grid">
           
           {/* Left Column: ID Card & Identity */}
-          <div className="profile-left">
-            <div className="profile-card premium-card">
+          <div className="premium-card">
               <div className="profile-avatar-wrapper">
                 <div 
                   className="profile-avatar-large"
@@ -188,9 +187,10 @@ const Profile = () => {
                      />
                   )}
                 </div>
+              </div>
                 
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
-                  <label style={{ 
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+                <label style={{ 
                      background: '#f8fafc',
                      color: '#0f172a',
                      border: '1px solid #e2e8f0',
@@ -250,7 +250,6 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-          </div>
 
           {/* Right Column: Detailed Info Form */}
           <div className="profile-main-content">

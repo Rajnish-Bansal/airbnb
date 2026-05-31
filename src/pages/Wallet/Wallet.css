@@ -4,37 +4,30 @@
   padding: 120px 24px 64px;
 }
 
-.balance-card {
-  background: linear-gradient(135deg, var(--primary) 0%, #BD1E59 100%);
-  border-radius: 16px;
-  padding: 32px;
-  color: white;
-  margin-bottom: 40px;
-  box-shadow: 0 10px 25px rgba(255, 56, 92, 0.3);
+.balance-minimal {
+  margin-bottom: 48px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ebebeb;
 }
 
-.balance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.balance-label {
-  font-size: 16px;
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-.balance-amount {
-  font-size: 48px;
-  font-weight: 700;
+.balance-minimal-header {
   margin-bottom: 8px;
 }
 
-.balance-expiry {
+.balance-minimal-label {
   font-size: 14px;
-  opacity: 0.8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #717171;
+}
+
+.balance-minimal-amount {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: #222;
+  line-height: 1.1;
 }
 
 .section-header {
@@ -127,13 +120,13 @@
 }
 
 .transaction-icon.credit {
-  background: #e6fce8;
-  color: #008a05;
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
 .transaction-icon.debit {
-  background: #f7f7f7;
-  color: #222;
+  background: #f8fafc;
+  color: #475569;
 }
 
 .transaction-info {
@@ -142,21 +135,23 @@
 
 .t-title {
   font-size: 16px;
-  font-weight: 500;
-  color: #222;
+  font-weight: 600;
+  color: #0f172a;
   margin-bottom: 4px;
 }
 
 .t-date {
   font-size: 13px;
-  color: #717171;
+  color: #64748b;
 }
 
 .t-amount {
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.5px;
+  color: #0f172a;
 }
 
 .t-amount.credit {
-  color: #008a05;
+  color: #16a34a;
 }

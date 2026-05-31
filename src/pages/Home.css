@@ -197,6 +197,11 @@
   .section-title {
     font-size: 24px;
   }
+  
+  .listings-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
 }
 
 @media (max-width: 480px) {

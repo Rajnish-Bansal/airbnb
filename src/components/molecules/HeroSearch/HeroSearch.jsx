@@ -210,7 +210,7 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
             }}
         >
           <label>Guests</label>
-          <div style={{ fontSize: '14px', fontWeight: 500, color: '#94A3B8' }}>
+          <div style={{ fontSize: '15px', fontWeight: 600, color: '#222222' }}>
               {totalGuests > 0 ? `${totalGuests} Guest${totalGuests > 1 ? 's' : ''}` : '1 Guest'}
           </div>
 
@@ -282,15 +282,7 @@ const HeroSearch = ({ onSearch, allLocations = [] }) => {
                       </div>
                   </div>
                   
-                  {/* Sticky Footer */}
-                  <div className="sheet-footer">
-                      <button 
-                        className="btn btn-primary apply-btn" 
-                        onClick={() => setActiveField(null)}
-                      >
-                        Show properties
-                      </button>
-                  </div>
+
               </div>
           )}
         </div>
