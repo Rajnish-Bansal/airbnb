@@ -59,6 +59,8 @@ function AppContent() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<About />} />
 
+                <Route path="/wishlist" element={<Wishlist />} />
+
                 {/* Protected Routes - Require Login */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/booking" element={<Checkout />} />
@@ -68,7 +70,6 @@ function AppContent() {
                   <Route path="/wallet" element={<Wallet />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/bookings" element={<Bookings />} />
-                  <Route path="/wishlists" element={<Wishlist />} />
                   <Route path="/inbox" element={<Inbox />} />
                 </Route>
                 <Route path="/admin/login" element={<AdminLogin />} />

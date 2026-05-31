@@ -1,19 +1,8 @@
-.page-container {
-  padding: 40px 24px;
-  max-width: 1280px;
-  margin: 0 auto;
-}
+/* Container and title layouts managed globally */
 
 .content-wrapper {
   max-width: 800px;
   margin: 0 auto;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 32px;
 }
 
 .notifications-list {

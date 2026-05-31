@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import './Bookings.css';
-import { MapPin, Calendar, Users, Briefcase, MessageSquare, Star, FileText, ChevronLeft } from 'lucide-react';
+import { MapPin, Calendar, Users, Briefcase, MessageSquare, Star, FileText } from 'lucide-react';
+import PageHeader from '../../components/molecules/PageHeader/PageHeader';
 import RatingModal from '../../components/molecules/RatingModal/RatingModal';
 import InvoiceModal from '../../components/molecules/InvoiceModal/InvoiceModal';
 import { fetchMyTrips, updateBookingStatus } from '../../services/api';
@@ -99,32 +100,10 @@ const Bookings = () => {
   };
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
       <div className="page-container">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-          <button 
-            onClick={() => navigate('/')}
-            style={{
-              background: 'white',
-              border: '1px solid #ddd',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'scale(1)'; }}
-            title="Go to Home"
-          >
-            <ChevronLeft size={24} color="#222" />
-          </button>
-          <h1 className="page-title" style={{ margin: 0 }}>My Bookings</h1>
-        </div>
+        <PageHeader title="My Bookings" />
         
         <div className="tabs-container">
           <button 
@@ -581,10 +560,9 @@ const Bookings = () => {
              </div>
            </div>
          </div>
-       )}
-     </>
-   );
+        )}
+    </div>
+  );
 };
 
 export default Bookings;
-

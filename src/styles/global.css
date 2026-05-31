@@ -31,6 +31,21 @@ body {
   }
 }
 
+/* Unified Page Container Layout */
+.page-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 120px 80px 60px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 100px 24px 40px;
+  }
+}
+
 /* Responsive Utilities */
 .hide-on-mobile {
   @media (max-width: 768px) {

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import './Wallet.css';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Plus, ArrowUpRight, ArrowDownLeft, Wallet as WalletIcon, Loader2, ChevronLeft } from 'lucide-react';
+import { CreditCard, Plus, ArrowUpRight, ArrowDownLeft, Wallet as WalletIcon, Loader2 } from 'lucide-react';
+import PageHeader from '../../components/molecules/PageHeader/PageHeader';
 import { fetchTransactions } from '../../services/api';
 
 const Wallet = () => {
@@ -27,25 +28,11 @@ const Wallet = () => {
 
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <div className="wallet-container">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-          <button 
-            onClick={() => navigate(-1)} 
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#f7f7f7'}
-            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className="page-title" style={{ margin: 0 }}>Payments & Transactions</h1>
-        </div>
+      <div className="page-container">
+        <PageHeader title="Payments & Transactions" />
         
-
-
-
-
         <div className="transactions-list">
             {loading ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
@@ -82,9 +69,8 @@ const Wallet = () => {
               </div>
             )}
          </div>
-
       </div>
-    </>
+    </div>
   );
 };
 

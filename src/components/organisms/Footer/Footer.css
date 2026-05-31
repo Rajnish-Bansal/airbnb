@@ -7,14 +7,14 @@
 .footer-inner {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 56px var(--spacing-xl, 32px) 28px;
+  padding: 32px var(--spacing-xl, 32px) 16px;
 }
 
 .footer-top {
   display: grid;
   grid-template-columns: 1.4fr 2fr;
   gap: 80px;
-  padding-bottom: 48px;
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--border-light, rgba(0,0,0,0.08));
 }
 

@@ -5,6 +5,7 @@ import { useHost } from '../../context/HostContext';
 import { ShieldCheck, Check, Star, User, Phone, Mail, Briefcase, Camera, Sparkles } from 'lucide-react';
 import { fetchUserProfile, updateUserProfile, uploadImage, sendOtp, verifyOtp } from '../../services/api';
 import OTPInput from '../../components/molecules/OTPInput/OTPInput';
+import PageHeader from '../../components/molecules/PageHeader/PageHeader';
 import './Profile.css';
 
 const Profile = () => {
@@ -154,6 +155,8 @@ const Profile = () => {
     <>
       <Navbar />
       <div className="profile-container">
+        
+        <PageHeader title="Profile" />
         
         {saveSuccess && (
           <div className="profile-toast-success-premium">

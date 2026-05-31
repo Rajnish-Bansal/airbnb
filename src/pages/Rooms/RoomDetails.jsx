@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { Share, Heart, Star, MapPin, Wifi, Car, Utensils, Monitor, ChevronDown, ChevronUp, ArrowLeft, Wind, Briefcase, Coffee, Waves, Dumbbell, Flame, Bath } from 'lucide-react';
+import { Share, Heart, Star, MapPin, Wifi, Car, Utensils, Monitor, ChevronDown, ChevronUp, ArrowLeft, Wind, Briefcase, Coffee, Waves, Dumbbell, Flame, Bath, Home } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import Navbar from '../../components/organisms/Navbar/Navbar';
@@ -73,7 +73,17 @@ const RoomDetails = () => {
   
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Initialize isFavorite from localStorage so it stays red across refreshes
+  const [isFavorite, setIsFavorite] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`wishlist_${id}`);
+      return saved === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  
   const [showNudge, setShowNudge] = useState(false);
   
   useEffect(() => {
@@ -82,6 +92,13 @@ const RoomDetails = () => {
       return () => clearTimeout(timer);
     }
   }, [showNudge]);
+
+  // Sync isFavorite to localStorage whenever it changes
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem(`wishlist_${id}`, isFavorite);
+    }
+  }, [isFavorite, id]);
 
   // Fetch listing data
   useEffect(() => {
@@ -335,14 +352,13 @@ const RoomDetails = () => {
   };
 
   const handleSave = () => {
-    if (!user) {
-      setShowNudge(true);
-      return;
-    }
-    
     setIsFavorite(!isFavorite);
     if (!isFavorite) {
-      showNotification('Saved to wishlist!', 'success');
+      if (!user) {
+        setShowNudge(true);
+      } else {
+        showNotification('Saved to wishlist!', 'success');
+      }
     }
   };
 
@@ -367,22 +383,52 @@ const RoomDetails = () => {
       </Helmet>
       <Navbar />
       <div className="room-content">
-        <div className="room-title-header-row">
-          {location.state?.fromHost ? (
-            <Link 
-              to="/become-a-host/dashboard?tab=listings" 
-              className="back-circle-btn"
-              style={{ textDecoration: 'none' }}
-              title="Back"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-          ) : (
-            <button className="back-circle-btn" onClick={() => navigate(-1)} title="Back">
-              <ArrowLeft size={20} />
-            </button>
-          )}
-          <h1 className="room-title">{listing.title || `Stunning stay in ${listing.location}`}</h1>
+        <div className="room-title-header-row" style={{ justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {location.state?.fromHost ? (
+              <Link 
+                to="/become-a-host/dashboard?tab=listings" 
+                className="back-circle-btn"
+                style={{ textDecoration: 'none' }}
+                title="Back"
+              >
+                <ArrowLeft size={20} />
+              </Link>
+            ) : (
+              <button className="back-button" onClick={() => navigate(-1)} title="Go Back">
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <h1 className="room-title" style={{ margin: 0 }}>{listing.title || `Stunning stay in ${listing.location}`}</h1>
+          </div>
+          
+          <button 
+            onClick={() => navigate('/')}
+            style={{
+              background: 'white',
+              border: '1px solid #DDDDDD',
+              borderRadius: '24px',
+              padding: '6px 14px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '13px',
+              color: '#222',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            Back to home
+          </button>
         </div>
         <div className="room-header-meta">
           <div className="left-meta">

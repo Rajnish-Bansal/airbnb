@@ -1,7 +1,8 @@
 .profile-container {
-  max-width: 1120px;
+  width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 80px 24px 80px;
+  padding: 120px 80px 60px;
   min-height: 80vh;
   box-sizing: border-box;
   animation: fadeIn 0.4s ease-in-out;
@@ -518,7 +519,7 @@
 /* Responsive Scaling */
 @media (max-width: 960px) {
   .profile-container {
-    padding: 100px 16px 40px;
+    padding: 100px 24px 40px;
   }
 
   .profile-grid {

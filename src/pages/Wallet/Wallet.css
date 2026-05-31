@@ -1,8 +1,4 @@
-.wallet-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 120px 24px 64px;
-}
+/* Container layout managed globally by .page-container */
 
 .balance-minimal {
   margin-bottom: 48px;

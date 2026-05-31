@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '../../components/organisms/Navbar/Navbar';
+import PageHeader from '../../components/molecules/PageHeader/PageHeader';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -28,11 +29,11 @@ const Notifications = () => {
   ];
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <div className="page-container">
+      <div className="page-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div className="content-wrapper">
-          <h1 className="page-title">Notifications</h1>
+          <PageHeader title="Notifications" />
           
           <div className="notifications-list">
             {notifications.map(note => (
@@ -48,7 +49,7 @@ const Notifications = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -146,8 +146,10 @@ const Navbar = ({ onLogoClick, scrolled }) => {
                         </div>
                         <div className="menu-divider"></div>
                         
+                        <Link to="/" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Home</Link>
                         <Link to="/profile" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Profile</Link>
                         <Link to="/bookings" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>My Bookings</Link>
+                        <Link to="/wishlist" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>My Wishlist</Link>
                         <Link to="/wallet" className="menu-item" onClick={() => setIsUserMenuOpen(false)}>Payments & Transactions</Link>
                         <div className="menu-divider"></div>
                         <div className="menu-item" onClick={() => {
@@ -161,6 +163,8 @@ const Navbar = ({ onLogoClick, scrolled }) => {
                             <div className="menu-item-bold" onClick={() => { openAuthModal(); setIsUserMenuOpen(false); }}>Log in</div>
                             <div className="menu-item" onClick={() => { openAuthModal(); setIsUserMenuOpen(false); }}>Sign up</div>
                             <div className="menu-divider"></div>
+                            <Link to="/" className="menu-item" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }} onClick={() => setIsUserMenuOpen(false)}>Home</Link>
+                            <Link to="/wishlist" className="menu-item" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }} onClick={() => setIsUserMenuOpen(false)}>Wishlist</Link>
                             <div className="menu-item" onClick={() => { setRedirectAfterLogin('/become-a-host'); openAuthModal(); setIsUserMenuOpen(false); }}>Become a host</div>
                             <div className="menu-item">Help Center</div>
                           </>

@@ -7,7 +7,11 @@ import './ListingCard.css';
 const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyViewed, ...listing }) => {
   const navigate = useNavigate();
   const { user, openAuthModal, showNotification } = useAuth();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const cardId = id || listing._id;
+  
+  const [isFavorite, setIsFavorite] = useState(() => {
+    return localStorage.getItem(`wishlist_${cardId}`) === 'true';
+  });
   const [showNudge, setShowNudge] = useState(false);
 
   // Dynamic details calculation
@@ -47,22 +51,24 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
           className="favorite-button" 
           onClick={(e) => {
             e.stopPropagation();
-            if (!user) {
-              setShowNudge(true);
-              return;
-            }
             
-            setIsFavorite(!isFavorite);
-            if (!isFavorite) {
+            const newFavoriteStatus = !isFavorite;
+            setIsFavorite(newFavoriteStatus);
+            
+            if (newFavoriteStatus) {
+              localStorage.setItem(`wishlist_${cardId}`, 'true');
               showNotification('Saved to wishlist!', 'success');
+            } else {
+              localStorage.removeItem(`wishlist_${cardId}`);
+              showNotification('Removed from wishlist', 'info');
             }
           }}
         >
           <Heart 
             size={20} 
             className="heart-icon" 
-            fill={isFavorite ? 'var(--primary)' : 'none'}
-            stroke={isFavorite ? 'var(--primary)' : '#222'}
+            fill={isFavorite ? '#FF385C' : 'rgba(0,0,0,0.5)'}
+            stroke={isFavorite ? '#FF385C' : 'white'}
           />
         </button>
         {showNudge && (
