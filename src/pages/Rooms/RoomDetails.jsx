@@ -9,7 +9,7 @@ import GuestSelector from '../../components/molecules/GuestSelector/GuestSelecto
 import { useAuth } from '../../context/AuthContext';
 import { useHost } from '../../context/HostContext';
 import { useSearch } from '../../context/SearchContext';
-import { fetchListingById, fetchBookedDates } from '../../services/api';
+import { fetchListingById, fetchBookedDates, toggleWishlist } from '../../services/api';
 import { differenceInDays, format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import MapView from '../../components/molecules/MapView/MapView';
@@ -66,7 +66,7 @@ const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, openAuthModal, showNotification } = useAuth();
+  const { user, openAuthModal, showNotification, toggleFavoriteLocally } = useAuth();
   const { listings: hostListings } = useHost();
   const { addToRecentlyViewed } = useSearch();
   const routeListing = location.state?.listing || null;
@@ -74,31 +74,25 @@ const RoomDetails = () => {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Initialize isFavorite from localStorage so it stays red across refreshes
-  const [isFavorite, setIsFavorite] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`wishlist_${id}`);
-      return saved === 'true';
-    } catch (e) {
-      return false;
-    }
-  });
-  
+  // Use isFavorite directly from AuthContext
+  const isFavorite = user?.wishlist?.includes(id) || false;
+
   const [showNudge, setShowNudge] = useState(false);
+  const [showMessageNudge, setShowMessageNudge] = useState(false);
   
   useEffect(() => {
     if (showNudge) {
-      const timer = setTimeout(() => setShowNudge(false), 3000);
+      const timer = setTimeout(() => setShowNudge(false), 1500);
       return () => clearTimeout(timer);
     }
   }, [showNudge]);
 
-  // Sync isFavorite to localStorage whenever it changes
   useEffect(() => {
-    if (id) {
-      localStorage.setItem(`wishlist_${id}`, isFavorite);
+    if (showMessageNudge) {
+      const timer = setTimeout(() => setShowMessageNudge(false), 1500);
+      return () => clearTimeout(timer);
     }
-  }, [isFavorite, id]);
+  }, [showMessageNudge]);
 
   // Fetch listing data
   useEffect(() => {
@@ -351,21 +345,54 @@ const RoomDetails = () => {
     });
   };
 
-  const handleSave = () => {
-    setIsFavorite(!isFavorite);
-    if (!isFavorite) {
-      if (!user) {
-        setShowNudge(true);
-      } else {
-        showNotification('Saved to wishlist!', 'success');
+  const handleSave = async () => {
+    if (!user) {
+      setShowNudge(true);
+      return;
+    }
+    
+    const newFavoriteStatus = !isFavorite;
+    toggleFavoriteLocally(id);
+    
+    if (newFavoriteStatus) {
+      showNotification('Saved to wishlist!', 'success');
+    } else {
+      showNotification('Removed from wishlist', 'info');
+    }
+    
+    try {
+      await toggleWishlist(id);
+    } catch (err) {
+      console.error('Failed to toggle wishlist:', err);
+      toggleFavoriteLocally(id);
+      showNotification('Failed to save. Please try again.', 'error');
+    }
+  };
+  const handleShare = async () => {
+    const shareData = {
+      title: listing.title || 'Hostify Stay',
+      text: `Check out this amazing stay in ${listing.location} on Hostify!`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
       }
+    } else {
+      // Fallback
+      navigator.clipboard.writeText(window.location.href);
+      showNotification('Link copied to clipboard!', 'success');
     }
   };
 
   const handleMessageHost = () => {
     if (!user) {
-      showNotification('Please login to message the host', 'warning');
-      openAuthModal();
+      setShowMessageNudge(true);
       return;
     }
     navigate('/inbox', { state: { hostName, hostImage } });
@@ -383,8 +410,10 @@ const RoomDetails = () => {
       </Helmet>
       <Navbar />
       <div className="room-content">
-        <div className="room-title-header-row" style={{ justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', marginBottom: '24px' }}>
+          
+          {/* Back button container */}
+          <div style={{ flexShrink: 0, marginTop: '2px' }}>
             {location.state?.fromHost ? (
               <Link 
                 to="/become-a-host/dashboard?tab=listings" 
@@ -395,64 +424,73 @@ const RoomDetails = () => {
                 <ArrowLeft size={20} />
               </Link>
             ) : (
-              <button className="back-button" onClick={() => navigate(-1)} title="Go Back">
+              <button className="back-button" onClick={() => navigate(-1)} title="Go Back" style={{ marginBottom: 0 }}>
                 <ArrowLeft size={20} />
               </button>
             )}
-            <h1 className="room-title" style={{ margin: 0 }}>{listing.title || `Stunning stay in ${listing.location}`}</h1>
           </div>
-          
-          <button 
-            onClick={() => navigate('/')}
-            style={{
-              background: 'white',
-              border: '1px solid #DDDDDD',
-              borderRadius: '24px',
-              padding: '6px 14px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              fontSize: '13px',
-              color: '#222',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
-              e.currentTarget.style.transform = 'scale(1.02)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            Back to home
-          </button>
-        </div>
-        <div className="room-header-meta">
-          <div className="left-meta">
-            <Star size={14} fill="black" /> 
-            <span className="rating-bold">{listing.rating}</span>
-            <span className="dot">·</span>
-            <span className="reviews-link">{listing.reviewsCount} reviews</span>
-            <span className="dot">·</span>
-            <button 
-              className="location-link-btn" 
-              onClick={scrollToMap}
-            >
-              {listing.location}
-            </button>
-            <span className="dot">·</span>
-            <button 
-              className="view-on-map-link"
-              onClick={scrollToMap}
-            >
-              View on map
-            </button>
-          </div>
+
+          {/* Title and Meta Column */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+            
+            {/* Title Row */}
+            <div className="room-title-header-row" style={{ justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+              <h1 className="room-title" style={{ margin: 0 }}>{listing.title || `Stunning stay in ${listing.location}`}</h1>
+              
+              <button 
+                onClick={() => navigate('/')}
+                style={{
+                  background: 'white',
+                  border: '1px solid #DDDDDD',
+                  borderRadius: '24px',
+                  padding: '6px 14px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  color: '#222',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                Back to home
+              </button>
+            </div>
+
+            {/* Meta Row */}
+            <div className="room-header-meta" style={{ marginBottom: 0 }}>
+              <div className="left-meta">
+                <Star size={14} fill="black" /> 
+                <span className="rating-bold">{listing.rating}</span>
+                <span className="dot">·</span>
+                <span className="reviews-link">{listing.reviewsCount} reviews</span>
+                <span className="dot">·</span>
+                <button 
+                  className="location-link-btn" 
+                  onClick={scrollToMap}
+                >
+                  {listing.location}
+                </button>
+                <span className="dot">·</span>
+                <button 
+                  className="view-on-map-link"
+                  onClick={scrollToMap}
+                >
+                  View on map
+                </button>
+              </div>
           <div className="right-actions">
-            <button className="action-btn"><Share size={16} /> Share</button>
+            <button className="action-btn" onClick={handleShare}><Share size={16} /> Share</button>
             <button 
               className={`action-btn ${isFavorite ? 'active' : ''}`} 
               onClick={handleSave}
@@ -471,7 +509,9 @@ const RoomDetails = () => {
                 </div>
               )}
             </button>
+            </div>
           </div>
+        </div>
         </div>
 
         {/* Gallery Grid */}
@@ -497,7 +537,14 @@ const RoomDetails = () => {
                     <h2>Hosted by {hostName}</h2>
                     <p>4 guests · 2 bedrooms · 2 beds · 2 baths</p>
                     <div className="host-actions-row">
-                       <button className="host-action-btn primary" onClick={handleMessageHost}>Message Host</button>
+                       <button className="host-action-btn primary" onClick={handleMessageHost} style={{ position: 'relative' }}>
+                         Message Host
+                         {showMessageNudge && (
+                           <div className="details-nudge fade-in">
+                              <span>🔒 Please login to message</span>
+                           </div>
+                         )}
+                       </button>
                     </div>
                  </div>
                  <div className="host-avatar" style={{backgroundImage: `url(${hostImage})`}}></div>

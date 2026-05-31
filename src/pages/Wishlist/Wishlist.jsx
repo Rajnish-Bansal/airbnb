@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/organisms/Navbar/Navbar';
 import ListingCard from '../../components/molecules/ListingCard/ListingCard';
-import { fetchListings } from '../../services/api';
+import { fetchWishlist } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { DUMMY_LISTINGS } from '../../constants/mockData';
 import Footer from '../../components/organisms/Footer/Footer';
 import PageHeader from '../../components/molecules/PageHeader/PageHeader';
@@ -11,37 +12,30 @@ import '../Bookings/Bookings.css';
 import './Wishlist.css';
 
 const Wishlist = () => {
+  const { user, openAuthModal } = useAuth();
   const [savedListings, setSavedListings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadWishlist = async () => {
+      if (!user) {
+        setSavedListings([]);
+        setLoading(false);
+        return;
+      }
+      
       try {
-        // Get all saved IDs from local storage
-        const savedIds = Object.keys(localStorage)
-          .filter(key => key.startsWith('wishlist_') && localStorage.getItem(key) === 'true')
-          .map(key => key.replace('wishlist_', ''));
-
-        // Fetch all listings
-        let all = [];
-        try {
-           all = await fetchListings();
-           if (!all || all.length === 0) all = DUMMY_LISTINGS;
-        } catch {
-           all = DUMMY_LISTINGS;
-        }
-
-        const saved = all.filter(item => savedIds.includes(String(item.id || item._id)));
-        setSavedListings(saved);
+        const wishlist = await fetchWishlist();
+        setSavedListings(wishlist);
       } catch (err) {
-        console.error("Error loading wishlist:", err);
+        console.error("Error loading wishlist from DB:", err);
       } finally {
         setLoading(false);
       }
     };
     
     loadWishlist();
-  }, []);
+  }, [user]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -65,7 +59,27 @@ const Wishlist = () => {
         ) : (
           <div style={{ padding: '60px 0', textAlign: 'center', color: '#666' }}>
             <h2 style={{ marginBottom: '16px', color: '#222' }}>Your wishlist is empty</h2>
-            <p>Save properties you like to view them later!</p>
+            {!user ? (
+              <>
+                <p style={{ marginBottom: '24px' }}>Log in to view and save properties to your wishlist across all your devices.</p>
+                <button 
+                  onClick={openAuthModal}
+                  style={{
+                    padding: '12px 24px',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Log in
+                </button>
+              </>
+            ) : (
+              <p>Save properties you like to view them later!</p>
+            )}
           </div>
         )}
       </div>

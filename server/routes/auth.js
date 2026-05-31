@@ -154,7 +154,8 @@ router.post('/verify-otp', async (req, res) => {
         name: user.name,
         phone: user.phone,
         role: user.role,
-        isPhoneVerified: user.isPhoneVerified
+        isPhoneVerified: user.isPhoneVerified,
+        wishlist: user.wishlist || []
       }
     });
 
@@ -238,7 +239,8 @@ router.post('/google-login', async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
-        role: user.role
+        role: user.role,
+        wishlist: user.wishlist || []
       }
     });
 

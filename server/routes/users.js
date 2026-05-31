@@ -52,4 +52,48 @@ router.put('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @route POST /api/users/wishlist/:listingId
+ * @desc  Toggle a listing in the user's wishlist
+ * @access Private
+ */
+router.post('/wishlist/:listingId', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { listingId } = req.params;
+    const wishlistIndex = user.wishlist.findIndex(id => id.toString() === listingId);
+
+    if (wishlistIndex > -1) {
+      // Remove from wishlist
+      user.wishlist.splice(wishlistIndex, 1);
+    } else {
+      // Add to wishlist
+      user.wishlist.push(listingId);
+    }
+
+    await user.save();
+    res.json({ wishlist: user.wishlist });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+/**
+ * @route GET /api/users/wishlist
+ * @desc  Get the user's full wishlist with populated properties
+ * @access Private
+ */
+router.get('/wishlist', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('wishlist');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json(user.wishlist);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 module.exports = router;

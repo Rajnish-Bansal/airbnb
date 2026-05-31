@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   isIdVerified: { type: Boolean, default: false },
   role: { type: String, enum: ['Guest', 'Host', 'Admin'], default: 'Guest' },
   status: { type: String, enum: ['Active', 'Suspended'], default: 'Active' },
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
   joinDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 

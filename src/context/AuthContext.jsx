@@ -92,6 +92,26 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const toggleFavoriteLocally = (listingId) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      
+      const currentWishlist = prev.wishlist || [];
+      const isFavorite = currentWishlist.includes(listingId);
+      
+      let newWishlist;
+      if (isFavorite) {
+        newWishlist = currentWishlist.filter(id => id !== listingId);
+      } else {
+        newWishlist = [...currentWishlist, listingId];
+      }
+      
+      const newUser = { ...prev, wishlist: newWishlist };
+      localStorage.setItem('hostify_user', JSON.stringify(newUser));
+      return newUser;
+    });
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -100,6 +120,7 @@ export const AuthProvider = ({ children }) => {
       loginWithGoogle,
       logout, 
       updateUser, 
+      toggleFavoriteLocally,
       isAuthModalOpen, 
       openAuthModal, 
       closeAuthModal, 

@@ -241,6 +241,39 @@ export const fetchBookedDates = async (listingId) => {
 };
 
 // --- Transactions ---
+export const fetchBookings = async () => {
+  const response = await fetch(`${API_URL}/bookings`, {
+    headers: getHeaders()
+  });
+  if (!response.ok) throw new Error('Failed to fetch bookings');
+  return response.json();
+};
+
+export const fetchWishlist = async () => {
+  const response = await fetch(`${API_URL}/users/wishlist`, {
+    headers: getHeaders()
+  });
+  if (!response.ok) throw new Error('Failed to fetch wishlist');
+  return response.json();
+};
+
+export const toggleWishlist = async (listingId) => {
+  const response = await fetch(`${API_URL}/users/wishlist/${listingId}`, {
+    method: 'POST',
+    headers: getHeaders()
+  });
+  if (!response.ok) throw new Error('Failed to toggle wishlist');
+  return response.json();
+};
+
+export const fetchAdminDashboard = async () => {
+    const response = await fetch(`${API_URL}/transactions`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch transaction history');
+    return response.json();
+};
+
 export const fetchTransactions = async () => {
     const response = await fetch(`${API_URL}/transactions`, {
         headers: getHeaders()

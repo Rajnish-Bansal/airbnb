@@ -2,16 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Heart, Eye } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { toggleWishlist } from '../../../services/api';
 import './ListingCard.css';
 
 const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyViewed, ...listing }) => {
   const navigate = useNavigate();
-  const { user, openAuthModal, showNotification } = useAuth();
+  const { user, openAuthModal, showNotification, toggleFavoriteLocally } = useAuth();
   const cardId = id || listing._id;
   
-  const [isFavorite, setIsFavorite] = useState(() => {
-    return localStorage.getItem(`wishlist_${cardId}`) === 'true';
-  });
+  const isFavorite = user?.wishlist?.includes(cardId) || false;
   const [showNudge, setShowNudge] = useState(false);
 
   // Dynamic details calculation
@@ -22,7 +21,7 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
   
   useEffect(() => {
     if (showNudge) {
-      const timer = setTimeout(() => setShowNudge(false), 3000);
+      const timer = setTimeout(() => setShowNudge(false), 1500);
       return () => clearTimeout(timer);
     }
   }, [showNudge]);
@@ -49,18 +48,32 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
         <img src={image} alt={location} className="listing-image" />
         <button 
           className="favorite-button" 
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
             
+            if (!user) {
+              setShowNudge(true);
+              return;
+            }
+            
             const newFavoriteStatus = !isFavorite;
-            setIsFavorite(newFavoriteStatus);
+            
+            // Optimistic update
+            toggleFavoriteLocally(cardId);
             
             if (newFavoriteStatus) {
-              localStorage.setItem(`wishlist_${cardId}`, 'true');
               showNotification('Saved to wishlist!', 'success');
             } else {
-              localStorage.removeItem(`wishlist_${cardId}`);
               showNotification('Removed from wishlist', 'info');
+            }
+            
+            try {
+              await toggleWishlist(cardId);
+            } catch (err) {
+              console.error('Failed to toggle wishlist:', err);
+              // Revert optimistic update on failure
+              toggleFavoriteLocally(cardId);
+              showNotification('Failed to save. Please try again.', 'error');
             }
           }}
         >
@@ -85,12 +98,13 @@ const ListingCard = ({ id, image, location, distance, price, rating, isRecentlyV
       </div>
       <div className="listing-details">
         <div className="listing-header">
-          <h3 className="listing-location">{location}</h3>
+          <h3 className="listing-primary-text">{listing.title || `Stunning stay in ${location.split(',')[0]}`}</h3>
           <div className="listing-rating">
             <Star size={14} fill="var(--primary)" stroke="var(--primary)" style={{ position: 'relative', top: '-1px' }} />
             <span>{rating} ({listing.reviewsCount || 0})</span>
           </div>
         </div>
+        <p className="listing-secondary-text">{location}</p>
         <p className="listing-info">{detailText}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, flexWrap: 'wrap', gap: '8px' }}>
            <p className="listing-price" style={{ margin: 0 }}>
